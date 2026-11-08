@@ -10,7 +10,7 @@
     "test": "node checks.js && node icons.js && node smoke.js && node responsive.js && node functional.js"
   },
   "devDependencies": {
-    "js-yaml": "4.1.0",
-    "playwright": "1.48.2"
+    "js-yaml": "4.3.2",
+    "playwright": "1.63.0"
   }
 }
