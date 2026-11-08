@@ -525,11 +525,12 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	});
 	check("foto do aparelho grande é salva em WebP, menor e sem passar de 1200 px na capa", foto.ok);
 	if (!foto.ok) console.log(`     ${foto.info}`);
-	// 1.0.1: capa em pixel art (blocos de cor chapada) reduzida para 1200 px não
-	// pode ficar maior que o original. Antes virava WebP mesmo assim: 356 KB a
-	// partir de um PNG de 168 KB; agora fica o menor formato (PNG reduzido, 109 KB)
+	// 1.0.1: capa em pixel art (blocos de cor chapada, PNG de 437 KB, acima do
+	// limite de 300 KB a partir do qual o app comprime) reduzida para 1200 px não
+	// pode ficar maior que o original. Antes virava WebP mesmo assim (661 KB);
+	// agora fica o menor formato, no mesmo tamanho reduzido
 	const chapada = await p.evaluate(async () => {
-		const c = document.createElement("canvas"); c.width = 1800; c.height = 2700; const g = c.getContext("2d");
+		const c = document.createElement("canvas"); c.width = 3000; c.height = 4500; const g = c.getContext("2d");
 		const pal = ["#0b1119", "#1d63e0", "#ffb547", "#3fe0b0"]; let s = 7;
 		for (let y = 0; y < c.height; y += 15) for (let x = 0; x < c.width; x += 15) { s = (s * 1103515245 + 12345) >>> 0; g.fillStyle = pal[(s >>> 16) & 3]; g.fillRect(x, y, 15, 15); }
 		const blob = await new Promise(r => c.toBlob(r, "image/png")); const file = new File([blob], "arte.png", { type: "image/png" });
