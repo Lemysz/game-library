@@ -1,12 +1,18 @@
 name: Versões
 
-# Quando a VERSION do SteamVaultCore.js muda, cria a versão no GitHub
-# com as novidades tiradas do AUDITORIA.md e o zip pronto para abrir no Obsidian.
+# Cria a versão no GitHub quando uma tag vX.Y.Z[-estágio] é enviada:
+#   git tag v1.0.0-prototype && git push origin v1.0.0-prototype
+# A versão nasce como pré-lançamento enquanto o estágio não for estável. Como o
+# repositório é privado, a versão e o ZIP também são privados.
 on:
   push:
-    paths:
-      - Scripts/SteamVaultCore.js
+    tags:
+      - "v*"
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag existente (ex.: v1.0.0-prototype)"
+        required: true
 
 permissions:
   contents: write
@@ -15,49 +21,76 @@ jobs:
   versao:
     name: Publicar versão
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
 
-      - name: Ler a versão
+      - name: Conferir tag e versão do código
         id: v
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          VER=$(grep -oP 'this\.VERSION\s*=\s*"\K[0-9.]+' Scripts/SteamVaultCore.js)
-          echo "ver=$VER" >> "$GITHUB_OUTPUT"
-          if git rev-parse -q --verify "refs/tags/v$VER" >/dev/null; then
-            echo "A versão v$VER já existe; nada a fazer."
-            echo "skip=1" >> "$GITHUB_OUTPUT"
+          VER=$(grep -oP 'this\.VERSION\s*=\s*"\K[0-9]+\.[0-9]+\.[0-9]+' Scripts/SteamVaultCore.js)
+          STAGE=$(grep -oP 'this\.STAGE\s*=\s*"\K[A-Za-z0-9-]*' Scripts/SteamVaultCore.js || true)
+          EXPECTED="v$VER${STAGE:+-$(echo "$STAGE" | tr '[:upper:]' '[:lower:]')}"
+          if [ "$TAG" != "$EXPECTED" ]; then
+            echo "::error::A tag $TAG não corresponde à versão do código ($EXPECTED)."
+            exit 1
           fi
+          awk -v v="## [$VER]" 'index($0, v) == 1 { f = 1 } END { exit !f }' CHANGELOG.md || { echo "::error::CHANGELOG.md sem a seção [$VER]."; exit 1; }
+          echo "ver=$VER" >> "$GITHUB_OUTPUT"
+          echo "stage=$STAGE" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Montar o zip e as novidades
-        if: steps.v.outputs.skip != '1'
+      - name: Verificações rápidas
+        working-directory: .github/tests
+        run: |
+          npm ci --ignore-scripts
+          node checks.js
+
+      - name: Montar o ZIP instalável e as notas
         env:
           VER: ${{ steps.v.outputs.ver }}
+          TAG: ${{ steps.v.outputs.tag }}
         run: |
-          git archive --format=zip -o "Game_Library_$VER.zip" --prefix=Game_Library/ HEAD
-          # seção "### … (versão X.Y.Z)" do AUDITORIA.md até o próximo título
-          awk -v v="(versão $VER)" '
-            index($0, "### ") == 1 && index($0, v) { on = 1; sub(/^### /, ""); title = $0; next }
-            on && /^##/ { exit }
-            on { print }
-            END { if (title) print title > "title.txt" }
-          ' AUDITORIA.md > notes.md
-          [ -s title.txt ] || echo "Game Library $VER" > title.txt
+          NAME="Game_Library_${TAG#v}"
+          # só arquivos versionados; .gitattributes (export-ignore) tira testes e arquivos do GitHub
+          git archive --format=zip -o "$NAME.zip" --prefix=Game_Library/ HEAD
+          # conferência: nada de código de terceiros, segredos ou estado local no ZIP
+          if unzip -Z1 "$NAME.zip" | grep -E '^Game_Library/(\.obsidian/plugins/[^/]+/(main\.js|styles\.css|manifest\.json)|\.obsidian/themes/|\.obsidian/workspace[^/]*\.json|\.trash/|Backups/|\.steamvault/|\.github/(tests|tools|workflows)/|(.*/)?\.env(\..*)?$|(.*/)?node_modules/)'; then
+            echo "::error::O ZIP contém arquivos que não podem ser distribuídos."; exit 1
+          fi
+          sha256sum "$NAME.zip" > "$NAME.zip.sha256"
+          # notas: seção "## [VER]" do CHANGELOG.md até a próxima seção
+          awk -v v="## [$VER]" 'index($0, v) == 1 { on = 1; next } on && /^## \[/ { exit } on { print }' CHANGELOG.md > notes.md
           {
             echo
             echo "---"
-            echo "**Como instalar:** baixe \`Game_Library_$VER.zip\` abaixo, descompacte e abra a pasta \`Game_Library\` como vault no Obsidian. Para atualizar um vault existente, copie a pasta \`Scripts/\` e o arquivo \`.obsidian/snippets/steamvault.css\` por cima dos antigos."
+            echo "### Como instalar"
+            echo "1. Baixe \`$NAME.zip\` abaixo e descompacte."
+            echo "2. No Obsidian, *Abrir pasta como vault* → \`Game_Library\`, e confie no vault."
+            echo "3. Em *Configurações › Plugins da comunidade*, instale e ative **Dataview** e **CustomJS**. Opcionais: **Style Settings** (ajustes visuais) e **Templater** (para usar os modelos em \`_Templates/\`)."
+            echo "4. Abra \`Dashboard/Home\`. Detalhes no README."
           } >> notes.md
+          echo "name=$NAME" >> "$GITHUB_ENV"
 
       - name: Criar a versão no GitHub
-        if: steps.v.outputs.skip != '1'
         env:
           GH_TOKEN: ${{ github.token }}
           VER: ${{ steps.v.outputs.ver }}
+          STAGE: ${{ steps.v.outputs.stage }}
+          TAG: ${{ steps.v.outputs.tag }}
         run: |
-          gh release create "v$VER" "Game_Library_$VER.zip" \
-            --target "$GITHUB_SHA" \
-            --title "$VER · $(cat title.txt | sed 's/ (versão [0-9.]*)//')" \
-            --notes-file notes.md \
-            --latest
+          PRE=""
+          [ -n "$STAGE" ] && PRE="--prerelease"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$name.zip" "$name.zip.sha256" --clobber
+          else
+            gh release create "$TAG" "$name.zip" "$name.zip.sha256" \
+              --verify-tag \
+              --title "Game Library $VER${STAGE:+ — $STAGE}" \
+              --notes-file notes.md $PRE
+          fi
