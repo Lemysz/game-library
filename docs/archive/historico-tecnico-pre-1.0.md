@@ -1,3 +1,8 @@
+> **Arquivo histórico.** Este é o registro técnico completo do desenvolvimento anterior à
+> **Game Library V1.0 — Prototype** (antes chamado `AUDITORIA.md`). As versões 1.x a 3.74 citadas
+> aqui eram numeração interna de desenvolvimento. O conteúdo foi preservado sem edição; o estado atual
+> está no [CHANGELOG](../../CHANGELOG.md) e na [documentação](../../DOCUMENTACAO.md). Só os links relativos foram ajustados ao novo local.
+
 # Auditoria e mudanças — iiSU → Steam Vault
 
 Registro do que foi encontrado no vault original e do que mudou. Correções de dados foram feitas **na origem** (nas notas), não escondidas na interface.
@@ -620,7 +625,7 @@ As outras telas (faixa sólida ao rolar) e o desktop ficam como estavam.
 
 O cálculo dos dados (`model`) foi medido em cerca de 10 ms para 1.673 notas e ficou como estava.
 
-**Cartão para compartilhar:** `SteamVaultShare.js`, descrito na documentação ([DOCUMENTACAO.md](DOCUMENTACAO.md)). Formatos Post e Story, para o jogo e para o perfil.
+**Cartão para compartilhar:** `SteamVaultShare.js`, descrito na documentação ([DOCUMENTACAO.md](../../DOCUMENTACAO.md)). Formatos Post e Story, para o jogo e para o perfil.
 - As imagens são lidas como bytes (vault ou `requestUrl`), então o canvas nunca fica bloqueado para exportação.
 - A saída é JPEG a 92%, com 100–400 KB contra 1–3 MB em PNG. Para copiar, a imagem é convertida para PNG na hora.
 - O layout do perfil é calculado pelo espaço disponível: as capas encolhem no Post e o espaço é distribuído no Story.
