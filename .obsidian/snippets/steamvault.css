@@ -6901,11 +6901,11 @@ body.theme-light:has(.markdown-preview-view.steamvault :is(pre > code.language-d
 .sv-ovfact dt .sv-i { width: 13px; height: 13px; }
 .sv-ovfact dd { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
 .sv-ovfact-val { font-size: calc(0.92rem * var(--sv-ts, 1)); font-weight: 600; color: var(--sv-text); }
-.sv-ovchip, .sv-host button.sv-ovchip { --sv-id: #8fa3b8; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px 0 9px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--sv-id) 13%, var(--sv-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sv-id) 32%, var(--sv-line)); color: var(--sv-text); font-size: var(--sv-fs-small); font-weight: 600; text-decoration: none; cursor: pointer; transition: background var(--sv-t-fast), transform var(--sv-t-fast); }
-.sv-ovchip .sv-i { width: 14px; height: 14px; color: var(--sv-id); }
+.sv-ovchip, .sv-host button.sv-ovchip { --sv-id: #8fa3b8; display: inline-flex; align-items: center; gap: 6px; min-height: 30px; max-width: 100%; padding: 4px 11px 4px 9px; white-space: normal; overflow-wrap: anywhere; text-align: left; line-height: 1.25; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--sv-id) 13%, var(--sv-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sv-id) 32%, var(--sv-line)); color: var(--sv-text); font-size: var(--sv-fs-small); font-weight: 600; text-decoration: none; cursor: pointer; transition: background var(--sv-t-fast), transform var(--sv-t-fast); }
+.sv-ovchip .sv-i { flex: none; width: 14px; height: 14px; color: var(--sv-id); }
 .sv-ovchip:hover { background: color-mix(in srgb, var(--sv-id) 22%, var(--sv-surface)); }
 .sv-ovchip:active { transform: scale(0.97); }
-.sv-ovchip.is-plain, .sv-host button.sv-ovchip.is-plain { cursor: default; background: var(--sv-surface-2); box-shadow: inset 0 0 0 1px var(--sv-line); padding: 0 11px; color: var(--sv-text-2); font-weight: 500; }
+.sv-ovchip.is-plain, .sv-host button.sv-ovchip.is-plain { cursor: default; background: var(--sv-surface-2); box-shadow: inset 0 0 0 1px var(--sv-line); padding: 4px 11px; color: var(--sv-text-2); font-weight: 500; }
 .sv-ovchip.is-search { --sv-id: var(--sv-cyan, #4fc3f7); }
 
 /* linha do tempo */
@@ -7023,7 +7023,7 @@ body.theme-light:has(.markdown-preview-view.steamvault :is(pre > code.language-d
 .sv-app.sv-bp-sm .sv-ovfact { display: grid; grid-template-columns: 118px minmax(0, 1fr); align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--sv-line); }
 .sv-app.sv-bp-sm .sv-ovfact:last-child { border-bottom: 0; }
 .sv-app.sv-bp-sm .sv-ovfact dt { margin: 0; }
-.sv-app.sv-bp-sm .sv-ovchip { height: 28px; font-size: var(--sv-fs-micro); }
+.sv-app.sv-bp-sm .sv-ovchip { min-height: 28px; font-size: var(--sv-fs-micro); }
 .sv-app.sv-bp-sm .sv-ovheat { gap: 2px; }
 .sv-app.sv-bp-sm .sv-ovheat i { border-radius: 2px; }
 .sv-app.sv-bp-sm .sv-ovrhythm-stats { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }

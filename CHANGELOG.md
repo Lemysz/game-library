@@ -73,6 +73,9 @@ as correções são pontuais e valem só para telefones estreitos:
 - **Estados vazios** (ex.: Lista de desejos): em telefones estreitos os botões se empilham em largura
   total em vez de quebrar o texto em duas linhas.
 - **Busca da Biblioteca:** a dica longa termina em reticências em vez de ser cortada no meio.
+- **Ficha › Visão geral:** chips com nomes longos (ex.: desenvolvedora "Maddy Makes Games Inc.")
+  causavam rolagem lateral em 320 px com a fonte real (IBM Plex Sans); agora quebram em duas linhas
+  dentro da coluna. Encontrado pelo CI, que carrega as fontes web como o aparelho.
 - Novo teste `responsive.js` impede a volta do texto invadindo a coluna vizinha.
 
 ### Experimental
