@@ -507,15 +507,21 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	check("inglês: dicionário lido do arquivo e tela traduzida", await p.evaluate(() => { const T = customJS.SteamVaultI18n, nav = document.querySelector(".sv-app")?.innerText || ""; return T._enLoaded && Object.keys(T.en).length > 3000 && /Library/.test(nav) && !/Biblioteca/.test(nav); }));
 	await p.evaluate(() => customJS.SteamVaultI18n.setLang("pt"));
 	const foto = await p.evaluate(async () => {
-		const c = document.createElement("canvas"); c.width = 1800; c.height = 2700; const g = c.getContext("2d"), img = g.createImageData(c.width, c.height);
-		for (let i = 0; i < img.data.length; i += 4) { img.data[i] = (i * 7) % 255; img.data[i + 1] = (i * 13) % 251; img.data[i + 2] = (i >> 9) % 255; img.data[i + 3] = 255; }
+		// foto de celular: JPEG grande com degradê e ruído (determinístico). Um padrão
+		// sintético em PNG comprimia de jeito diferente em cada versão do Chromium
+		// (768 KB no 130, 3 MB no 153) e tornava a comparação de tamanho instável.
+		const c = document.createElement("canvas"); c.width = 1800; c.height = 2700; const g = c.getContext("2d");
+		const gr = g.createLinearGradient(0, 0, c.width, c.height); gr.addColorStop(0, "#2a4d6e"); gr.addColorStop(0.5, "#c98a4b"); gr.addColorStop(1, "#1d2b1f");
+		g.fillStyle = gr; g.fillRect(0, 0, c.width, c.height);
+		const img = g.getImageData(0, 0, c.width, c.height); let s = 12345;
+		for (let i = 0; i < img.data.length; i += 4) { s = (s * 1103515245 + 12345) >>> 0; const n = ((s >>> 16) & 63) - 32; img.data[i] += n; img.data[i + 1] += n; img.data[i + 2] += n; }
 		g.putImageData(img, 0, 0);
-		const blob = await new Promise(r => c.toBlob(r, "image/png")); const file = new File([blob], "foto.png", { type: "image/png" });
+		const blob = await new Promise(r => c.toBlob(r, "image/jpeg", 0.92)); const file = new File([blob], "foto.jpg", { type: "image/jpeg" });
 		const path = await customJS.SteamVaultLegacy.saveDeviceImage(file, "Assets/Covers", "Foto teste");
 		const bmp = await createImageBitmap(new Blob([await (await fetch(window.__blobs[path])).arrayBuffer()]));
 		const ok = /\.webp$/.test(path) && window.__bin[path] < blob.size && bmp.width === 1200;
 		// diagnóstico quando falha: qual condição não valeu (depende do codificador WebP do navegador)
-		return { ok, info: `caminho=${path} webp=${window.__bin[path]} B png=${blob.size} B largura=${bmp.width} ${(navigator.userAgent.match(/Chrome\/[\d.]+/) || [""])[0]}` };
+		return { ok, info: `caminho=${path} webp=${window.__bin[path]} B original=${blob.size} B largura=${bmp.width} ${(navigator.userAgent.match(/Chrome\/[\d.]+/) || [""])[0]}` };
 	});
 	check("foto do aparelho grande é salva em WebP, menor e sem passar de 1200 px na capa", foto.ok);
 	if (!foto.ok) console.log(`     ${foto.info}`);
