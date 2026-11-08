@@ -1,0 +1,22 @@
+name: Ideia
+description: Sugira uma tela, um recurso ou uma melhoria.
+title: "[Ideia] "
+labels: ["ideia"]
+body:
+  - type: textarea
+    id: ideia
+    attributes:
+      label: A ideia
+      description: O que você gostaria de ver na Game Library?
+    validations:
+      required: true
+  - type: textarea
+    id: porque
+    attributes:
+      label: Por que ajudaria
+      description: Que problema resolve ou o que fica melhor no dia a dia.
+  - type: textarea
+    id: referencias
+    attributes:
+      label: Referências
+      description: Imagens, apps ou exemplos que inspiram a ideia.

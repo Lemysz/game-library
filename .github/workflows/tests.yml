@@ -1,0 +1,59 @@
+name: Testes
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testes:
+    name: Verificações e telas
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: .github/tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: .github/tests/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Verificações rápidas (sintaxe, CSS, versão, notas, segredos)
+        run: node checks.js
+
+      - name: Ícones (SVGs em Assets/Icons em dia com o registro e XML válido)
+        run: node icons.js
+
+      - name: Instalar o Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Abrir todas as telas no celular e no computador
+        run: node smoke.js
+        env:
+          SV_SHOTS: screenshots
+
+      - name: Testes funcionais (filtros, janelas, fila, sessão, gravação nas notas)
+        run: node functional.js
+
+      - name: Guardar as capturas de tela
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas
+          path: .github/tests/screenshots
+          retention-days: 7
+          if-no-files-found: ignore

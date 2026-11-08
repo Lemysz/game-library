@@ -1,0 +1,7 @@
+# Game Library — nunca publicar caches de perfil/sincronização
+.steamvault/
+# lixeira local do Obsidian
+.trash/
+
+# backups locais feitos pela Game Library
+Backups/
