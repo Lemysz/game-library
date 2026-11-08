@@ -2,6 +2,9 @@ name: Versões
 
 # Cria a versão no GitHub quando uma tag vX.Y.Z[-estágio] é enviada:
 #   git tag v1.0.0-prototype && git push origin v1.0.0-prototype
+# ou pelo botão "Run workflow" (Actions › Versões), escolhendo o branch: aí a
+# tag é criada pelo próprio GitHub no commit do branch. Nos dois casos a tag
+# precisa bater com a VERSION/STAGE do código e com uma seção do CHANGELOG.
 # A versão nasce como pré-lançamento enquanto o estágio não for estável. Como o
 # repositório é privado, a versão e o ZIP também são privados.
 on:
@@ -11,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag existente (ex.: v1.0.0-prototype)"
+        description: "Tag da versão (ex.: v1.0.0-prototype); criada no commit do branch se ainda não existir"
         required: true
 
 permissions:
@@ -25,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Conferir tag e versão do código
@@ -89,11 +92,18 @@ jobs:
         run: |
           PRE=""
           [ -n "$STAGE" ] && PRE="--prerelease"
+          # push de tag: a tag já existe; botão manual: o GitHub cria a tag no commit do branch
+          VERIFY=""
+          [ "$GITHUB_EVENT_NAME" = "push" ] && VERIFY="--verify-tag"
+          if [ "$GITHUB_EVENT_NAME" != "push" ] && git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            AT=$(git ls-remote --tags origin "refs/tags/$TAG^{}" "refs/tags/$TAG" | cut -f1)
+            echo "$AT" | grep -qx "$GITHUB_SHA" || { echo "::error::A tag $TAG já existe em outro commit."; exit 1; }
+          fi
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$name.zip" "$name.zip.sha256" --clobber
           else
             gh release create "$TAG" "$name.zip" "$name.zip.sha256" \
-              --verify-tag \
+              $VERIFY --target "$GITHUB_SHA" \
               --title "Game Library $VER${STAGE:+ — $STAGE}" \
               --notes-file notes.md $PRE
           fi
