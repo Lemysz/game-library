@@ -1,0 +1,20 @@
+# Normalização de fim de linha
+* text=auto eol=lf
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.webp binary
+*.gif binary
+*.zip binary
+
+# Fora do ZIP instalável (git archive): testes, ferramentas e arquivos só do GitHub.
+# .github/readme/ fica no ZIP: são as imagens do README.md.
+.github/tests/ export-ignore
+.github/tools/ export-ignore
+.github/workflows/ export-ignore
+.github/ISSUE_TEMPLATE/ export-ignore
+.github/pull_request_template.md export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+CONTRIBUTING.md export-ignore
+CLAUDE.md export-ignore
