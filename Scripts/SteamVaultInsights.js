@@ -924,7 +924,7 @@ class SteamVaultInsights {
 		const issues = C.audit(model);
 		const levels = { error: "Erro", warn: "Aviso", info: "Info" };
 		const html = `<div class="sv-page sv-pad">
-			${U.pageHead("Configurações", { sub: `Game Library ${C.VERSION}` })}
+			${U.pageHead("Configurações", { sub: `Game Library ${C.VERSION}${C.STAGE ? ` · ${C.STAGE}` : ""}` })}
 			<div class="sv-settings">
 				${ctx.PP ? ctx.PP.settingsSummary(ctx) : ""}
 				${ctx.A ? (() => { const n = ctx.A.legacyCount(); return `<section class="sv-surface sv-settings-ach">
