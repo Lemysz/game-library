@@ -1,7 +1,8 @@
 // Responsividade: abre cada tela em 320, 360, 390 e 430 px (celular, toque) e no
 // computador, nos temas escuro e claro. Falha com erro de JavaScript, tela vazia,
 // rolagem lateral ou conteúdo fora da tela. Avisa (sem falhar) sobre áreas de
-// toque menores que 32 px e textos cortados sem reticências.
+// toque menores que 32 px (área efetiva, com o ::after que a amplia) e textos
+// cortados sem reticências.
 //
 //   node responsive.js                 todas as larguras e os dois temas
 //   SV_WIDTHS=320,390 node responsive.js
@@ -58,11 +59,25 @@ const SHOTS = process.env.SV_SHOTS ? path.resolve(process.env.SV_SHOTS) : null;
 					const b = R(el);
 					if ((b.right > VW + 1 || b.left < -1) && !clipped(el)) out.outside.push(`${name(el)} ${Math.round(b.left)}..${Math.round(b.right)}`);
 				}
+				// área de toque efetiva: a caixa do elemento somada à extensão de um ::after
+				// absoluto (inset negativo), a menos que o próprio elemento corte o ::after
+				// (overflow); um input escondido dentro de um <label> vale pelo label
+				const touchBox = el => {
+					if (getComputedStyle(el).pointerEvents === "none" && el.closest("label")) el = el.closest("label");
+					const b = R(el); let w = b.width, h = b.height;
+					const cs = getComputedStyle(el), a = getComputedStyle(el, "::after");
+					if (a.content !== "none" && a.position === "absolute" && cs.overflow === "visible") {
+						const px = v => Math.max(0, -parseFloat(v) || 0);
+						w += px(a.left) + px(a.right); h += px(a.top) + px(a.bottom);
+					}
+					return [w, h];
+				};
 				if (mob) for (const el of app.querySelectorAll("button, a[href], [role=button], [role=tab], select, input[type=checkbox]")) {
 					if (!vis(el) || el.closest("[hidden], .sv-menu:not(.is-open), .sv-sr")) continue;
 					if (el.matches(".sv-content a") && getComputedStyle(el).display === "inline") continue;
 					const b = R(el); if (b.bottom < 0 || b.top > innerHeight * 3) continue;
-					if (b.width < 32 || b.height < 32) out.small.push(`${name(el)} ${Math.round(b.width)}×${Math.round(b.height)}`);
+					const [w, h] = touchBox(el);
+					if (w < 31.5 || h < 31.5) out.small.push(`${name(el)} ${Math.round(w)}×${Math.round(h)}`);
 				}
 				for (const el of app.querySelectorAll(".sv-content h1, .sv-content h2, .sv-content h3, .sv-content .sv-btn, .sv-content p")) {
 					if (!vis(el)) continue; const cs = getComputedStyle(el);
@@ -82,7 +97,7 @@ const SHOTS = process.env.SV_SHOTS ? path.resolve(process.env.SV_SHOTS) : null;
 			console.log(`${problems.length ? "FAIL" : "ok  "} ${label}${problems.length ? "\n     " + problems.join("\n     ") : ""}`);
 			if (problems.length) fails.push(label);
 			for (const [k, list] of [["toque < 32 px", r.small], ["texto cortado", r.cut]]) for (const x of new Set(list)) {
-				const key = `${k}: ${target.replace(/^Dashboard\//, "")} › ${x.replace(/ \d+×\d+$/, "")}`;
+				const key = `${k}: ${target.replace(/^Dashboard\//, "")} › ${process.env.SV_SIZES ? x : x.replace(/ \d+×\d+$/, "")}`;
 				if (!warns.has(key)) warns.set(key, new Set());
 				warns.get(key).add(vp.tag);
 			}

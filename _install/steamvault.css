@@ -8161,6 +8161,12 @@ body.sv-immersive-top .sv-app.sv-bp-sm.has-top-image .sv-pf-banner { height: cal
 .sv-app.is-touch .sv-hero-franchise::after { content: ""; position: absolute; inset: -12px -4px; }
 .sv-app.is-touch .sv-ovchip::after { content: ""; position: absolute; inset: -6px -2px; }
 .sv-app.is-touch .sv-stgantt-row::after { content: ""; position: absolute; inset: -4px 0; }
+/* 1.0.1: área de toque de pelo menos 32 px no celular.
+   Linhas do gráfico de períodos: 24 px + 8 px de espaço = 32 px por linha.
+   Título do card: o overflow (reticências) corta um ::after, então a área cresce
+   com padding e volta com margem negativa — o texto não sai do lugar. */
+.sv-app.is-touch .sv-stgantt-row { min-height: 24px; }
+.sv-app.is-touch .sv-card-title { position: relative; z-index: 1; padding-block: 8px; margin-block: -8px; }
 .sv-app.is-touch .sv-card-favbtn { width: 34px !important; height: 34px !important; }
 /* "Minha análise" vazia: no celular o botão desce para a linha de baixo */
 .sv-app.sv-bp-sm .sv-ovreview.is-empty { flex-wrap: wrap; }

@@ -525,6 +525,21 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	});
 	check("foto do aparelho grande é salva em WebP, menor e sem passar de 1200 px na capa", foto.ok);
 	if (!foto.ok) console.log(`     ${foto.info}`);
+	// 1.0.1: capa em pixel art (blocos de cor chapada) reduzida para 1200 px não
+	// pode ficar maior que o original. Antes virava WebP mesmo assim: 356 KB a
+	// partir de um PNG de 168 KB; agora fica o menor formato (PNG reduzido, 109 KB)
+	const chapada = await p.evaluate(async () => {
+		const c = document.createElement("canvas"); c.width = 1800; c.height = 2700; const g = c.getContext("2d");
+		const pal = ["#0b1119", "#1d63e0", "#ffb547", "#3fe0b0"]; let s = 7;
+		for (let y = 0; y < c.height; y += 15) for (let x = 0; x < c.width; x += 15) { s = (s * 1103515245 + 12345) >>> 0; g.fillStyle = pal[(s >>> 16) & 3]; g.fillRect(x, y, 15, 15); }
+		const blob = await new Promise(r => c.toBlob(r, "image/png")); const file = new File([blob], "arte.png", { type: "image/png" });
+		const path = await customJS.SteamVaultLegacy.saveDeviceImage(file, "Assets/Covers", "Arte chapada");
+		const bmp = await createImageBitmap(new Blob([await (await fetch(window.__blobs[path])).arrayBuffer()]));
+		const ok = window.__bin[path] < blob.size && bmp.width === 1200;
+		return { ok, info: `caminho=${path} salvo=${window.__bin[path]} B original=${blob.size} B largura=${bmp.width} ${(navigator.userAgent.match(/Chrome\/[\d.]+/) || [""])[0]}` };
+	});
+	check("imagem reduzida nunca fica maior que o original (escolhe o menor formato)", chapada.ok);
+	if (!chapada.ok) console.log(`     ${chapada.info}`);
 	// ---- acessibilidade das janelas (3.55.0): nome, foco preso, Esc e foco de volta
 	const trapTest = async (open, rootSel) => {
 		await p.evaluate(() => { const b = document.querySelector(".sv-app button:not([disabled])"); b.focus(); window.__op = b; });

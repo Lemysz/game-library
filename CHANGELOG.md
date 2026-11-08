@@ -8,6 +8,26 @@ será anunciada aqui, com o caminho de migração.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.0.1] — Prototype · 2026-11-08
+
+Correções pontuais da 1.0. Sem funcionalidade nova e sem mudança no formato das notas.
+
+### Corrigido
+- **Imagens maiores que o original:** ao reduzir uma imagem para capa, fundo ou logo, o app sempre
+  gravava WebP, mesmo quando ele ficava maior que o original. Uma capa em pixel art de 168 KB virava
+  356 KB. Agora, nesse caso, compara com PNG (ou JPEG, sem transparência) no mesmo tamanho reduzido e
+  fica com o menor: a mesma capa fica com 109 KB.
+- **Áreas de toque no celular:** o título dos cards (16 px de altura) e as linhas do gráfico de
+  períodos das Estatísticas (19 px) passaram a ter pelo menos 32 px para o dedo, sem mudar o visual.
+  No título, o `::after` que ampliaria o toque era cortado pelo `overflow` das reticências.
+- `responsive.js` mede a área de toque **efetiva** (com o `::after` que a amplia e o `label` de
+  interruptores), em vez da caixa visível; meio pixel de tolerância para arredondamentos.
+- O recarregamento da tela depois de salvar (dois pontos do `SteamVaultLegacy.js`) usava
+  `workspace.activeLeaf`, obsoleto na API do Obsidian; agora usa `getMostRecentLeaf()`, com o
+  antigo só como reserva (o mesmo padrão já usado em `SteamVault.js`).
+
 ### Segurança
 
 - **Reparo de ícones da Steam**: o endereço salvo numa conquista (`steamIconUrl`) só é baixado de
@@ -16,11 +36,6 @@ será anunciada aqui, com o caminho de migração.
 - **Testes** (`.github/tests/`, fora do ZIP): Playwright 1.48.2 → 1.63.0 (GHSA-7mvr-c777-76hp: o
   download do navegador não conferia o certificado) e js-yaml 4.1.0 → 4.3.2 (GHSA-mh29-5h37-fv8m e
   outras). `npm audit` sem vulnerabilidades.
-
-### Corrigido
-- O recarregamento da tela depois de salvar (dois pontos do `SteamVaultLegacy.js`) usava
-  `workspace.activeLeaf`, obsoleto na API do Obsidian; agora usa `getMostRecentLeaf()`, com o
-  antigo só como reserva (o mesmo padrão já usado em `SteamVault.js`).
 
 ### Documentação
 - Requisito mínimo explícito: Obsidian 1.8.7 (APIs `loadLocalStorage`/`saveLocalStorage`),
@@ -111,5 +126,6 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.0.0-prototype...HEAD
+[Não lançado]: ../../compare/v1.0.1-prototype...HEAD
+[1.0.1]: ../../releases/tag/v1.0.1-prototype
 [1.0.0]: ../../releases/tag/v1.0.0-prototype
