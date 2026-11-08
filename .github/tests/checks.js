@@ -16,12 +16,30 @@ for (const f of fs.readdirSync(path.join(ROOT, "Scripts")).filter(f => f.endsWit
 // 2. A cópia em _install/ é idêntica ao snippet ativo
 ok("_install/steamvault.css igual a .obsidian/snippets/steamvault.css", read("_install/steamvault.css") === read(".obsidian/snippets/steamvault.css"));
 
-// 3. Versão: código, selo do README e histórico andam juntos
-const version = (/this\.VERSION\s*=\s*"([\d.]+)"/.exec(read("Scripts/SteamVaultCore.js")) || [])[1];
-ok("VERSION definida no SteamVaultCore.js", !!version);
-const badge = (/vers%C3%A3o-([\d.]+)-/.exec(read("README.md")) || [])[1];
+// 3. Versão: código, selo do README e CHANGELOG andam juntos (SemVer + estágio)
+const core = read("Scripts/SteamVaultCore.js");
+const version = (/this\.VERSION\s*=\s*"(\d+\.\d+\.\d+)"/.exec(core) || [])[1];
+const stage = (/this\.STAGE\s*=\s*"([\w-]*)"/.exec(core) || [])[1];
+ok("VERSION (SemVer) definida no SteamVaultCore.js", !!version);
+ok("STAGE definido no SteamVaultCore.js", stage !== undefined);
+const badge = (/vers%C3%A3o-([\d.]+)/.exec(read("README.md")) || [])[1];
 ok(`selo do README (${badge}) igual à VERSION (${version})`, badge === version);
-ok(`AUDITORIA.md tem a seção da versão ${version}`, new RegExp(`^### .*\\(versão ${String(version).replace(/\./g, "\\.")}\\)`, "m").test(read("AUDITORIA.md")));
+ok(`CHANGELOG.md tem a seção da versão ${version}`, new RegExp(`^## \\[${String(version).replace(/\./g, "\\.")}\\]`, "m").test(read("CHANGELOG.md")));
+
+// 3b. Higiene do repositório: nada de código de terceiros, lixeira ou estado local versionados
+{
+	const files = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" }).split("\n").filter(Boolean);
+	const bad = files.filter(f => /^\.obsidian\/plugins\/[^/]+\/(main\.js|styles\.css|manifest\.json)$/.test(f) || /^\.obsidian\/themes\//.test(f)
+		|| /^\.obsidian\/workspace[^/]*\.json$/.test(f) || /^\.trash\//.test(f) || /^Backups\//.test(f) || /(^|\/)\.env(\.|$)/.test(f) || /node_modules\//.test(f));
+	ok("sem plugins/tema de terceiros, lixeira, backups ou estado local no git", !bad.length, bad.slice(0, 6).join(", "));
+	const needed = [".obsidian/community-plugins.json", ".obsidian/plugins/dataview/data.json", ".obsidian/plugins/customjs/data.json", ".obsidian/snippets/steamvault.css", ".obsidian/appearance.json"];
+	const miss = needed.filter(f => !files.includes(f));
+	ok("configurações necessárias do vault versionadas", !miss.length, miss.join(", "));
+	let dv = {}; try { dv = JSON.parse(read(".obsidian/plugins/dataview/data.json")); } catch (_) { }
+	ok("Dataview com consultas JavaScript ligadas (data.json)", dv.enableDataviewJs === true);
+	let cj = {}; try { cj = JSON.parse(read(".obsidian/plugins/customjs/data.json")); } catch (_) { }
+	ok("CustomJS lendo a pasta Scripts/ (data.json)", cj.jsFolder === "Scripts/");
+}
 
 // 4. Todas as notas têm frontmatter legível
 const data = buildData();

@@ -5,7 +5,9 @@
   "scripts": {
     "checks": "node checks.js",
     "smoke": "node smoke.js",
-    "test": "node checks.js && node smoke.js"
+    "responsive": "node responsive.js",
+    "functional": "node functional.js",
+    "test": "node checks.js && node icons.js && node smoke.js && node responsive.js && node functional.js"
   },
   "devDependencies": {
     "js-yaml": "4.1.0",

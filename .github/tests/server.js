@@ -60,4 +60,22 @@ function start(port = 0) {
 	return new Promise(ok => server.listen(port, "127.0.0.1", () => ok({ server, data, url: `http://127.0.0.1:${server.address().port}/` })));
 }
 
-module.exports = { ROOT, buildData, start };
+// Telas testadas pelo smoke.js e pelo responsive.js: cada tela do Dashboard e a
+// primeira nota real de cada tipo. SV_ONLY filtra pelo caminho.
+function screenTargets(data) {
+	const real = p => p.fm && !p.path.includes("_Templates") && !p.path.startsWith("_install/");
+	const first = type => data.pages.find(p => real(p) && p.fm.type === type)?.path;
+	return [
+		...data.pages.filter(p => p.path.startsWith("Dashboard/") && p.page).map(p => p.path).sort(),
+		first("game"), first("platform"), first("genre"), first("subgenre"), first("franchise"), first("collection"), first("achievement")
+	].filter(Boolean).filter(p => !process.env.SV_ONLY || p.includes(process.env.SV_ONLY));
+}
+
+// Chromium do Playwright (ou o indicado em CHROMIUM_PATH)
+function launchBrowser() {
+	let chromium;
+	try { ({ chromium } = require("playwright")); } catch { ({ chromium } = require("playwright-core")); }
+	return chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+}
+
+module.exports = { ROOT, buildData, start, screenTargets, launchBrowser };

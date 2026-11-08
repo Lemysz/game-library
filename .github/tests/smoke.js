@@ -1,7 +1,7 @@
 // Abre cada tela do vault num Chromium sem interface, no celular e no computador,
 // e falha se aparecer erro de JavaScript, tela vazia ou rolagem lateral.
 const fs = require("fs"), path = require("path");
-const { start } = require("./server");
+const { start, screenTargets } = require("./server");
 
 let chromium;
 try { ({ chromium } = require("playwright")); } catch { ({ chromium } = require("playwright-core")); }
@@ -16,12 +16,7 @@ const SHOTS = process.env.SV_SHOTS ? path.resolve(process.env.SV_SHOTS) : null;
 
 (async () => {
 	const { server, data, url } = await start();
-	const real = p => p.fm && !p.path.includes("_Templates") && !p.path.startsWith("_install/");
-	const first = type => data.pages.find(p => real(p) && p.fm.type === type)?.path;
-	const targets = [
-		...data.pages.filter(p => p.path.startsWith("Dashboard/") && p.page).map(p => p.path).sort(),
-		first("game"), first("platform"), first("genre"), first("subgenre"), first("franchise"), first("collection"), first("achievement")
-	].filter(Boolean).filter(p => !process.env.SV_ONLY || p.includes(process.env.SV_ONLY));
+	const targets = screenTargets(data);
 
 	const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
 	const fails = [];
