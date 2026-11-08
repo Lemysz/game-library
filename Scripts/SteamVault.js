@@ -321,7 +321,8 @@ class SteamVault {
 		// área não depende dele), então valem também no primeiro desenho
 		for (const [k, max] of this._bps) root.classList.toggle(`sv-bp-${k}`, w < max);
 	}
-	get _bps() { return [["lg", 1180], ["md", 1000], ["sm", 760], ["xs", 440]]; }
+	// xxs (1.0.0): telefones estreitos, 320–379 px (inclui os 360 px mais comuns no Android)
+	get _bps() { return [["lg", 1180], ["md", 1000], ["sm", 760], ["xs", 440], ["xxs", 380]]; }
 	_viewWidth(own) {
 		const cands = [own, window.innerWidth, document.documentElement.clientWidth, window.visualViewport?.width].filter(v => Number.isFinite(v) && v > 0);
 		return cands.length ? Math.min(...cands) : 1200;

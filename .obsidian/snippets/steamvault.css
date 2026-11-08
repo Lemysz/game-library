@@ -1063,6 +1063,8 @@ body.theme-dark .sv-search-results, body:not(.theme-light) .sv-search-results { 
 .sv-field--search > .sv-i { position: absolute; left: 11px; width: 16px; height: 16px; color: var(--sv-muted); pointer-events: none; }
 .sv-field--search .sv-input, .sv-host .sv-field--search input.sv-input, .sv-modal-root .sv-field--search input.sv-input { padding-left: 34px; }
 .sv-field--search .sv-input::-webkit-search-cancel-button { filter: grayscale(1) opacity(0.6); }
+/* dica longa da busca termina em reticências, nunca cortada no meio de uma palavra */
+.sv-field--search .sv-input { text-overflow: ellipsis; }
 
 .sv-select {
 	position: relative;
@@ -3729,6 +3731,20 @@ body.is-mobile .sv-app.sv-bp-sm .sv-bottomnav { display: none; }
 .sv-app.sv-bp-xs .sv-franchise .sv-figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .sv-app.sv-bp-xs .sv-toolbar-end .sv-select > .sv-i { display: none; }
 .sv-app.sv-bp-xs .sv-toolbar-end .sv-select select { padding-left: 10px; }
+
+/* ----------------------------------------------------------- xxs (<380) */
+/* Telefones estreitos (320–379 px). Na ficha, o resumo de conquistas fica só com
+   número e legenda (como horas e nota) para a legenda não invadir a coluna da nota;
+   as ações do topo ficam numa linha só; os botões do estado vazio se empilham. */
+.sv-app.sv-bp-xxs .sv-hero-ach .sv-ring,
+.sv-app.sv-bp-xxs .sv-hero-ach .sv-hero-ach-unknown { display: none; }
+.sv-app.sv-bp-xxs .sv-hero-actions { gap: 6px; }
+.sv-app.sv-bp-xxs .sv-hero-actions > .sv-btn:not(.sv-btn--icon),
+.sv-app.sv-bp-xxs .sv-hero-actions > a.sv-btn { padding: 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sv-app.sv-bp-xxs .sv-hero-actions .sv-btn--icon,
+.sv-host .sv-app.sv-bp-xxs .sv-hero-actions button.sv-btn--icon { width: 40px; }
+.sv-app.sv-bp-xxs .sv-empty:not(.sv-empty--compact) .sv-empty-action { flex-direction: column; align-items: stretch; width: 100%; max-width: 280px; }
+.sv-app.sv-bp-xxs .sv-empty:not(.sv-empty--compact) .sv-empty-action .sv-btn { justify-content: center; }
 
 /* ------------------------------------------------ toque (sem hover real) */
 @media (hover: none) {
