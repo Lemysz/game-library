@@ -8,7 +8,14 @@ será anunciada aqui, com o caminho de migração.
 
 ## [Não lançado]
 
-Nada ainda.
+### Segurança
+
+- **Reparo de ícones da Steam**: o endereço salvo numa conquista (`steamIconUrl`) só é baixado de
+  domínios da Steam, como já acontecia em *Salvar ícones no vault*. Uma nota sincronizada não consegue
+  mais fazer o aparelho acessar `localhost` ou a rede local.
+- **Testes** (`.github/tests/`, fora do ZIP): Playwright 1.48.2 → 1.63.0 (GHSA-7mvr-c777-76hp: o
+  download do navegador não conferia o certificado) e js-yaml 4.1.0 → 4.3.2 (GHSA-mh29-5h37-fv8m e
+  outras). `npm audit` sem vulnerabilidades.
 
 ## [1.0.0] — Prototype · 2026-11-08
 

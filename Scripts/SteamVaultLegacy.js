@@ -3070,7 +3070,10 @@ class SteamVaultLegacy {
 				`https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${tail}`
 			);
 		}
-		return [...new Set(out.filter(Boolean))];
+		// o endereço pode vir de uma nota (steamIconUrl): só domínios da Steam,
+		// nunca localhost ou a rede local
+		const hosts = ["steamstatic.com", "steamcommunity.com", "steampowered.com", "steamcdn-a.akamaihd.net"];
+		return [...new Set(out.map(u => customJS.SteamVaultCore.safeUrl(u, { hosts })).filter(Boolean))];
 	}
 
 	// arquivo de ícone já baixado, válido e registrado no vault

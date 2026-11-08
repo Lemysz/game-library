@@ -53,6 +53,6 @@ carregamento do Google Fonts revela o endereço IP ao Google, como qualquer font
 
 | Pacote | Versão | Licença |
 |---|---|---|
-| Playwright / playwright-core | 1.48.2 | Apache-2.0 |
-| js-yaml | 4.1.0 | MIT |
+| Playwright / playwright-core | 1.63.0 | Apache-2.0 |
+| js-yaml | 4.3.2 | MIT |
 | argparse (dependência do js-yaml) | 2.0.1 | Python-2.0 |
