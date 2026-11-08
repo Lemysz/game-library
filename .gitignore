@@ -1,7 +1,55 @@
-# Game Library — nunca publicar caches de perfil/sincronização
-.steamvault/
-# lixeira local do Obsidian
-.trash/
+# ─────────────────────────────────────────────────────────────
+# Game Library — o que NUNCA vai para o git
+# ─────────────────────────────────────────────────────────────
 
-# backups locais feitos pela Game Library
+# Dados locais da Game Library (cache de perfis/sincronização e backups)
+.steamvault/
 Backups/
+# Preferências pessoais (tema, layout, idioma, metas). Ficam fora deste repositório
+# de distribuição. Se você sincroniza o SEU vault pelo git, apague esta linha lá.
+Assets/game-library-preferencias.json
+
+# Obsidian: lixeira, estado de janelas e arquivos por aparelho
+.trash/
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/workspaces.json
+.obsidian/graph.json
+.obsidian/cache
+.obsidian/*.log
+
+# Obsidian: código de terceiros (instalado pelo próprio Obsidian).
+# Só as configurações (data.json) dos plugins entram no repositório.
+.obsidian/themes/
+.obsidian/plugins/*/main.js
+.obsidian/plugins/*/styles.css
+.obsidian/plugins/*/manifest.json
+.obsidian/plugins/*/*.wasm
+
+# Credenciais e segredos (nenhum deve existir no vault)
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.keystore
+credentials*.json
+secrets*.json
+
+# Ferramentas de teste
+node_modules/
+.github/tests/screenshots/
+.github/tests/test-results/
+
+# Sistema operacional e editores
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.vscode/
+.idea/
+
+# Artefatos de empacotamento
+*.zip
+dist/
