@@ -194,7 +194,8 @@ Detalhes: [SECURITY.md](SECURITY.md) · [Segurança e privacidade](DOCUMENTACAO.
 - **Modo inglês** é uma tradução aplicada depois de desenhar a tela; algum texto novo pode
   aparecer em português.
 - **Tipografia** vem do Google Fonts; sem internet, usa fontes do sistema.
-- Alguns links de texto têm área de toque menor que 32 px (apontados pelo `responsive.js`).
+- Áreas de toque: todas têm pelo menos 32 px efetivos no celular; o ideal de 44 px (diretriz de
+  acessibilidade mais exigente) ainda não vale para links de texto pequenos e pontos do carrossel.
 - O código ainda usa o nome interno *SteamVault* (arquivos `SteamVault*.js`, classes `sv-*`).
 - As artes de jogos incluídas são **dados de exemplo** com direitos dos donos
   ([ASSET_CREDITS.md](ASSET_CREDITS.md)).
@@ -206,8 +207,8 @@ Direções para as próximas versões, sem data e sujeitas a mudança:
 
 - [ ] Definir a licença do projeto.
 - [ ] Roteiro de teste em aparelho real (Android e iOS) a cada versão.
-- [ ] Áreas de toque de pelo menos 44 px nos links de texto restantes.
-- [ ] Opção de tipografia local (sem depender do Google Fonts).
+- [ ] Áreas de toque de 44 px nos links de texto e pontos do carrossel.
+- [ ] Tipografia local: fontes Archivo e IBM Plex Sans (OFL) dentro do vault, sem acessar o Google Fonts.
 - [ ] Dividir os módulos maiores (`SteamVaultLegacy.js`, `SteamVaultPages.js`) sem mudar o comportamento.
 - [ ] Plano de migração do nome interno *SteamVault* para *Game Library*.
 - [ ] Documentação também em inglês.

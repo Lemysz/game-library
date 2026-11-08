@@ -282,7 +282,7 @@ class SteamVaultAchievements {
 				if (S?._saveBinary) await S._saveBinary(p, out.buf);
 				else { const folder = p.split("/").slice(0, -1).join("/"); if (!app.vault.getAbstractFileByPath(folder)) await app.vault.createFolder(folder).catch(() => {}); await app.vault.createBinary(p, out.buf); }
 				form.icon = p;
-				form.iconPreview = URL.createObjectURL(new Blob([out.buf], { type: out.ext === "webp" ? "image/webp" : file.type || "image/png" }));
+				form.iconPreview = URL.createObjectURL(new Blob([out.buf], { type: ({ webp: "image/webp", png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg" })[out.ext] || file.type || "image/png" }));
 				if (prev) prev.innerHTML = iconPrev(form.iconPreview);
 				const btns = body.querySelector(".sv-mgr-iconbtns");
 				if (btns && !btns.querySelector("[data-iconclear]")) btns.insertAdjacentHTML("beforeend", U.btn("Remover", { icon: "trash", kind: "ghost", size: "sm", attrs: "data-iconclear" }));

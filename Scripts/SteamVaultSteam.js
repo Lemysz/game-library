@@ -778,8 +778,17 @@ class SteamVaultSteam {
 			bmp.close?.();
 			const blob = await new Promise(r => c.toBlob(r, "image/webp", 0.86));
 			if (!blob || blob.type !== "image/webp") return file;
-			const buf = await blob.arrayBuffer();
-			return buf.byteLength < file.buf.byteLength || scale < 1 ? { buf, ext: "webp" } : file;
+			let best = { buf: await blob.arrayBuffer(), ext: "webp" };
+			// 1.0.1: reduzida, uma imagem de cores chapadas (arte, captura de tela)
+			// pode ficar maior em WebP do que era no original. Nesse caso tenta,
+			// no mesmo tamanho reduzido, PNG (com transparência) ou JPEG, e fica
+			// com o menor: nunca grava um arquivo maior que o necessário.
+			if (scale < 1 && best.buf.byteLength >= file.buf.byteLength) {
+				const type = alpha ? "image/png" : "image/jpeg";
+				const alt = await new Promise(r => c.toBlob(r, type, 0.9));
+				if (alt && alt.type === type && alt.size < best.buf.byteLength) best = { buf: await alt.arrayBuffer(), ext: alpha ? "png" : "jpg" };
+			}
+			return best.buf.byteLength < file.buf.byteLength || scale < 1 ? best : file;
 		} catch (_) { return file; }
 	}
 
