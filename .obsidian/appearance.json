@@ -1,0 +1,10 @@
+{
+  "enabledCssSnippets": [
+    "steamvault"
+  ],
+  "cssTheme": "Minimal",
+  "theme": "obsidian",
+  "slidingSidebar": true,
+  "floatingNavigation": true,
+  "autoFullScreen": true
+}

@@ -1,0 +1,63 @@
+name: Versões
+
+# Quando a VERSION do SteamVaultCore.js muda, cria a versão no GitHub
+# com as novidades tiradas do AUDITORIA.md e o zip pronto para abrir no Obsidian.
+on:
+  push:
+    paths:
+      - Scripts/SteamVaultCore.js
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  versao:
+    name: Publicar versão
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ler a versão
+        id: v
+        run: |
+          VER=$(grep -oP 'this\.VERSION\s*=\s*"\K[0-9.]+' Scripts/SteamVaultCore.js)
+          echo "ver=$VER" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/v$VER" >/dev/null; then
+            echo "A versão v$VER já existe; nada a fazer."
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Montar o zip e as novidades
+        if: steps.v.outputs.skip != '1'
+        env:
+          VER: ${{ steps.v.outputs.ver }}
+        run: |
+          git archive --format=zip -o "Game_Library_$VER.zip" --prefix=Game_Library/ HEAD
+          # seção "### … (versão X.Y.Z)" do AUDITORIA.md até o próximo título
+          awk -v v="(versão $VER)" '
+            index($0, "### ") == 1 && index($0, v) { on = 1; sub(/^### /, ""); title = $0; next }
+            on && /^##/ { exit }
+            on { print }
+            END { if (title) print title > "title.txt" }
+          ' AUDITORIA.md > notes.md
+          [ -s title.txt ] || echo "Game Library $VER" > title.txt
+          {
+            echo
+            echo "---"
+            echo "**Como instalar:** baixe \`Game_Library_$VER.zip\` abaixo, descompacte e abra a pasta \`Game_Library\` como vault no Obsidian. Para atualizar um vault existente, copie a pasta \`Scripts/\` e o arquivo \`.obsidian/snippets/steamvault.css\` por cima dos antigos."
+          } >> notes.md
+
+      - name: Criar a versão no GitHub
+        if: steps.v.outputs.skip != '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VER: ${{ steps.v.outputs.ver }}
+        run: |
+          gh release create "v$VER" "Game_Library_$VER.zip" \
+            --target "$GITHUB_SHA" \
+            --title "$VER · $(cat title.txt | sed 's/ (versão [0-9.]*)//')" \
+            --notes-file notes.md \
+            --latest
