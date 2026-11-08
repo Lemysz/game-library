@@ -1,0 +1,58 @@
+# Avisos de terceiros
+
+A Game Library depende de software de terceiros. Esta página lista **o que é redistribuído** no
+repositório (e no ZIP da versão) e **o que não é**, com a licença verificada.
+
+> Licença do próprio projeto: **ainda não definida** — todos os direitos reservados ao autor até que
+> uma licença seja escolhida. Nada nesta página concede licença sobre o código da Game Library.
+
+## Não redistribuído (instalado pelo próprio Obsidian)
+
+O código destes plugins e do tema **não** está no repositório nem no ZIP. Cada pessoa instala pelo
+navegador de plugins/temas do Obsidian, direto da fonte oficial. O vault guarda apenas a
+**configuração** (`.obsidian/plugins/<id>/data.json` e as listas em `.obsidian/*.json`), que é
+própria do projeto.
+
+| Componente | Uso | Obrigatório | Licença | Fonte |
+|---|---|---|---|---|
+| [Dataview](https://github.com/blacksmithgu/obsidian-dataview) | Executa os blocos `dataviewjs` de cada tela | Sim | MIT (verificada no pacote npm e no cabeçalho do bundle) | Plugins da comunidade |
+| [CustomJS](https://github.com/saml-dev/obsidian-custom-js) | Carrega os scripts de `Scripts/` | Sim | Não verificada nesta sessão (consultar o repositório oficial) | Plugins da comunidade |
+| [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) | Ajustes visuais do snippet | Recomendado | Não verificada nesta sessão (consultar o repositório oficial) | Plugins da comunidade |
+| [Templater](https://github.com/SilentVoid13/Templater) | Modelos opcionais em `*/_Templates/` | Opcional | Não verificada nesta sessão (consultar o repositório oficial) | Plugins da comunidade |
+| [Minimal](https://github.com/kepano/obsidian-minimal) (tema) | Tema configurado em `appearance.json` | Opcional | MIT (cabeçalho do `theme.css`) | Temas da comunidade |
+
+Como esses componentes não são redistribuídos, a Game Library não precisa reproduzir suas licenças.
+Antes de incluir qualquer um deles no repositório ou no ZIP, **verifique a licença** e acrescente o
+texto completo aqui.
+
+## Redistribuído
+
+### Ícones — `Assets/Icons/` e `SteamVaultUI.paths`
+
+Parte dos desenhos vem de bibliotecas abertas, sem alteração de desenho (só a cor passou a ser
+`currentColor`); os demais são desenhos próprios do projeto. Os textos completos das licenças estão em
+[`Assets/Icons/LICENSES.txt`](Assets/Icons/LICENSES.txt).
+
+| Biblioteca | Versão | Licença |
+|---|---|---|
+| Tabler Icons | 3.49.0 | MIT — © 2020-2026 Paweł Kuna |
+| Lucide (lucide-static) | 1.61.0 | ISC — © Lucide Icons and Contributors; ícones derivados do Feather sob MIT — © 2013-present Cole Bemis |
+| Phosphor Icons (@phosphor-icons/core) | 2.1.1 | MIT — © 2023 Phosphor Icons |
+| Simple Icons | 16.35.0 | CC0-1.0 (os desenhos); **as marcas continuam pertencendo aos donos** |
+
+## Carregado da internet (não redistribuído)
+
+| Recurso | Uso | Licença |
+|---|---|---|
+| [Archivo](https://fonts.google.com/specimen/Archivo) e [IBM Plex Sans](https://fonts.google.com/specimen/IBM+Plex+Sans) | Tipografia do snippet, via `@import` do Google Fonts | SIL Open Font License 1.1 |
+
+Sem internet, o snippet usa fontes do sistema (`Bahnschrift`, `Segoe UI`, `Roboto`…). O
+carregamento do Google Fonts revela o endereço IP ao Google, como qualquer fonte web.
+
+## Somente para testes (`.github/tests/`, não vai para o ZIP)
+
+| Pacote | Versão | Licença |
+|---|---|---|
+| Playwright / playwright-core | 1.48.2 | Apache-2.0 |
+| js-yaml | 4.1.0 | MIT |
+| argparse (dependência do js-yaml) | 2.0.1 | Python-2.0 |
