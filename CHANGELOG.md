@@ -53,7 +53,8 @@ implementado e foi verificado pelos testes automáticos antes da publicação.
   (`data.json` do Dataview e do CustomJS, lista de plugins, snippet) continuam no vault.
 - O plugin **Tasks**, ativado mas sem nenhum uso no vault, saiu da lista de plugins da comunidade.
 - Os links dos modelos de issue apontavam para outro repositório; foram corrigidos.
-- Fluxo de versões (`release.yml`) refeito: roda só quando uma tag `v*` é enviada, monta um ZIP
+- Fluxo de versões (`release.yml`) refeito: roda quando uma tag `v*` é enviada (ou pelo botão
+  *Run workflow*, que cria a tag no GitHub), confere a tag contra a versão do código, monta um ZIP
   instalável sem arquivos locais e cria a versão no GitHub como *pré-lançamento* (o repositório é
   privado, então a versão também é).
 - Testes ampliados: telas abertas também em 320, 360, 390 e 430 px nos temas claro e escuro.

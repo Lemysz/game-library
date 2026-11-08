@@ -76,7 +76,9 @@ Comentários como `// 3.74.0: …` citam a numeração interna anterior à 1.0 (
 - Ao lançar: atualize `VERSION`, o selo do `README.md` (`vers%C3%A3o-X.Y.Z`) e crie a seção
   `## [X.Y.Z]` no `CHANGELOG.md`. `checks.js` confere os três.
 - A versão no GitHub nasce de uma tag: `git tag vX.Y.Z-prototype && git push origin vX.Y.Z-prototype`
-  dispara `.github/workflows/release.yml` (pré-lançamento com o ZIP instalável).
+  dispara `.github/workflows/release.yml` (pré-lançamento com o ZIP instalável). Sem permissão para
+  enviar tags (ex.: sessões na nuvem), use *Actions › Versões › Run workflow* no branch `main` com a
+  tag: o GitHub cria a tag no commit do branch. A tag precisa bater com `VERSION`/`STAGE`.
 
 ## Testes
 
