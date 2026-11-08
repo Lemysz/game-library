@@ -119,7 +119,8 @@ Sem servidor, sem conta e sem banco de dados: tudo são arquivos Markdown e imag
 
 ## 📋 Requisitos
 
-- **Obsidian** atualizado, no Android (prioridade) ou no computador.
+- **Obsidian 1.8.7 ou mais recente**, no Android (prioridade) ou no computador. A partir dessa versão o
+  Obsidian guarda dados por vault no aparelho (`app.saveLocalStorage`), onde fica a chave do RetroAchievements.
 - **Plugins da comunidade** (instalados pelo próprio Obsidian, veja abaixo):
 
 | Plugin | Situação | Para quê |
@@ -210,6 +211,7 @@ Direções para as próximas versões, sem data e sujeitas a mudança:
 - [ ] Dividir os módulos maiores (`SteamVaultLegacy.js`, `SteamVaultPages.js`) sem mudar o comportamento.
 - [ ] Plano de migração do nome interno *SteamVault* para *Game Library*.
 - [ ] Documentação também em inglês.
+- [ ] Guardar a Web API Key do RetroAchievements no cofre de segredos do Obsidian (`app.secretStorage`), com migração.
 
 ## 📖 Documentação
 

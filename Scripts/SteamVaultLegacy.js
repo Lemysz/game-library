@@ -2237,7 +2237,7 @@ class SteamVaultLegacy {
 				const tone = result.iconsFailed ? "is-error" : "is-success";
 				if (msg) { msg.textContent = `${text} · ${({ Steam: "Steam", Retro: "RetroAchievements" })[result.source] || result.source}`; msg.className = `svl-achievement-refresh-msg ${tone}`; }
 				if (typeof app?.workspace?.requestSaveLayout === "function") app.workspace.requestSaveLayout();
-				setTimeout(() => { try { app.workspace.activeLeaf?.rebuildView?.(); } catch (_) {} }, 250);
+				setTimeout(() => { try { (app.workspace.getMostRecentLeaf?.() || app.workspace.activeLeaf)?.rebuildView?.(); } catch (_) {} }, 250);
 			} catch (err) {
 				console.error("Game Library: falha ao atualizar conquistas incompletas.", err);
 				if (msg) { msg.textContent = err?.message || "Não foi possível atualizar as conquistas."; msg.className = "svl-achievement-refresh-msg is-error"; }
@@ -3214,7 +3214,7 @@ class SteamVaultLegacy {
 					? "Sem preço na loja brasileira da Steam"
 					: `${this.formatPrice(r.current)}${r.discount ? ` (-${r.discount}%)` : ""}`;
 				if (msg) { msg.textContent = text; msg.className = "svl-price-check-msg is-success"; }
-				setTimeout(() => { try { app.workspace.activeLeaf?.rebuildView?.(); } catch (_) {} }, 300);
+				setTimeout(() => { try { (app.workspace.getMostRecentLeaf?.() || app.workspace.activeLeaf)?.rebuildView?.(); } catch (_) {} }, 300);
 			} catch (err) {
 				console.error("Game Library: falha ao verificar preço.", err);
 				if (msg) { msg.textContent = err?.message || "Não foi possível verificar o preço."; msg.className = "svl-price-check-msg is-error"; }

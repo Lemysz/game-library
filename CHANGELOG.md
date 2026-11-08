@@ -17,6 +17,16 @@ será anunciada aqui, com o caminho de migração.
   download do navegador não conferia o certificado) e js-yaml 4.1.0 → 4.3.2 (GHSA-mh29-5h37-fv8m e
   outras). `npm audit` sem vulnerabilidades.
 
+### Corrigido
+- O recarregamento da tela depois de salvar (dois pontos do `SteamVaultLegacy.js`) usava
+  `workspace.activeLeaf`, obsoleto na API do Obsidian; agora usa `getMostRecentLeaf()`, com o
+  antigo só como reserva (o mesmo padrão já usado em `SteamVault.js`).
+
+### Documentação
+- Requisito mínimo explícito: Obsidian 1.8.7 (APIs `loadLocalStorage`/`saveLocalStorage`),
+  conferido na documentação atual da API do Obsidian pelo Context7.
+- Roadmap: chave do RetroAchievements no `app.secretStorage`.
+
 ## [1.0.0] — Prototype · 2026-11-08
 
 Primeira versão oficial. Ela **consolida** o que já existia no vault ao fim do desenvolvimento
