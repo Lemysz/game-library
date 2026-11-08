@@ -850,7 +850,7 @@ class SteamVaultUI {
 	// theme/accent ausentes = mantém os atuais
 	layoutPresets() {
 		return [
-			{ id: "original", name: "Original", desc: "A Game Library como na 3.57", layout: {} },
+			{ id: "original", name: "Original", desc: "O visual clássico da Game Library", layout: {} },
 			{ id: "steam-split", name: "Steam Split", desc: "Destaque em carrossel com capa ao lado e fichas divididas", layout: { home: { hero: "split" }, game: { model: "split", stats: "grid" }, library: { size: "md" } } },
 			{ id: "cinema", name: "Cinematográfico", desc: "Banners amplos, arte em primeiro plano e cards com texto sobre a capa", layout: { home: { hero: "cinema", height: "lg" }, game: { model: "cinema", banner: "lg" }, cards: { style: "overlay" }, banners: { gradient: "soft" } } },
 			{ id: "minimal", name: "Steam Minimal", desc: "Tema grafite, fichas limpas e cards sem moldura", theme: "graphite", layout: { home: { hero: "horizontal", height: "sm" }, game: { model: "minimal", stats: "compact" }, cards: { shadow: "none", radius: "square" }, library: { density: "compact" } } },
