@@ -15,12 +15,14 @@ Nada ainda.
 Correções pontuais da 1.0. Sem funcionalidade nova e sem mudança no formato das notas.
 
 ### Corrigido
-- **Imagens maiores que o original:** ao reduzir uma imagem para capa, fundo ou logo, o app sempre
-  gravava WebP, mesmo quando ele ficava maior que o original. Uma capa em pixel art de 168 KB virava
-  356 KB. Agora, nesse caso, compara com PNG (ou JPEG, sem transparência) no mesmo tamanho reduzido e
-  fica com o menor: a mesma capa fica com 109 KB.
-- **Áreas de toque no celular:** o título dos cards (16 px de altura) e as linhas do gráfico de
-  períodos das Estatísticas (19 px) passaram a ter pelo menos 32 px para o dedo, sem mudar o visual.
+- **Imagens maiores que o original:** ao reduzir uma imagem (artes baixadas da Steam, ícones de
+  conquistas e imagens do aparelho acima de 300 KB), o app sempre gravava WebP, mesmo quando ele ficava
+  maior que o original. Uma capa em pixel art de 437 KB (3000×4500) virava 661 KB. Agora, nesse caso,
+  compara com PNG (ou JPEG, sem transparência) no mesmo tamanho reduzido e fica com o menor: a mesma
+  capa fica com 157 KB, em 1200 px. Teste funcional novo cobre o caso.
+- **Áreas de toque no celular:** o título dos cards (16 px de altura), as linhas do gráfico de
+  períodos das Estatísticas (19 px) e o nome das coleções no DNA da biblioteca (31 px) passaram a ter
+  pelo menos 32 px para o dedo, sem mudar o visual.
   No título, o `::after` que ampliaria o toque era cortado pelo `overflow` das reticências.
 - `responsive.js` mede a área de toque **efetiva** (com o `::after` que a amplia e o `label` de
   interruptores), em vez da caixa visível; meio pixel de tolerância para arredondamentos.

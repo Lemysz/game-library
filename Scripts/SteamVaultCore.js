@@ -14,7 +14,7 @@ class SteamVaultCore {
 		// Versão do produto (SemVer) e estágio. A 1.0.0 consolida o desenvolvimento
 		// anterior (numeração interna 3.x, ver docs/archive/). O estágio aparece em
 		// Configurações e na versão do GitHub (tag v1.0.0-prototype).
-		this.VERSION = "1.0.0";
+		this.VERSION = "1.0.1";
 		this.STAGE = "Prototype";
 
 		this.folders = {
