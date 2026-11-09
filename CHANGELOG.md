@@ -8,7 +8,13 @@ será anunciada aqui, com o caminho de migração.
 
 ## [Não lançado]
 
-Nada ainda.
+### Corrigido
+- **Tela de carregamento presa (Android):** a tela que cobre o Obsidian enquanto os plugins carregam
+  tinha uma saída de 20 s que recomeçava sempre que a nota era redesenhada; podia ficar para sempre,
+  sem deixar chegar às configurações. Agora há também um limite fixo de 25 s desde a abertura do
+  Obsidian, que não recomeça.
+- **Plugins ausentes:** se o Dataview não roda (não instalado, desligado ou modo restrito), a nota
+  passa a explicar o que fazer em vez de ficar vazia.
 
 ## [1.0.1] — Prototype · 2026-11-08
 
