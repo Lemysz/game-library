@@ -6818,9 +6818,13 @@ body.is-mobile .sv-libbulk { bottom: calc(var(--mobile-toolbar-height, 50px) + 2
    CustomJS carrega — a troca entre as duas não pisca. Não captura toques e
    some sozinha depois de 20 s, para nunca prender o Obsidian.
    Também cobre o bloco do Dataview ainda vazio (a nota espera o vault listar
-   os arquivos) e o aviso passageiro "custom view not found" do Dataview. */
+   os arquivos) e o aviso passageiro "custom view not found" do Dataview.
+   1.0.2: só na ABERTURA. Depois do primeiro desenho (classe .sv-booted no
+   <body>), trocar de aba no modo Leitura cria um bloco novo e vazio a cada
+   nota e a tela cobria tudo por uma fração de segundo, como se o app
+   reiniciasse; agora a tela anterior fica até a nova estar pronta. */
 .markdown-preview-view.steamvault pre:has(> code.language-dataviewjs) { display: none !important; }
-body:has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .block-language-dataviewjs:empty:not(.sv-anchor), .block-language-dataviewjs > .dataview-error-box, .block-language-dataviewjs > .dataview-error))::before {
+body:not(.sv-booted):has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .block-language-dataviewjs:empty:not(.sv-anchor), .block-language-dataviewjs > .dataview-error-box, .block-language-dataviewjs > .dataview-error))::before {
 	content: "Game Library";
 	position: fixed; inset: 0; z-index: 9999;
 	display: flex; align-items: center; justify-content: center;
@@ -6832,7 +6836,7 @@ body:has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .
 	pointer-events: none;
 	animation: svBootGiveUp 0.4s ease 20s forwards;
 }
-body:has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .block-language-dataviewjs:empty:not(.sv-anchor), .block-language-dataviewjs > .dataview-error-box, .block-language-dataviewjs > .dataview-error))::after {
+body:not(.sv-booted):has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .block-language-dataviewjs:empty:not(.sv-anchor), .block-language-dataviewjs > .dataview-error-box, .block-language-dataviewjs > .dataview-error))::after {
 	content: "";
 	position: fixed; z-index: 10000;
 	left: calc(50% - 74px); top: calc(50% + 92px);
@@ -6844,7 +6848,7 @@ body:has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .
 body.theme-light:has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .block-language-dataviewjs:empty:not(.sv-anchor), .block-language-dataviewjs > .dataview-error-box, .block-language-dataviewjs > .dataview-error))::before { background-color: #eef3f8; color: #13202e; }
 @keyframes svBootBarCss { 0% { background-position: -60px 0, 0 0; } 100% { background-position: 148px 0, 0 0; } }
 @keyframes svBootGiveUp { to { opacity: 0; visibility: hidden; } }
-@media (prefers-reduced-motion: reduce) { body:has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .block-language-dataviewjs:empty:not(.sv-anchor), .block-language-dataviewjs > .dataview-error-box, .block-language-dataviewjs > .dataview-error))::after { animation: svBootGiveUp 0.4s ease 20s forwards; } }
+@media (prefers-reduced-motion: reduce) { body:not(.sv-booted):has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .block-language-dataviewjs:empty:not(.sv-anchor), .block-language-dataviewjs > .dataview-error-box, .block-language-dataviewjs > .dataview-error))::after { animation: svBootGiveUp 0.4s ease 20s forwards; } }
 /* Limite fixo. Os 20 s acima recomeçam sempre que o bloco da nota muda
    de estado (o Obsidian ou o Dataview redesenham a nota) e, no Android, a tela
    podia ficar para sempre por cima do Obsidian inteiro. Este relógio conta
@@ -6852,8 +6856,8 @@ body.theme-light:has(.markdown-preview-view.steamvault :is(pre > code.language-d
 @property --sv-boot-alive { syntax: "<number>"; inherits: true; initial-value: 1; }
 body { animation: svBootClock 0.4s ease 25s forwards; }
 @keyframes svBootClock { to { --sv-boot-alive: 0; } }
-body:has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .block-language-dataviewjs:empty:not(.sv-anchor), .block-language-dataviewjs > .dataview-error-box, .block-language-dataviewjs > .dataview-error))::before,
-body:has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .block-language-dataviewjs:empty:not(.sv-anchor), .block-language-dataviewjs > .dataview-error-box, .block-language-dataviewjs > .dataview-error))::after { opacity: var(--sv-boot-alive, 1); }
+body:not(.sv-booted):has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .block-language-dataviewjs:empty:not(.sv-anchor), .block-language-dataviewjs > .dataview-error-box, .block-language-dataviewjs > .dataview-error))::before,
+body:not(.sv-booted):has(.markdown-preview-view.steamvault :is(pre > code.language-dataviewjs, .block-language-dataviewjs:empty:not(.sv-anchor), .block-language-dataviewjs > .dataview-error-box, .block-language-dataviewjs > .dataview-error))::after { opacity: var(--sv-boot-alive, 1); }
 /* o Dataview não rodou o bloco (plugin ausente, desligado ou modo restrito):
    passado o limite, a nota diz o que fazer em vez de ficar vazia */
 .markdown-preview-view.steamvault .el-pre:has(> pre > code.language-dataviewjs)::after {

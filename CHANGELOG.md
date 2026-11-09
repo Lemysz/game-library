@@ -15,6 +15,17 @@ será anunciada aqui, com o caminho de migração.
   Obsidian, que não recomeça.
 - **Plugins ausentes:** se o Dataview não roda (não instalado, desligado ou modo restrito), a nota
   passa a explicar o que fazer em vez de ficar vazia.
+- **Tela de inicialização ao trocar de aba:** no modo Leitura (o padrão de uma instalação nova), cada
+  aba é uma nota com um bloco novo e vazio do Dataview, e a tela de inicialização do CSS cobria tudo por
+  uma fração de segundo a cada troca, como se o app reiniciasse. Ela agora aparece só na abertura do
+  Obsidian (classe `sv-booted` no `<body>` depois do primeiro desenho); nas trocas, a tela anterior fica
+  até a nova estar pronta. Nos vaults antigos isso não aparecia porque a aba ficava no modo Live
+  Preview, guardado no `workspace-mobile.json`, que não vai no ZIP.
+- **Animações de entrada das telas:** logo depois de abrir uma nota no modo Leitura, um segundo
+  desenho da mesma tela (outro bloco da nota rodando de novo) era tratado como atualização: trocava o
+  HTML, desligava as animações e a tela aparecia de uma vez. Agora esse segundo desenho, se o conteúdo
+  é o mesmo, mantém a tela e as animações (entrada da página, blocos, números, barras e anéis). Três
+  testes funcionais novos simulam a troca de aba no modo Leitura.
 
 ## [1.0.1] — Prototype · 2026-11-08
 

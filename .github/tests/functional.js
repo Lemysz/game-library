@@ -891,6 +891,48 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		check("Xbox: o cadastro em lote aparece só em jogos de Xbox", await p.evaluate(() => !document.querySelector('[data-action="ach-bulk"]')));
 		await p.evaluate(x => { for (let i = __PAGES.length - 1; i >= 0; i--) { const y = __PAGES[i]; if (y.path === x || y.fm?.gamePath === x) __PAGES.splice(i, 1); } customJS.SteamVaultCore.invalidate(); }, xp);
 	}
+	// 1.0.2: troca de aba como no Obsidian no modo Leitura — cada nota cria um
+	// bloco novo e vazio do Dataview, e o bloco pode rodar duas vezes logo
+	// depois de abrir. A tela de inicialização só pode aparecer na abertura, e o
+	// segundo desenho da mesma tela não pode cortar a animação de entrada.
+	{
+		const mctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+		const m = await mctx.newPage();
+		m.on("pageerror", e => errors.push(e.message));
+		await m.addInitScript(() => document.addEventListener("DOMContentLoaded", () => {
+			document.querySelector(".markdown-preview-view").classList.add("steamvault");
+			document.getElementById("host").className = "block-language-dataviewjs";
+		}));
+		await m.goto(url + "?p=Dashboard/Conquistas.md", { waitUntil: "domcontentloaded" });
+		const splash = () => m.evaluate(() => { const c = getComputedStyle(document.body, "::before"); return c.content !== "none" && c.visibility !== "hidden" && +c.opacity > 0; });
+		const atBoot = await splash();
+		await m.waitForFunction(() => window.__ready, null, { timeout: 60000 });
+		check("inicialização: a tela de carregamento aparece na abertura e some no primeiro desenho", atBoot && !(await splash()) && await m.evaluate(() => document.body.classList.contains("sv-booted")));
+		await m.evaluate(() => {
+			window.go = async pth => {
+				curPath = pth;
+				const old = document.getElementById("host"), nb = document.createElement("div");
+				nb.className = "block-language-dataviewjs"; old.removeAttribute("id"); old.replaceWith(nb); nb.id = "host";
+				await new Promise(r => setTimeout(r, 150));
+				const pg = byPath.get(pth)?.page || "home";
+				const side = document.createElement("div"); side.className = "markdown-source-view steamvault"; side.style.display = "none";
+				const h2 = document.createElement("div"); h2.className = "block-language-dataviewjs"; side.appendChild(h2);
+				document.querySelector(".view-content").prepend(side);
+				await Promise.all([customJS.SteamVault.render(mkdv(), pg), new Promise(r => setTimeout(r, 40)).then(() => customJS.SteamVault.render({ ...mkdv(), container: h2 }, pg))]);
+			};
+		});
+		await m.evaluate(() => [...document.querySelectorAll(".sv-bottomnav-item[data-open]")].find(x => /Biblioteca$/.test(x.dataset.open))?.click());
+		let flashed = false, first = null, swapped = false, refresh = false;
+		for (let i = 0; i < 45; i++) {
+			if (await splash()) flashed = true;
+			const st = await m.evaluate(f => { const a = document.querySelector(".sv-layer .sv-app"); if (!a || a.dataset.page !== "library") return null; if (!window.__svFirst) window.__svFirst = a; return { same: window.__svFirst === a, refresh: a.classList.contains("is-refresh") }; });
+			if (st) { first = true; if (!st.same) swapped = true; if (st.refresh) refresh = true; }
+			await m.waitForTimeout(20);
+		}
+		check("troca de aba (modo Leitura): a tela de carregamento não aparece de novo", first && !flashed);
+		check("troca de aba: o segundo desenho da mesma tela não corta a animação de entrada", first && !swapped && !refresh && await m.evaluate(() => document.querySelector(".sv-layer .sv-app").classList.contains("sv-motion")), JSON.stringify({ swapped, refresh }));
+		await mctx.close();
+	}
 	check("nenhum erro de script durante os testes", errors.length === 0, errors.slice(0, 3).join(" | "));
 
 	await browser.close(); server.close();
