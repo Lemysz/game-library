@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Obrigado por avisar! Antes de enviar, confira *Configurações › Diagnóstico do vault* e a seção [Problemas comuns](https://github.com/Lemysz/Games/blob/main/DOCUMENTACAO.md#problemas-comuns).
+        Obrigado por avisar! Antes de enviar, confira *Configurações › Diagnóstico do vault* e a seção [Problemas comuns](https://github.com/Lemysz/game-library/blob/main/DOCUMENTACAO.md#problemas-comuns).
         **Nunca cole chaves, tokens, Web API Keys ou senhas aqui.**
   - type: input
     id: versao
