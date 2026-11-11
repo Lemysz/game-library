@@ -2,13 +2,26 @@
 
 Todas as mudanças relevantes da Game Library são registradas aqui.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e a numeração segue
-[Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto o projeto estiver na fase
-*Prototype*, a API das notas (frontmatter) pode mudar entre versões menores; toda mudança desse tipo
-será anunciada aqui, com o caminho de migração.
+[Versionamento Semântico](https://semver.org/lang/pt-BR/). Desde a 1.1.0 (estável), o formato das
+notas (frontmatter) só ganha campos novos em versões menores, sempre com migração; mudanças
+incompatíveis ficam para uma versão maior. Na fase *Prototype* (1.0.x), ele podia mudar entre
+versões menores.
 
 ## [Não lançado]
 
 Nada ainda.
+
+## [1.1.0] · 2026-11-11
+
+Primeira versão **estável**: a Game Library sai da fase de protótipo (1.0.0 a 1.0.2). O código é o da
+1.0.2; muda o compromisso com quem usa.
+
+### Mudado
+- **Estágio:** sem "Prototype". A versão no GitHub usa a tag `v1.1.0` (sem sufixo) e aparece como
+  *Latest*, não mais como pré-lançamento; o ZIP passa a se chamar `Game_Library_1.1.0.zip`.
+- **Formato das notas:** campos novos podem chegar em versões menores, sempre com migração automática e
+  aviso aqui; mudanças incompatíveis só numa versão maior (2.0).
+- **Suporte de segurança:** 1.1.x; a 1.0.x (Prototype) foi substituída.
 
 ## [1.0.2] — Prototype · 2026-11-11
 
@@ -151,7 +164,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.0.2-prototype...HEAD
+[Não lançado]: ../../compare/v1.1.0...HEAD
+[1.1.0]: ../../releases/tag/v1.1.0
 [1.0.2]: ../../releases/tag/v1.0.2-prototype
 [1.0.1]: ../../releases/tag/v1.0.1-prototype
 [1.0.0]: ../../releases/tag/v1.0.0-prototype

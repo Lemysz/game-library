@@ -7,7 +7,8 @@ explica o que o projeto protege, como relatar um problema e o que nunca deve ent
 
 | Versão | Suporte |
 |---|---|
-| 1.0.x (Prototype) | ✅ correções de segurança |
+| 1.1.x | ✅ correções de segurança |
+| 1.0.x (Prototype) | ❌ substituídas pela 1.1 |
 | Anteriores à 1.0 (numeração interna 3.x) | ❌ substituídas pela 1.0 |
 
 ## Como relatar uma vulnerabilidade
