@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Documentação
-    url: https://github.com/Lemysz/Games/blob/main/DOCUMENTACAO.md
+    url: https://github.com/Lemysz/game-library/blob/main/DOCUMENTACAO.md
     about: Campos, telas, integrações e solução de problemas.
   - name: Relatar vulnerabilidade (privado)
-    url: https://github.com/Lemysz/Games/security/advisories/new
+    url: https://github.com/Lemysz/game-library/security/advisories/new
     about: Problemas de segurança não vão em issues comuns. Veja SECURITY.md.
