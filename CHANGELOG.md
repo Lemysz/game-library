@@ -8,6 +8,12 @@ será anunciada aqui, com o caminho de migração.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.0.2] — Prototype · 2026-11-11
+
+Correções da abertura e da navegação no Android. Sem funcionalidade nova e sem mudança no formato das notas.
+
 ### Corrigido
 - **Tela de carregamento presa (Android):** a tela que cobre o Obsidian enquanto os plugins carregam
   tinha uma saída de 20 s que recomeçava sempre que a nota era redesenhada; podia ficar para sempre,
@@ -145,6 +151,7 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.0.1-prototype...HEAD
+[Não lançado]: ../../compare/v1.0.2-prototype...HEAD
+[1.0.2]: ../../releases/tag/v1.0.2-prototype
 [1.0.1]: ../../releases/tag/v1.0.1-prototype
 [1.0.0]: ../../releases/tag/v1.0.0-prototype
