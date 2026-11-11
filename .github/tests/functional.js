@@ -891,6 +891,47 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		check("Xbox: o cadastro em lote aparece só em jogos de Xbox", await p.evaluate(() => !document.querySelector('[data-action="ach-bulk"]')));
 		await p.evaluate(x => { for (let i = __PAGES.length - 1; i >= 0; i--) { const y = __PAGES[i]; if (y.path === x || y.fm?.gamePath === x) __PAGES.splice(i, 1); } customJS.SteamVaultCore.invalidate(); }, xp);
 	}
+	// Busca e filtros: a busca livre cobre distribuidora, subgênero, plataforma e
+	// tags (palavras em qualquer ordem); comandos subgenero:/dev:/dist:/tag:;
+	// filtro por subgênero no painel; tag da ficha abre a Biblioteca filtrada.
+	{
+		await p.evaluate(() => { try { localStorage.removeItem("steamvault:ui:lib:library"); } catch (_) {} });
+		await go("Dashboard/Biblioteca.md");
+		const shown = () => p.evaluate(() => [...document.querySelectorAll(".sv-library .sv-grid > .sv-card")].filter(e => e.getClientRects().length).map(e => e.querySelector(".sv-card-title")?.textContent.trim()).sort().join("|"));
+		const libQ = async v => { await p.evaluate(v => { const q = document.querySelector("[data-lib-q]"); q.value = v; q.dispatchEvent(new Event("input", { bubbles: true })); }, v); await p.waitForTimeout(450); return shown(); };
+		const expect = fn => p.evaluate(src => { const f = new Function("g", "return " + src); return __PAGES.filter(x => x.fm?.type === "game" && !x.path.includes("_Templates") && x.fm.status !== "Wishlist" && f(x.fm)).map(x => x.fm.title).sort().join("|"); }, fn);
+		const all = await libQ("");
+		check("busca: acha pela distribuidora", (await libQ("rockstar games")) === await expect('/rockstar games/i.test(g.publisher || "")') && (await libQ("rockstar games")) !== "");
+		check("busca: acha pelo subgênero", (await libQ("puzzle")) === await expect('(g.subgenre || []).some(x => /puzzle/i.test(x)) || /puzzle/i.test(g.title)'));
+		check("busca: acha pela plataforma", (await libQ("psp")) === await expect('g.platform === "PSP"'));
+		check("busca: palavras em qualquer ordem", (await libQ("evil resident")) === await expect('/resident evil/i.test(g.title)') && (await libQ("evil resident")) !== "");
+		check("busca avançada: subgenero:parkour", (await libQ("subgenero:parkour")) === await expect('(g.subgenre || []).includes("Parkour")'));
+		check("busca avançada: dev: e dist:", (await libQ("dev:capcom")) === await expect('/capcom/i.test(g.developer || "")') && (await libQ("dist:rockstar")) === await expect('/rockstar/i.test(g.publisher || "")'));
+		await libQ("");
+		await p.evaluate(() => document.querySelector("[data-lib-filters]").click()); await p.waitForTimeout(450);
+		const hasSub = await p.evaluate(() => { const b = [...document.querySelectorAll('.sv-libsheet .sv-fchip[data-k="subgenre"]')].find(b => /Puzzle/.test(b.textContent)); b?.click(); return !!b; });
+		await p.waitForTimeout(350); await closeModal();
+		const bySub = await shown();
+		check("filtro por subgênero: o painel filtra e mostra o chip", hasSub && bySub === await expect('(g.subgenre || []).includes("Puzzle")') && await count('[data-lib-active] [data-rm="subgenre"]') === 1, bySub);
+		await p.evaluate(() => rerender()); await p.waitForTimeout(700);
+		check("filtro por subgênero: lembrado ao redesenhar", (await shown()) === bySub);
+		await click('[data-lib-active] [data-rm="subgenre"]'); await p.waitForTimeout(400);
+		check("filtro por subgênero: remover o chip volta tudo", (await shown()) === all);
+		// tag da ficha
+		const tagged = "Games/PC/Celeste.md";
+		await p.evaluate(x => { __PAGES.find(y => y.path === x).fm.labels = ["de boa"]; customJS.SteamVaultCore.invalidate(); }, tagged);
+		await go(tagged);
+		const chip = await p.evaluate(() => { const b = document.querySelector(".sv-labels [data-ov-search]"); b?.click(); return b ? b.tagName + ":" + b.dataset.ovSearch : ""; });
+		await p.waitForTimeout(900);
+		check("ficha: a tag é um botão que abre a Biblioteca filtrada por ela", chip === 'BUTTON:tag:"de boa"' && (await shown()) === "Celeste", chip + " → " + await shown());
+		await p.evaluate(x => { __PAGES.find(y => y.path === x).fm.labels = []; customJS.SteamVaultCore.invalidate(); }, tagged);
+		await libQ("");
+		// busca global
+		const glob = async v => { await p.evaluate(v => { document.querySelector('[data-action="search-open"]')?.click(); const i = document.querySelector(".sv-search input"); i.focus(); i.value = v; i.dispatchEvent(new Event("input", { bubbles: true })); }, v); await p.waitForTimeout(350); return p.evaluate(() => [...document.querySelectorAll(".sv-search-item")].filter(a => a.querySelector(".sv-cover")).map(a => a.querySelector("b").textContent).sort().join("|")); };
+		check("busca global: jogos por plataforma, subgênero e distribuidora", (await glob("ps2")).split("|").includes("Bully") && !(await glob("ps2")).includes("Celeste") && (await glob("survival horror")).split("|").length === 3 && (await glob("rockstar games")) === "Bully", [await glob("ps2"), await glob("survival horror")].join(" / "));
+		check("busca global: o nome continua na frente e sem resultado avisa", (await glob("celeste")) === "Celeste" && (await glob("zzzz")) === "" && await count(".sv-search-empty") === 1);
+		await p.keyboard.press("Escape"); await p.waitForTimeout(300);
+	}
 	// 1.0.2: troca de aba como no Obsidian no modo Leitura — cada nota cria um
 	// bloco novo e vazio do Dataview, e o bloco pode rodar duas vezes logo
 	// depois de abrir. A tela de inicialização só pode aparecer na abertura, e o

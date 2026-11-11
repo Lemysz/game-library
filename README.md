@@ -67,7 +67,7 @@
 
 <table>
   <tr>
-    <td width="33%" valign="top">📚 <b>Biblioteca</b><br><sub>Busca com comandos (<code>status:zerado</code>, <code>nota&gt;4</code>), filtros, quatro visões, agrupamento, índice A–Z, menu rápido e ações em lote.</sub></td>
+    <td width="33%" valign="top">📚 <b>Biblioteca</b><br><sub>Busca por nome, plataforma, gênero, subgênero, estúdio ou tag, com comandos (<code>status:zerado</code>, <code>nota&gt;4</code>, <code>subgenero:puzzle</code>), filtros, quatro visões, agrupamento, índice A–Z, menu rápido e ações em lote.</sub></td>
     <td width="33%" valign="top">🎮 <b>Ficha do jogo</b><br><sub>Arte, capa, logo, status, nota, tempo, sessões, zeradas, DLC, mídia, análise com prós e contras e histórico.</sub></td>
     <td width="33%" valign="top">🏠 <b>Início</b><br><sub>Jogando agora, sua semana, metas, memórias, "O que jogar agora?" e primeiros passos para um vault vazio.</sub></td>
   </tr>
