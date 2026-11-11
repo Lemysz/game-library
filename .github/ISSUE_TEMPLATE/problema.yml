@@ -13,7 +13,7 @@ body:
     attributes:
       label: Versão da Game Library
       description: Aparece em Configurações, abaixo do título.
-      placeholder: "1.0.0 · Prototype"
+      placeholder: "1.1.0"
     validations:
       required: true
   - type: dropdown

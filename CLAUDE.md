@@ -4,8 +4,9 @@ Guia para quem (pessoa ou agente) for modificar este repositório. Leia antes de
 
 ## O que é
 
-**Game Library V1.0 — Prototype**: um vault do [Obsidian](https://obsidian.md) que funciona como uma
-biblioteca pessoal de videogames com cara de aplicativo (catálogo, fichas, conquistas, estatísticas).
+**Game Library V1.1** (estável desde a 1.1.0; antes, 1.0.x Prototype): um vault do
+[Obsidian](https://obsidian.md) que funciona como uma biblioteca pessoal de videogames com cara de
+aplicativo (catálogo, fichas, conquistas, estatísticas).
 **Não** é launcher nem frontend de emulação. Prioridade: Obsidian Android; desktop continua suportado.
 
 - Idioma do produto, do código (comentários) e da documentação: **português do Brasil**. O modo
@@ -72,11 +73,13 @@ Comentários como `// 3.74.0: …` citam a numeração interna anterior à 1.0 (
 
 ## Versão
 
-- `Scripts/SteamVaultCore.js`: `this.VERSION` (SemVer) e `this.STAGE` (`Prototype`).
+- `Scripts/SteamVaultCore.js`: `this.VERSION` (SemVer) e `this.STAGE` (vazio = estável; `Beta`,
+  `Prototype`… = pré-lançamento, com sufixo na tag).
 - Ao lançar: atualize `VERSION`, o selo do `README.md` (`vers%C3%A3o-X.Y.Z`) e crie a seção
   `## [X.Y.Z]` no `CHANGELOG.md`. `checks.js` confere os três.
-- A versão no GitHub nasce de uma tag: `git tag vX.Y.Z-prototype && git push origin vX.Y.Z-prototype`
-  dispara `.github/workflows/release.yml` (pré-lançamento com o ZIP instalável). Sem permissão para
+- A versão no GitHub nasce de uma tag: `git tag vX.Y.Z && git push origin vX.Y.Z` (com estágio:
+  `vX.Y.Z-beta`) dispara `.github/workflows/release.yml` (versão com o ZIP instalável; estável vira
+  *Latest*, com estágio vira pré-lançamento). Sem permissão para
   enviar tags (ex.: sessões na nuvem), use *Actions › Versões › Run workflow* no branch `main` com a
   tag: o GitHub cria a tag no commit do branch. A tag precisa bater com `VERSION`/`STAGE`.
 

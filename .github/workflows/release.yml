@@ -1,7 +1,7 @@
 name: Versões
 
 # Cria a versão no GitHub quando uma tag vX.Y.Z[-estágio] é enviada:
-#   git tag v1.0.0-prototype && git push origin v1.0.0-prototype
+#   git tag v1.1.0 && git push origin v1.1.0   (com estágio: v1.2.0-beta)
 # ou pelo botão "Run workflow" (Actions › Versões), escolhendo o branch: aí a
 # tag é criada pelo próprio GitHub no commit do branch. Nos dois casos a tag
 # precisa bater com a VERSION/STAGE do código e com uma seção do CHANGELOG.
@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag da versão (ex.: v1.0.0-prototype); criada no commit do branch se ainda não existir"
+        description: "Tag da versão (ex.: v1.1.0, ou v1.2.0-beta com estágio); criada no commit do branch se ainda não existir"
         required: true
 
 permissions:
