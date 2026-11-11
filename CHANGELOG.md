@@ -9,6 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.2.0] · 2026-11-11
+
+Busca e filtros mais completos. Sem mudança no formato das notas.
+
 ### Adicionado
 - **Filtro por subgênero** no painel de filtros da Biblioteca (aparece quando há mais de um
   subgênero na lista), com chip removível; entra nas visões salvas.
@@ -178,7 +184,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.1.0...HEAD
+[Não lançado]: ../../compare/v1.2.0...HEAD
+[1.2.0]: ../../releases/tag/v1.2.0
 [1.1.0]: ../../releases/tag/v1.1.0
 [1.0.2]: ../../releases/tag/v1.0.2-prototype
 [1.0.1]: ../../releases/tag/v1.0.1-prototype
