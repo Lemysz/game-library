@@ -26,7 +26,7 @@ for (let i = 0; i < 200 && !app.metadataCache.getFirstLinkpathDest("Assets/steam
 ```
 ````
 
-O `Assets/steamvault-boot.js` mostra a tela de carregamento (**Game Library**, com o ícone do controle) enquanto o Obsidian abre. Antes dos plugins, quem cuida disso é o snippet; depois, o boot espera o CustomJS e chama `customJS.SteamVault.render(dv, "game")`. A primeira parte da linha espera o celular terminar de listar os arquivos do vault (até 10 s): sem isso, o Dataview às vezes mostrava "custom view not found" por um instante ao abrir o Obsidian. Notas antigas (que chamavam `customJS` direto ou o boot sem essa espera) são atualizadas sozinhas, em segundo plano, uma vez por versão.
+O `Assets/steamvault-boot.js` mostra a tela de carregamento (**Game Library**, com o ícone do controle) enquanto o Obsidian abre, e só nessa hora: ao trocar de aba, a tela anterior fica até a nova estar pronta. Antes dos plugins, quem cuida disso é o snippet; depois, o boot espera o CustomJS e chama `customJS.SteamVault.render(dv, "game")`. A primeira parte da linha espera o celular terminar de listar os arquivos do vault (até 10 s): sem isso, o Dataview às vezes mostrava "custom view not found" por um instante ao abrir o Obsidian. Notas antigas (que chamavam `customJS` direto ou o boot sem essa espera) são atualizadas sozinhas, em segundo plano, uma vez por versão.
 
 Telas disponíveis: `icons` (galeria de ícones), `home`, `library`, `game`, `wishlist`, `collections`, `collection`, `platforms`, `platform`, `genres`, `genre`, `subgenres`, `subgenre`, `franchises`, `franchise`, `integrations`, `achievements`, `achievement`, `tierlist`, `statistics`, `settings`, `steam-profile`, `steam-activity`, `steam-library`, `steam-showcase`, `retro`, `retro-games`, `retro-achievements`, `xbox-profile`, `gog-profile`, `epic-profile`, `psn-profile`, `nintendo-profile`, `googleplay-profile`.
 
@@ -398,7 +398,7 @@ Na aba principal, a Game Library é desenhada numa camada própria sobre a área
 | Sintoma | Causa provável |
 |---|---|
 | "Game Library não carregou" | CustomJS desligado ou pasta de scripts diferente de `Scripts/`. |
-| Tela de carregamento não some | O CustomJS não carregou em 40 s; a própria tela explica o que conferir. |
+| Tela de carregamento não some | O CustomJS não carregou em 40 s; a própria tela explica o que conferir. Se o Dataview não roda (plugin ausente, desligado ou modo restrito), a tela some em até 25 s e a nota diz o que fazer. |
 | Bloco de código em vez da tela | Dataview sem *Enable JavaScript Queries*, ou nota em modo de edição. |
 | Tela sem estilo | Snippet `steamvault` desativado. |
 | "O perfil Steam precisa ser público" | Privacidade da Steam; nada é contornado. |

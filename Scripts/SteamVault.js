@@ -123,17 +123,43 @@ class SteamVault {
 		const preW = this._viewWidth(preOwn);
 		// 3.68.0: tudo o que o ajuste de tamanho mede, medido antes de trocar o conteúdo
 		const preSize = surface.layer ? { fit: this._measureFit(surface), w: preOwn, vw: preW, h: surface.el.clientHeight } : null;
-		surface.el.innerHTML = M.U.shell({ active: res.active, content: res.html, C: M.C, model, steamCfg, raCfg: M.R ? M.R.getConfig() : null });
+		const shellHtml = M.U.shell({ active: res.active, content: res.html, C: M.C, model, steamCfg, raCfg: M.R ? M.R.getConfig() : null });
+		// navegação de verdade × re-render da MESMA tela (Dataview, sync,
+		// salvar): as animações de entrada só rodam na navegação — o re-render
+		// troca o conteúdo sem a tela piscar
+		const renderKey = `${page}:${current?.file?.path || ""}`;
+		// 1.0.2: no modo Leitura, logo depois de abrir uma nota, o Obsidian e o
+		// Dataview podem rodar OUTRO bloco da mesma nota. Esse segundo desenho
+		// era tratado como atualização: trocava o HTML, cortava a animação de
+		// entrada no meio e a tela aparecia de uma vez. Se é outro bloco, a
+		// mesma tela, o mesmo conteúdo e a navegação acabou de acontecer, o HTML
+		// fica; só as referências (dv, modelo) dos eventos já ligados mudam.
+		// Atualizações do próprio app (salvar, sync, idioma) usam o mesmo bloco
+		// e seguem o caminho de sempre.
+		const live = surface.el.querySelector(".sv-app");
+		const twin = surface.el.__svHost && surface.el.__svHost !== host && Date.now() - (surface.el.__svAt || 0) < 2000 && !window.__svLibFilter;
+		if (twin && surface.el.__svKey === renderKey && surface.el.__svShell === shellHtml && live?.__svCtx) {
+			Object.assign(live.__svCtx, ctx);
+			host.__svSurface = surface;
+			this._markLeaf(host);
+			this._observeSize(host, surface);
+			this._applyPrefs();
+			this._markScreen();
+			host.__svApply?.(preSize);
+			document.body.classList.add("sv-booted");
+			return;
+		}
+		surface.el.innerHTML = shellHtml;
+		surface.el.__svShell = shellHtml;
+		surface.el.__svHost = host;
+		surface.el.__svAt = Date.now();
 		const root = surface.el.querySelector(".sv-app");
+		root.__svCtx = ctx;
 		root.dataset.page = page;
 		// 3.58.0: personalização da interface (atributos data-lay-*)
 		try { M.U.applyLayout?.(root); } catch (err) { console.warn("Game Library: layout", err); }
 		root.classList.add("sv-instant");
 		this._presetSize(root, preW);
-		// navegação de verdade × re-render da MESMA tela (Dataview, sync,
-		// salvar): as animações de entrada só rodam na navegação — o re-render
-		// troca o conteúdo sem a tela piscar
-		const renderKey = `${page}:${current?.file?.path || ""}`;
 		const isRefresh = surface.el.__svKey === renderKey;
 		if (!isRefresh && current?.file?.path && ["game", "achievement", "collection", "platform", "genre", "subgenre", "franchise"].includes(page)) this._pushRecent(current.file.path);
 		surface.el.__svKey = renderKey;
@@ -158,6 +184,10 @@ class SteamVault {
 		requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("sv-instant")));
 		if (document.body.classList.contains("sv-app-paused")) document.body.classList.remove("sv-app-paused");
 		this._markScreen();
+		// 1.0.2: a tela de inicialização (steamvault.css, seção 38) é só da
+		// abertura do Obsidian: depois do primeiro desenho, trocar de aba não a
+		// mostra de novo (a tela anterior fica até a nova estar pronta)
+		document.body.classList.add("sv-booted");
 		host.__svApply?.(preSize);
 		// resumo RA na Home: carregado depois, no fim da página (secundário)
 		if (page === "home" && M.RP) {
