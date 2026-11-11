@@ -760,7 +760,7 @@ class SteamVaultPages {
 			${list.length ? this._libSummary(ctx, list) : ""}
 			${list.length ? this._libContinue(ctx, list) : ""}
 			${list.length ? `<div class="sv-libbar" role="toolbar" aria-label="Filtrar a biblioteca">
-				<div class="sv-field sv-field--search">${U.icon("search")}<input type="search" class="sv-input" data-lib-q placeholder="Buscar ou filtrar: nota>4 status:zerado" aria-label="Buscar por nome, franquia, gênero ou estúdio. Também aceita comandos como status:zerado, plataforma:ps2, nota>4, horas>=20, ano:2023 e fav" enterkeyhint="search"></div>
+				<div class="sv-field sv-field--search">${U.icon("search")}<input type="search" class="sv-input" data-lib-q placeholder="Buscar ou filtrar: nota>4 status:zerado" aria-label="Buscar por nome, plataforma, gênero, subgênero, estúdio, distribuidora ou tag. Também aceita comandos como status:zerado, plataforma:ps2, subgenero:puzzle, dev:capcom, nota>4, horas>=20, ano:2023 e fav" enterkeyhint="search"></div>
 				<button type="button" class="sv-libbtn" data-lib-filters aria-haspopup="dialog">${U.icon("filter")}<span class="sv-libbtn-label">Filtros</span><b class="sv-libbtn-badge" hidden>0</b></button>
 				<button type="button" class="sv-libbtn" data-lib-display aria-haspopup="dialog" title="Ordenar, agrupar e visualizar">${U.icon("sort")}<span class="sv-libbtn-label" data-lib-sortlabel>${U.esc(sortLabel)}</span></button>
 				<div class="sv-viewtoggle sv-libviews" role="radiogroup" aria-label="Visualização">${Object.entries(this._libViews()).map(([k, v]) => `<button type="button" data-view="${k}" class="${st.view === k ? "is-active" : ""}" title="${U.attr(v.label)}" aria-label="${U.attr(v.label)}">${U.icon(v.icon)}</button>`).join("")}</div>
@@ -798,11 +798,11 @@ class SteamVaultPages {
 
 	// filtro, ordem, grupos e visualização ficam lembrados por tela
 	_libState(ctx, active) {
-		const def = { status: [], platform: [], genre: [], ach: "", progress: "", rating: 0, fav: false, smart: "", sort: "title", group: "none", view: ctx.U._store("libraryView") || "grid" };
+		const def = { status: [], platform: [], genre: [], subgenre: [], ach: "", progress: "", rating: 0, fav: false, smart: "", sort: "title", group: "none", view: ctx.U._store("libraryView") || "grid" };
 		let saved = {};
 		try { saved = JSON.parse(ctx.U._store(`lib:${active}`) || "{}") || {}; } catch (_) { saved = {}; }
 		const s = { ...def, ...saved, q: "" };
-		for (const k of ["status", "platform", "genre"]) if (!Array.isArray(s[k])) s[k] = [];
+		for (const k of ["status", "platform", "genre", "subgenre"]) if (!Array.isArray(s[k])) s[k] = [];
 		if (!this._libSorts()[s.sort]) s.sort = "title";
 		if (!this._libGroups()[s.group]) s.group = "none";
 		if (!this._libViews()[s.view]) s.view = "grid";
@@ -838,11 +838,15 @@ class SteamVaultPages {
 		if (g.__libData && g.__libData.rev === ctx.model.builtAt) return g.__libData.d;
 		const letter = (C.normalizeKey(g.title)[0] || "#").toUpperCase();
 		const genres = [...g.genres].filter(Boolean);
+		const subs = [...(g.subgenres || [])].filter(Boolean);
 		const d = {
 			fStatus: g.status, fPlatform: g.platform, fProvider: g.provider, fSync: g.sync,
 			fProgress: C.progressBucket(g), fFav: String(!!g.favorite), fRating: String(g.rating || 0),
 			fGenres: `|${genres.map(x => C.normalizeKey(x)).join("|")}|`, fSmart: this._libFlags(ctx, g),
-			fTitle: C.normalizeKey(`${g.title} ${g.franchise} ${genres.join(" ")} ${g.developer || ""}`),
+			fSubs: `|${subs.map(x => C.normalizeKey(x)).join("|")}|`,
+			// busca livre: nome, franquia, gênero, subgênero, estúdio, distribuidora, plataforma e tags
+			fTitle: C.normalizeKey(`${g.title} ${g.franchise} ${genres.join(" ")} ${subs.join(" ")} ${g.developer || ""} ${g.publisher || ""} ${g.platform || ""} ${(g.labels || []).join(" ")}`),
+			fDev: C.normalizeKey(g.developer || ""), fPub: C.normalizeKey(g.publisher || ""), fTags: `|${(g.labels || []).map(x => C.normalizeKey(x)).join("|")}|`,
 			sTitle: g.title.toLowerCase(), sHours: String(g.playtime.hours || 0), sRating: String(g.rating || 0),
 			sAdded: g.dateAdded || "", sPlayed: g.lastPlayed.date || "", sPct: String(g.ach.pct ?? -1), sYear: String(g.releaseYear || 0),
 			gStatus: g.status, gPlatform: g.platform, gGenre: genres[0] || "", gFranchise: g.franchise || "",
@@ -860,8 +864,9 @@ class SteamVaultPages {
 	// filtro e ordem (os mesmos para os dados e para o dataset dos cards)
 	get _libChunk() { return 60; }
 	// 3.64.0: busca avançada. Comandos no campo de busca viram filtros:
-	// status:zerado, plataforma:ps2, genero:acao, franquia:resident, nota>4,
-	// horas>=20, ano:2023, conquistas>=80, fav. O resto continua sendo texto.
+	// status:zerado, plataforma:ps2, genero:acao, subgenero:puzzle, franquia:resident,
+	// dev:capcom, dist:rockstar, tag:coop, nota>4, horas>=20, ano:2023,
+	// conquistas>=80, fav. O resto continua sendo texto.
 	_libQueryParse(raw, C) {
 		const st = { jogando: "Playing", playing: "Playing", pausado: "Paused", paused: "Paused", backlog: "Backlog", zerado: "Completed", zerados: "Completed", completo: "Completed", completed: "Completed", concluido: "Completed", abandonado: "Dropped", dropped: "Dropped", desejos: "Wishlist", desejo: "Wishlist", wishlist: "Wishlist", lista: "Wishlist" };
 		const nums = { nota: "fRating", rating: "fRating", horas: "sHours", hours: "sHours", h: "sHours", ano: "sYear", year: "sYear", conquistas: "sPct", ach: "sPct", pct: "sPct" };
@@ -879,6 +884,10 @@ class SteamVaultPages {
 			if (["status", "s"].includes(key) && st[val.replace(/ /g, "")]) { const k = st[val.replace(/ /g, "")]; rules.push(d => d.fStatus === k); continue; }
 			if (["plataforma", "plat", "platform", "p"].includes(key) && val) { rules.push(d => C.normalizeKey(d.fPlatform).includes(val)); continue; }
 			if (["genero", "gen", "genre", "g"].includes(key) && val) { rules.push(d => d.fGenres.split("|").some(x => x && x.includes(val))); continue; }
+			if (["subgenero", "sub", "subgenre"].includes(key) && val) { rules.push(d => d.fSubs.split("|").some(x => x && x.includes(val))); continue; }
+			if (["dev", "desenvolvedora", "estudio", "developer"].includes(key) && val) { rules.push(d => d.fDev.includes(val)); continue; }
+			if (["dist", "distribuidora", "pub", "publisher", "editora"].includes(key) && val) { rules.push(d => d.fPub.includes(val)); continue; }
+			if (["tag", "tags", "etiqueta", "label"].includes(key) && val) { rules.push(d => d.fTags.split("|").some(x => x && x.includes(val))); continue; }
 			if (["franquia", "saga", "franchise"].includes(key) && val) { rules.push(d => C.normalizeKey(d.gFranchise).includes(val)); continue; }
 			if (["fav", "favorito"].includes(key)) { const yes = !["nao", "no", "false", "0"].includes(val); rules.push(d => (d.fFav === "true") === yes); continue; }
 			if (nums[key] && val !== "" && Number.isFinite(Number(val.replace(" ", ".")))) {
@@ -893,11 +902,12 @@ class SteamVaultPages {
 	}
 
 	_libMatch(state, d) {
-		return (!state.q || d.fTitle.includes(state.q))
+		return (!state.q || d.fTitle.includes(state.q) || state.q.split(" ").every(w => d.fTitle.includes(w)))
 			&& (!state.qRules?.length || state.qRules.every(r => r(d)))
 			&& (!state.status.length || state.status.includes(d.fStatus))
 			&& (!state.platform.length || state.platform.includes(d.fPlatform))
 			&& (!state.genre.length || state.genre.some(x => d.fGenres.includes(`|${x}|`)))
+			&& (!state.subgenre?.length || state.subgenre.some(x => d.fSubs.includes(`|${x}|`)))
 			&& (!state.fav || d.fFav === "true")
 			&& (!state.ach || (state.ach[0] === "p" ? d.fProvider : d.fSync) === state.ach.slice(2))
 			&& (!state.progress || d.fProgress === state.progress)
@@ -971,7 +981,7 @@ class SteamVaultPages {
 
 	// ---- visões salvas (3.60.0): filtros + ordem + grupos + visualização com
 	// um nome, num toque. Ficam em "lib:views" (sincroniza entre aparelhos)
-	_libViewKeys() { return ["status", "platform", "genre", "ach", "progress", "rating", "fav", "smart", "sort", "group", "view"]; }
+	_libViewKeys() { return ["status", "platform", "genre", "subgenre", "ach", "progress", "rating", "fav", "smart", "sort", "group", "view"]; }
 	_libSavedViews(ctx) {
 		try { const v = JSON.parse(ctx.U._store("lib:views") || "[]"); return Array.isArray(v) ? v.filter(x => x && x.id && typeof x.name === "string" && x.s && typeof x.s === "object") : []; }
 		catch (_) { return []; }
@@ -983,7 +993,7 @@ class SteamVaultPages {
 		return o;
 	}
 	_libSameView(state, saved) {
-		const a = this._libSnap(state), b = this._libSnap({ ...this._libSnap(state), ...saved.s });
+		const a = this._libSnap(state), b = this._libSnap({ ...this._libSnap(state), subgenre: [], ...saved.s });
 		return JSON.stringify(a) === JSON.stringify(b);
 	}
 	_libViewChips(ctx) {
@@ -1226,6 +1236,7 @@ class SteamVaultPages {
 			for (const s of state.status) out.push(["status", s, C.statusLabel(s)]);
 			for (const p of state.platform) out.push(["platform", p, p]);
 			for (const g of state.genre) out.push(["genre", g, genreLabel.get(g) || g]);
+			for (const g of state.subgenre) out.push(["subgenre", g, genreLabel.get(`sub:${g}`) || g]);
 			if (state.fav) out.push(["fav", "", "Favoritos"]);
 			if (state.smart) out.push(["smart", state.smart, sm[state.smart]?.[0] || state.smart]);
 			if (state.ach) out.push(["ach", state.ach, achLabel(state.ach)]);
@@ -1235,6 +1246,7 @@ class SteamVaultPages {
 		};
 		const genreLabel = new Map();
 		for (const g of list) for (const x of g.genres) if (x) genreLabel.set(C.normalizeKey(x), x);
+		for (const g of list) for (const x of g.subgenres || []) if (x) genreLabel.set(`sub:${C.normalizeKey(x)}`, x);
 		const progressLabels = { perfect: "100% das conquistas", partial: "Conquistas em andamento", zero: "0% das conquistas", unknown: "Sem contagem", none: "Sem conquistas" };
 		const achLabel = v => { const [t, k] = v.split(":"); return t === "p" ? (C.providerDefs[k]?.label || k) : (C.syncDefs[k]?.label || k); };
 
@@ -1264,7 +1276,7 @@ class SteamVaultPages {
 			if (sl) sl.textContent = this._libSorts()[state.sort] + (state.group !== "none" ? ` · ${this._libGroups()[state.group]}` : "");
 		};
 
-		const clearAll = () => { Object.assign(state, { status: [], platform: [], genre: [], ach: "", progress: "", rating: 0, fav: false, smart: "", q: "", qRules: [] }); page.querySelector("[data-lib-q]")?.classList.remove("has-rules"); const q = page.querySelector("[data-lib-q]"); if (q) q.value = ""; apply(); };
+		const clearAll = () => { Object.assign(state, { status: [], platform: [], genre: [], subgenre: [], ach: "", progress: "", rating: 0, fav: false, smart: "", q: "", qRules: [] }); page.querySelector("[data-lib-q]")?.classList.remove("has-rules"); const q = page.querySelector("[data-lib-q]"); if (q) q.value = ""; apply(); };
 
 		const setView = v => {
 			if (v === "list" && !rowsBuilt) { ensureRows(); state.view = v; apply(); }
@@ -1316,8 +1328,8 @@ class SteamVaultPages {
 		if (q && window.__svLibQuery) { q.value = window.__svLibQuery; setQuery(q.value); window.__svLibQuery = ""; }
 		if (window.__svLibFilter && typeof window.__svLibFilter === "object") {
 			const f = window.__svLibFilter; window.__svLibFilter = null;
-			Object.assign(state, { status: [], smart: "", platform: [], genre: [], ach: "", progress: "", rating: 0, fav: false });
-			for (const k of ["status", "platform", "genre"]) if (Array.isArray(f[k])) state[k] = f[k].map(String);
+			Object.assign(state, { status: [], smart: "", platform: [], genre: [], subgenre: [], ach: "", progress: "", rating: 0, fav: false });
+			for (const k of ["status", "platform", "genre", "subgenre"]) if (Array.isArray(f[k])) state[k] = f[k].map(String);
 			for (const k of ["ach", "progress", "smart"]) if (typeof f[k] === "string") state[k] = f[k];
 			if (typeof f.fav === "boolean") state.fav = f.fav;
 			if (typeof f.rating === "number") state.rating = f.rating;
@@ -1392,6 +1404,7 @@ class SteamVaultPages {
 				if (!v) return paintViews();
 				if (activeView()?.id === v.id) return clearAll();
 				for (const k of this._libViewKeys()) if (k in v.s) state[k] = Array.isArray(v.s[k]) ? [...v.s[k]] : v.s[k];
+				if (!Array.isArray(v.s.subgenre)) state.subgenre = [];
 				if (!this._libSorts()[state.sort]) state.sort = "title";
 				if (!this._libGroups()[state.group]) state.group = "none";
 				if (!this._libViews()[state.view]) state.view = "grid";
@@ -1436,7 +1449,7 @@ class SteamVaultPages {
 	_libFilterSheet(ctx, { list, state, apply, hideAchFilter, count, clearAll, genreLabel, progressLabels }) {
 		const { C, U, V } = ctx;
 		const tally = fn => { const m = new Map(); for (const g of list) for (const k of [].concat(fn(g)).filter(Boolean)) m.set(k, (m.get(k) || 0) + 1); return m; };
-		const sN = tally(g => g.status), pN = tally(g => g.platform), gN = tally(g => [...new Set([...g.genres].map(x => C.normalizeKey(x)))]);
+		const sN = tally(g => g.status), pN = tally(g => g.platform), gN = tally(g => [...new Set([...g.genres].map(x => C.normalizeKey(x)))]), sgN = tally(g => [...new Set([...(g.subgenres || [])].map(x => C.normalizeKey(x)))]);
 		const prN = tally(g => C.progressBucket(g)), pvN = tally(g => `p:${g.provider}`), syN = tally(g => `s:${g.sync}`);
 		const tones = this._libTones();
 		const chip = (k, v, label, n, extra = "") => `<button type="button" class="sv-fchip" data-k="${k}" data-v="${U.attr(v)}" ${extra}>${label}${n !== null ? `<span>${n}</span>` : ""}</button>`;
@@ -1444,6 +1457,7 @@ class SteamVaultPages {
 		const statusChips = Object.keys(C.statusDefs).filter(k => sN.get(k)).map(k => chip("status", k, `<i style="background:${tones[k]}"></i>${U.esc(C.statusLabel(k))}`, sN.get(k))).join("");
 		const platChips = [...pN].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([k, n]) => chip("platform", k, U.esc(k), n)).join("");
 		const genreChips = [...gN].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([k, n]) => chip("genre", k, U.esc(genreLabel.get(k) || k), n)).join("");
+		const subChips = [...sgN].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([k, n]) => chip("subgenre", k, U.esc(genreLabel.get(`sub:${k}`) || k), n)).join("");
 		const progChips = Object.keys(progressLabels).filter(k => prN.get(k)).map(k => chip("progress", k, U.esc(progressLabels[k]), prN.get(k))).join("");
 		const achChips = hideAchFilter ? "" : [...pvN].filter(([k]) => C.providerDefs[k.slice(2)]).map(([k, n]) => chip("ach", k, U.esc(C.providerDefs[k.slice(2)].label), n)).join("") + [...syN].filter(([k]) => C.syncDefs[k.slice(2)]).map(([k, n]) => chip("ach", k, `${U.icon("refresh")}${U.esc(C.syncDefs[k.slice(2)].label)}`, n)).join("");
 		const ratingChips = [[0, "Qualquer"], [3, "3+"], [4, "4+"], [4.5, "4,5+"]].map(([v, l]) => chip("rating", String(v), v ? `${U.icon("star")}${l}` : l, null)).join("");
@@ -1453,6 +1467,7 @@ class SteamVaultPages {
 			${group("Favoritos", chip("fav", "1", `${U.icon("heart")}Só favoritos`, list.filter(g => g.favorite).length))}
 			${pN.size > 1 ? group("Plataforma", platChips) : ""}
 			${gN.size > 1 ? group("Gênero", genreChips) : ""}
+			${sgN.size > 1 ? group("Subgênero", subChips) : ""}
 			${group("Nota mínima", ratingChips)}
 			${prN.size > 1 ? group("Progresso de conquistas", progChips) : ""}
 			${achChips ? group("Conquistas: origem e sincronização", achChips) : ""}`;
@@ -1805,7 +1820,7 @@ class SteamVaultPages {
 				${g.summary ? `<p class="sv-synopsis">${U.esc(g.summary)}</p>` : U.empty({ icon: "notebook", title: "Sem sinopse", text: "Adicione uma sinopse em Editar detalhes.", compact: true, action: U.btn("Editar detalhes", { icon: "edit", action: "manage", attrs: `data-section="details" data-path="${U.attr(g.path)}"` }) })}
 				${this._ovReview(ctx, g)}
 				${this._ovFacts(ctx, g)}
-				${g.labels.length ? `<div class="sv-labels">${g.labels.map(l => `<span class="sv-tag">${U.icon("tag")}${U.esc(l)}</span>`).join("")}</div>` : ""}
+				${g.labels.length ? `<div class="sv-labels">${g.labels.map(l => `<button type="button" class="sv-ovchip is-search" data-ov-search="${U.attr(`tag:"${String(l).replace(/"/g, "")}"`)}" title="Ver na Biblioteca">${U.icon("tag")}${U.esc(l)}</button>`).join("")}</div>` : ""}
 				${this._ovTimeline(ctx, g, d)}
 				${this._ovRhythm(ctx, g, d)}
 				${this._ovMedia(ctx, g)}
