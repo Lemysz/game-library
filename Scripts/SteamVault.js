@@ -1899,7 +1899,9 @@ class SteamVault {
 		const { model, C } = ctx;
 		if (window.__svSearchIndex?.built === model.builtAt) return window.__svSearchIndex.items;
 		const items = [];
-		for (const g of model.games) items.push({ kind: "game", label: g.title, sub: g.platform, path: g.path, key: C.normalizeKey(`${g.title} ${g.franchise} ${g.developer}`), g });
+		// jogo: o nome vale mais; "more" deixa achar também por plataforma,
+		// gênero, subgênero, estúdio, distribuidora e tags
+		for (const g of model.games) items.push({ kind: "game", label: g.title, sub: g.platform, path: g.path, key: C.normalizeKey(`${g.title} ${g.franchise}`), more: C.normalizeKey(`${g.developer || ""} ${g.publisher || ""} ${g.platform || ""} ${[...(g.genres || [])].join(" ")} ${[...(g.subgenres || [])].join(" ")} ${(g.labels || []).join(" ")} ${g.releaseYear || ""}`), g });
 		for (const c of model.collections) items.push({ kind: "collection", label: c.title, sub: `${c.games.length} jogos`, path: c.path, key: C.normalizeKey(c.title) });
 		for (const p of model.platforms) items.push({ kind: "platform", label: p.title, sub: "Plataforma", path: p.path, key: C.normalizeKey(p.title) });
 		for (const p of model.genres) items.push({ kind: "genre", label: p.title, sub: "Gênero", path: p.path, key: C.normalizeKey(p.title) });
@@ -2211,10 +2213,14 @@ class SteamVault {
 			}
 			const all = this._searchIndex(ctx);
 			const scored = [];
+			// frase inteira no nome primeiro; depois, todas as palavras (em qualquer
+			// ordem) no nome ou nos outros campos do jogo
+			const words = q.split(" ").filter(Boolean);
 			for (const it of all) {
 				const i = it.key.indexOf(q);
-				if (i < 0) continue;
-				scored.push({ it, s: (i === 0 ? 0 : 1) + (it.kind === "achievement" ? 2 : 0) + it.key.length / 200 });
+				if (i >= 0) { scored.push({ it, s: (i === 0 ? 0 : 1) + (it.kind === "achievement" ? 2 : 0) + it.key.length / 200 }); continue; }
+				const hay = it.more ? `${it.key} ${it.more}` : words.length > 1 ? it.key : "";
+				if (hay && words.every(w => hay.includes(w))) scored.push({ it, s: (it.more && !words.every(w => it.key.includes(w)) ? 3 : 2) + (it.kind === "achievement" ? 2 : 0) + it.key.length / 200 });
 			}
 			scored.sort((a, b) => a.s - b.s);
 			const byKind = {};

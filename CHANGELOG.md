@@ -9,7 +9,21 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Adicionado
+- **Filtro por subgênero** no painel de filtros da Biblioteca (aparece quando há mais de um
+  subgênero na lista), com chip removível; entra nas visões salvas.
+- **Comandos de busca novos** na Biblioteca: `subgenero:`, `dev:`, `dist:` e `tag:`
+  (ex.: `subgenero:puzzle dev:capcom`).
+- **Tags da ficha clicáveis:** cada tag abre a Biblioteca filtrada por ela (antes era só texto).
+
+### Melhorado
+- **Busca da Biblioteca:** o texto livre passa a cobrir também subgênero, distribuidora, plataforma
+  e tags, e as palavras podem vir em qualquer ordem (`evil resident`, `capcom pc`).
+- **Busca global:** jogos também são encontrados por plataforma, gênero, subgênero, estúdio,
+  distribuidora, tags e ano (`ps2`, `survival horror`, `capcom 2019`). O nome continua na frente.
+
+### Corrigido
+- Modo inglês: as lembranças da Início ("Você começou…", "Você zerou…") ficavam em português.
 
 ## [1.1.0] · 2026-11-11
 

@@ -911,7 +911,7 @@ body.theme-dark .sv-search-results, body:not(.theme-light) .sv-search-results { 
 	white-space: nowrap;
 }
 .sv-tag .sv-i { width: 15px; height: 15px; opacity: 0.8; }
-.sv-labels { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: var(--sv-s5); }
+.sv-labels { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--sv-s5); }
 
 /* figuras: um valor com peso, rótulo discreto */
 .sv-figures { display: flex; flex-wrap: wrap; gap: var(--sv-s4) var(--sv-s8); }
