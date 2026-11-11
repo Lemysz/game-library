@@ -12,10 +12,12 @@ class SteamVaultCore {
 
 	constructor() {
 		// Versão do produto (SemVer) e estágio. A 1.0.0 consolida o desenvolvimento
-		// anterior (numeração interna 3.x, ver docs/archive/). O estágio aparece em
-		// Configurações e na versão do GitHub (tag v1.0.0-prototype).
-		this.VERSION = "1.0.2";
-		this.STAGE = "Prototype";
+		// anterior (numeração interna 3.x, ver docs/archive/). A 1.1.0 é a primeira
+		// estável: estágio vazio = versão estável (tag vX.Y.Z, sem sufixo). Um
+		// estágio ("Beta", "Prototype"…) aparece em Configurações e vira sufixo da
+		// tag (vX.Y.Z-beta) e pré-lançamento no GitHub.
+		this.VERSION = "1.1.0";
+		this.STAGE = "";
 
 		this.folders = {
 			games: "Games", collections: "Collections", achievements: "Achievements",

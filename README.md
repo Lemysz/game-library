@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 1.0.2 Prototype" src="https://img.shields.io/badge/vers%C3%A3o-1.0.2%20Prototype-1a9fff?style=for-the-badge&labelColor=0d1420">
+  <img alt="Versão 1.1.0" src="https://img.shields.io/badge/vers%C3%A3o-1.1.0-1a9fff?style=for-the-badge&labelColor=0d1420">
   <img alt="Obsidian para Android e computador" src="https://img.shields.io/badge/Obsidian-Android%20%C2%B7%20desktop-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white&labelColor=0d1420">
   <img alt="Sem senha, sem cookies" src="https://img.shields.io/badge/sem%20senha-sem%20cookies-6cc24a?style=for-the-badge&labelColor=0d1420">
   <img alt="Português e inglês" src="https://img.shields.io/badge/idioma-PT%20%C2%B7%20EN-e9bd52?style=for-the-badge&labelColor=0d1420">
@@ -32,9 +32,9 @@
 </p>
 
 > [!IMPORTANT]
-> **V1.0 — Prototype.** Primeira versão oficial: consolida o desenvolvimento anterior e é a base
-> das próximas evoluções. Funciona no dia a dia, mas o formato das notas ainda pode mudar entre
-> versões (toda mudança vem com migração e aviso no [CHANGELOG](CHANGELOG.md)).
+> **V1.1 — estável.** Primeira versão estável, depois da fase de protótipo (1.0.0 a 1.0.2). Mudanças
+> no formato das notas vêm sempre com migração automática e aviso no [CHANGELOG](CHANGELOG.md);
+> mudanças incompatíveis só numa versão maior (2.0).
 
 ## 📱 Capturas
 
@@ -135,7 +135,7 @@ Sem servidor, sem conta e sem banco de dados: tudo são arquivos Markdown e imag
 
 ## 🚀 Instalação
 
-1. Baixe o `Game_Library_X.Y.Z-prototype.zip` da versão mais recente na página de [versões](../../releases) do repositório
+1. Baixe o `Game_Library_X.Y.Z.zip` da versão mais recente (marcada como *Latest*) na página de [versões](../../releases) do repositório
    (é preciso estar conectado ao GitHub com acesso a este repositório privado).
 2. Descompacte. No **Android**, use uma pasta acessível ao Obsidian (ex.: `Documentos/`).
 3. No Obsidian: **Abrir pasta como vault** → escolha a pasta `Game_Library` → **Confiar no autor e
@@ -186,7 +186,7 @@ Detalhes: [SECURITY.md](SECURITY.md) · [Segurança e privacidade](DOCUMENTACAO.
 
 ## ⚠️ Limitações conhecidas
 
-- **Protótipo:** o formato das notas pode mudar entre versões menores (sempre com migração).
+- **Formato das notas:** pode ganhar campos novos entre versões menores (sempre com migração); mudanças incompatíveis só numa versão maior.
 - **Testes automáticos rodam num simulador** do Obsidian (harness + Chromium), não em aparelhos.
   Testes em Android e iOS reais ainda são manuais; o iOS não foi verificado nesta versão.
 - **Steam, GOG e preços da Nuuvem** dependem de páginas públicas que as lojas podem mudar.
@@ -227,5 +227,5 @@ Direções para as próximas versões, sem data e sujeitas a mudança:
 | [.github/tests](.github/tests) | Testes automáticos e como rodar |
 | [docs/archive](docs/archive/README.md) | Histórico de desenvolvimento anterior à 1.0 |
 
-<p align="center"><sub>Game Library · V1.0 — Prototype · Repositório privado.<br>
+<p align="center"><sub>Game Library · V1.1 · Repositório privado.<br>
 Não é afiliada à Valve, Microsoft, Sony, Nintendo, GOG, Epic Games, Google ou RetroAchievements.</sub></p>
