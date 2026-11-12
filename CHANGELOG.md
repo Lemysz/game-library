@@ -9,6 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.3.0] · 2026-11-12
+
+Dados dos jogos de qualquer plataforma pelo Wikidata. Sem mudança no formato das notas (só o campo novo opcional `wikidataId`).
+
 ### Adicionado
 - **Completar dados pelo Wikidata** (ficha › ⋯): estúdio, distribuidora, gêneros, ano e data de
   lançamento para jogos de qualquer plataforma, não só da Steam. Base aberta de domínio público
@@ -205,7 +211,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.2.1...HEAD
+[Não lançado]: ../../compare/v1.3.0...HEAD
+[1.3.0]: ../../releases/tag/v1.3.0
 [1.2.1]: ../../releases/tag/v1.2.1
 [1.2.0]: ../../releases/tag/v1.2.0
 [1.1.0]: ../../releases/tag/v1.1.0
