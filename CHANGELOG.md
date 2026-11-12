@@ -9,6 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.2.1] · 2026-11-12
+
+Instalação mais simples. Sem mudança no app nem no formato das notas.
+
 ### Mudado
 - **Instalação sem passos de plugin:** o ZIP da versão já traz o **Dataview** (0.5.68) e o
   **CustomJS** (1.0.21) prontos e ativados; basta abrir a pasta como vault e confiar nela. Os
@@ -189,7 +195,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.2.0...HEAD
+[Não lançado]: ../../compare/v1.2.1...HEAD
+[1.2.1]: ../../releases/tag/v1.2.1
 [1.2.0]: ../../releases/tag/v1.2.0
 [1.1.0]: ../../releases/tag/v1.1.0
 [1.0.2]: ../../releases/tag/v1.0.2-prototype
