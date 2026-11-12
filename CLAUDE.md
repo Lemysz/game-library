@@ -100,7 +100,9 @@ foco, desempenho) estão em `.github/tools/audit/`.
 
 ## O que não fazer
 
-- Não versionar `main.js`/`styles.css`/`manifest.json` de plugins, temas, `.trash/`, `Backups/`,
+- Não versionar `main.js`/`styles.css`/`manifest.json` de plugins (Dataview e CustomJS entram só no
+  ZIP da versão, por `.github/tools/bundle-plugins.sh`, com versão e SHA-256 em
+  `.github/plugins/plugins.lock`), temas, `.trash/`, `Backups/`,
   `.steamvault/`, `workspace*.json` (o `.gitignore` e o `checks.js` cuidam disso).
 - Não adicionar integrações que peçam senha, cookie ou token de sessão de terceiros.
 - Não reescrever módulos inteiros sem demonstrar a necessidade; preferir mudanças pontuais.

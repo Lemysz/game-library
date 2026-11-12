@@ -33,6 +33,10 @@ esperado. **Nunca** cole chaves, tokens, Web API Keys, senhas, cookies ou captur
   em `http(s)` nos domínios esperados; imagens remotas não são baixadas de `localhost` ou da rede local.
 - **Código.** Sem `eval`, `new Function` ou `document.write`; sem dependências de runtime além dos
   plugins do Obsidian.
+- **Plugins no ZIP.** Só o ZIP da versão traz o Dataview e o CustomJS prontos (licença MIT). Cada
+  arquivo vem do release oficial no GitHub, numa versão fixa, e o workflow confere o SHA-256 listado
+  em `.github/plugins/plugins.lock` antes de empacotar: se um arquivo mudar, a versão não é criada.
+  O código desses plugins nunca entra no repositório.
 
 ## Verificações automáticas
 

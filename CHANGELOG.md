@@ -9,7 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Mudado
+- **Instalação sem passos de plugin:** o ZIP da versão já traz o **Dataview** (0.5.68) e o
+  **CustomJS** (1.0.21) prontos e ativados; basta abrir a pasta como vault e confiar nela. Os
+  arquivos vêm do release oficial de cada plugin, numa versão fixa, com o SHA-256 conferido pelo
+  workflow (`.github/plugins/plugins.lock`) e a licença MIT ao lado. O código deles continua fora do
+  repositório. Style Settings e Templater seguem opcionais, pela loja do Obsidian.
 
 ## [1.2.0] · 2026-11-11
 
