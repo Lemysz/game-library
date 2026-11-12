@@ -1,0 +1,64 @@
+name: Plugins do ZIP
+
+# Uma vez por mês (ou pelo botão "Run workflow"), confere se o Dataview e o
+# CustomJS têm versão nova no GitHub oficial. Se tiverem, abre uma issue com o
+# que fazer. Nada é atualizado sozinho: a versão nova só entra no ZIP depois que
+# alguém confere o código e grava os hashes em .github/plugins/plugins.lock.
+on:
+  schedule:
+    - cron: "17 9 3 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  conferir:
+    name: Conferir versões novas
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Comparar com plugins.lock
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          : > novidades.md
+          # id, versão e repositório de cada plugin (uma linha por plugin)
+          grep -vE '^\s*(#|$)' .github/plugins/plugins.lock | awk '{ print $1, $2, $3 }' | sort -u | while read -r id ver repo; do
+            [[ "$repo" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || { echo "::error::repositório inválido: $repo"; exit 1; }
+            latest="$(gh api "repos/$repo/releases/latest" --jq .tag_name || true)"
+            if [[ ! "$latest" =~ ^[0-9A-Za-z.+-]{1,40}$ ]]; then
+              echo "::warning::$id: não foi possível ler a última versão de $repo"
+              continue
+            fi
+            echo "$id: no ZIP $ver · última no GitHub $latest"
+            if [[ "$latest" != "$ver" ]]; then
+              echo "- **$id**: no ZIP **$ver** → disponível **$latest** ([notas da versão](https://github.com/$repo/releases/tag/$latest))" >> novidades.md
+            fi
+          done
+
+      - name: Abrir issue se houver versão nova
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [ -s novidades.md ] || { echo "Plugins em dia."; exit 0; }
+          title="Plugins do ZIP: versão nova disponível"
+          if [ -n "$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number')" ]; then
+            echo "Já existe uma issue aberta sobre isso."; exit 0
+          fi
+          {
+            echo "O workflow mensal achou versões novas dos plugins que vão no ZIP da versão:"
+            echo
+            cat novidades.md
+            echo
+            echo "Para atualizar (nada muda sozinho):"
+            echo "1. Leia as notas da versão e confira se o plugin continua compatível."
+            echo "2. Baixe \`manifest.json\`, \`main.js\` e \`styles.css\` do release oficial e grave a versão e os SHA-256 em \`.github/plugins/plugins.lock\`."
+            echo "3. Rode \`node .github/tests/checks.js\`, teste no aparelho e publique uma versão nova da Game Library."
+          } > corpo.md
+          gh issue create --title "$title" --body-file corpo.md

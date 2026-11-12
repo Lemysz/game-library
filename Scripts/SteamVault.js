@@ -760,7 +760,7 @@ class SteamVault {
 			"add-game", "random-game", "legacy", "toggle-sidebar", "open-drawer", "close-drawer", "shelf-prev", "shelf-next",
 			"repair-names", "collection-games", "open-category", "identity-edit", "smart-back",
 			"ra-connect", "ra-sync", "ra-sync-force", "ra-sync-game", "ra-import-game", "ra-import-all", "ra-disconnect", "obs", "search-open", "search-close", "live-toggle", "live-stop", "live-pause", "queue-toggle", "queue-manage",
-			"steam-import", "steam-art", "steam-art-all", "steam-details", "ach-target", "goals-edit", "stories", "picker", "wishlist-prices", "wishlist-import", "wish-target", "wish-bought", "onboard-hide", "onboard-show", "show-more", "backup-now", "backup-snooze", "csv-import", "library-health", "csv-export", "undo-last", "month-dismiss", "smart-collection",
+			"steam-import", "steam-art", "steam-art-all", "steam-details", "wikidata-details", "ach-target", "goals-edit", "stories", "picker", "wishlist-prices", "wishlist-import", "wish-target", "wish-bought", "onboard-hide", "onboard-show", "show-more", "backup-now", "backup-snooze", "csv-import", "library-health", "csv-export", "undo-last", "month-dismiss", "smart-collection",
 			"ach-config", "ach-unlock", "ach-migrate", "ach-icons-local", "skip-content", "ach-manage", "ach-manage-pick", "hub-open", "ach-bulk",
 			"plat-connect", "plat-sync", "plat-sync-game", "plat-disconnect", "plat-import", "plat-import-list", "secrets-wipe", "share-card", "feature-toggle"].includes(a);
 	}
@@ -844,6 +844,7 @@ class SteamVault {
 			case "steam-import": return this.steamImport(ctx, el.dataset.appid || null, el);
 			case "steam-art": this._closeMenus(root); return this.steamArt(ctx, path ? [path] : null, el);
 			case "steam-details": this._closeMenus(root); return this.steamDetails(ctx, path);
+			case "wikidata-details": this._closeMenus(root); return this.wikidataDetails(ctx, path);
 			case "steam-art-all": return this.steamArt(ctx, null, el);
 			case "ach-target": return ctx.X?.toggleTarget(el);
 			case "goals-edit": return ctx.X?.openGoalsEditor(ctx);
@@ -2953,10 +2954,19 @@ class SteamVault {
 			{ k: "releaseDate", label: "Data de lançamento", cur: C.iso(fm.releaseDate) || "", val: relIso },
 			{ k: "summary", label: "Sinopse", cur: str(fm.summary), val: clean(d.short_description) }
 		].filter(r => Array.isArray(r.val) ? r.val.length : str(r.val));
+		return this._detailsReview(ctx, { g, f, rows, title: "Completar dados pela Steam", same: "Os dados da ficha já batem com a Steam", none: "A loja Steam não tem esses dados para este jogo", done: n => `${U.plural(n, "campo atualizado", "campos atualizados")} com os dados da Steam`, log: "Steam" });
+	}
+
+	// janela de revisão de "Completar dados" (Steam e Wikidata): mostra só o que
+	// difere da ficha; campos vazios vêm marcados, os preenchidos só mudam se a
+	// pessoa marcar. `extra` vai junto na gravação (ex.: o ID do Wikidata).
+	_detailsReview(ctx, { g, f, rows, title, same: sameMsg, none, done, log, note = "", extra = null }) {
+		const { U, C } = ctx;
+		const str = v => (v === undefined || v === null ? "" : String(v)).trim();
 		const show = v => Array.isArray(v) ? v.join(", ") : str(v);
 		const same = r => C.normalizeKey(show(r.cur)) === C.normalizeKey(show(r.val));
 		const todo = rows.filter(r => !same(r));
-		if (!todo.length) return this.toast(rows.length ? "Os dados da ficha já batem com a Steam" : "A loja Steam não tem esses dados para este jogo", { tone: rows.length ? "ok" : "warn" });
+		if (!todo.length) return this.toast(rows.length ? sameMsg : none, { tone: rows.length ? "ok" : "warn" });
 		const body = document.createElement("div");
 		body.className = "sv-sdetails";
 		body.innerHTML = `<p class="sv-sdetails-intro">Marque o que deve ir para a ficha. Campos vazios já vêm marcados; os preenchidos só mudam se você marcar.</p>
@@ -2965,21 +2975,132 @@ class SteamVault {
 				<span class="sv-sdetails-text"><b>${U.esc(r.label)}</b>
 					<span class="sv-sdetails-new">${U.esc(r.k === "releaseDate" ? U.fmtDate(r.val) : show(r.val))}</span>
 					<small>${empty ? "Vazio na ficha" : `Na ficha: ${U.esc(r.k === "releaseDate" ? U.fmtDate(r.cur) : show(r.cur))}`}</small></span>
-			</label></li>`; }).join("")}</ul>`;
-		const m = this.modal({ title: "Completar dados pela Steam", sub: g.title, size: "sm", body, actions: `${U.btn("Cancelar", { kind: "ghost", attrs: "data-close" })}${U.btn("Aplicar", { kind: "primary", icon: "check", attrs: "data-sd-apply" })}` });
+			</label></li>`; }).join("")}</ul>${note ? `<p class="sv-sdetails-note">${U.esc(note)}</p>` : ""}`;
+		const m = this.modal({ title, sub: g.title, size: "sm", body, actions: `${U.btn("Cancelar", { kind: "ghost", attrs: "data-close" })}${U.btn("Aplicar", { kind: "primary", icon: "check", attrs: "data-sd-apply" })}` });
 		m.el.querySelector("[data-sd-apply]").addEventListener("click", async () => {
 			const pick = [...body.querySelectorAll("[data-sd]:checked")].map(x => todo[Number(x.dataset.sd)]);
 			if (!pick.length) { m.close(); return; }
 			try {
-				await app.fileManager.processFrontMatter(f, front => { for (const r of pick) front[r.k] = Array.isArray(r.val) ? [...r.val] : r.val; });
+				await app.fileManager.processFrontMatter(f, front => {
+					for (const r of pick) front[r.k] = Array.isArray(r.val) ? [...r.val] : r.val;
+					if (extra) for (const [k, v] of Object.entries(extra)) front[k] = v;
+				});
 				m.close();
-				this.toast(`${U.plural(pick.length, "campo atualizado", "campos atualizados")} com os dados da Steam`, { tone: "ok", icon: "check" });
+				this.toast(done(pick.length), { tone: "ok", icon: "check" });
 				C.invalidate?.();
 				this.refresh();
 			} catch (err) {
-				console.error("Game Library: completar dados pela Steam", err);
+				console.error(`Game Library: completar dados (${log})`, err);
 				this.toast("Não foi possível gravar na ficha", { tone: "error" });
 			}
+		});
+	}
+
+	// ============================================== Completar dados pelo Wikidata
+	// Base aberta (CC0), sem chave e sem conta. Uma consulta SPARQL busca o nome,
+	// filtra só o que é jogo (Q7889) e traz o ano; outra traz estúdio,
+	// distribuidora, gêneros (só os que o Wikidata classifica como gênero de
+	// jogo) e a primeira data de lançamento. Só query.wikidata.org; textos
+	// cortados e com escape; nada é gravado sem a pessoa confirmar.
+	async _wdSparql(query) {
+		const request = globalThis?.customJS?.obsidian?.requestUrl || globalThis?.requestUrl || globalThis?.app?.requestUrl;
+		if (typeof request !== "function") return { code: "network" };
+		const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`;
+		let res;
+		try {
+			res = await Promise.race([
+				request({ url, method: "GET", throw: false, headers: { Accept: "application/sparql-results+json", "User-Agent": "GameLibrary/1.2 (Obsidian vault; https://obsidian.md)" } }),
+				new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 25000))
+			]);
+		} catch (_) { return { code: "network" }; }
+		if (res?.status === 429) return { code: "busy" };
+		if (!res || res.status < 200 || res.status >= 300) return { code: "network" };
+		if (String(res.text ?? "").length > 2e6) return { code: "network" };
+		try {
+			const j = typeof res.json === "object" && res.json !== null ? res.json : JSON.parse(String(res.text ?? ""));
+			return { rows: Array.isArray(j?.results?.bindings) ? j.results.bindings : [] };
+		} catch (_) { return { code: "network" }; }
+	}
+
+	async wikidataDetails(ctx, path) {
+		const { U, C } = ctx;
+		const g = ctx.model.gamesByPath.get(path);
+		const f = g && app.vault.getAbstractFileByPath(path);
+		if (!f) return this.toast("Ficha não encontrada", { tone: "error" });
+		const fm = app.metadataCache?.getFileCache?.(f)?.frontmatter || ctx.dv?.page?.(path) || {};
+		const str = v => (v === undefined || v === null ? "" : String(v)).trim();
+		const arr = v => (Array.isArray(v) ? v : v ? [v] : []).map(x => str(x)).filter(Boolean);
+		const val = (b, k) => C.clip(str(b?.[k]?.value), 160);
+		const qid = b => (/\/entity\/(Q\d{1,12})$/.exec(str(b?.item?.value)) || [])[1] || "";
+		const fail = code => this.toast(code === "busy" ? "O Wikidata pediu uma pausa. Tente de novo em alguns segundos." : "Sem conexão com o Wikidata", { tone: "warn" });
+		const labels = 'SERVICE wikibase:label { bd:serviceParam wikibase:language "pt-br,pt,mul,en". }';
+		const t = this.toast("Buscando no Wikidata…", { sticky: true, icon: "refresh" });
+		// 1. qual item: o ID já gravado na ficha ou a busca pelo nome
+		let id = /^Q\d{1,12}$/.test(str(fm.wikidataId)) ? str(fm.wikidataId) : "";
+		if (!id) {
+			const name = C.clip(String(g.title || "").replace(/["\\\r\n]/g, " "), 120);
+			const r = await this._wdSparql(`SELECT ?item ?itemLabel ?itemDescription (YEAR(MIN(?d)) AS ?ano) WHERE { SERVICE wikibase:mwapi { bd:serviceParam wikibase:endpoint "www.wikidata.org"; wikibase:api "EntitySearch"; mwapi:search "${name}"; mwapi:language "pt"; mwapi:limit "12". ?item wikibase:apiOutputItem mwapi:item. } ?item wdt:P31/wdt:P279* wd:Q7889 . OPTIONAL { ?item wdt:P577 ?d } ${labels} } GROUP BY ?item ?itemLabel ?itemDescription`);
+			if (r.code) { t.close(0); return fail(r.code); }
+			const want = C.normalizeKey(g.title), year = Number(fm.releaseYear) || 0;
+			const list = [...new Map(r.rows.map(b => [qid(b), { id: qid(b), label: val(b, "itemLabel"), desc: val(b, "itemDescription"), year: Number(val(b, "ano")) || 0 }])).values()].filter(c => c.id && c.label);
+			for (const c of list) c.score = (C.normalizeKey(c.label) === want ? 4 : 0) + (year && c.year === year ? 3 : 0) + (year && c.year && Math.abs(c.year - year) <= 1 ? 1 : 0);
+			list.sort((a, b) => b.score - a.score || (a.year || 9999) - (b.year || 9999));
+			t.close(0);
+			if (!list.length) return this.toast("Nenhum jogo com esse nome no Wikidata", { tone: "warn" });
+			const sure = list.length === 1 || (list[0].score >= 7 && list[1].score < 7);
+			id = sure ? list[0].id : await this._wdPick(ctx, g, list.slice(0, 8));
+			if (!id) return;
+		} else t.close(0);
+		// 2. os dados do item escolhido (o aviso some assim que eles chegam)
+		const t2 = this.toast("Buscando no Wikidata…", { sticky: true, icon: "refresh" });
+		const r = await this._wdSparql(`SELECT ?devLabel ?pubLabel ?genreLabel ?date ?prec WHERE { VALUES ?item { wd:${id} } OPTIONAL { ?item wdt:P178 ?dev } OPTIONAL { ?item wdt:P123 ?pub } OPTIONAL { ?item wdt:P136 ?genre . ?genre wdt:P31 wd:Q659563 } OPTIONAL { ?item p:P577/psv:P577 [ wikibase:timeValue ?date; wikibase:timePrecision ?prec ] } ${labels} }`);
+		t2.close(0);
+		if (r.code) return fail(r.code);
+		const pick = k => [...new Set(r.rows.map(b => val(b, k)).filter(x => x && !/^Q\d+$/.test(x)))];
+		// lançamento: a data mais antiga; dia só quando o Wikidata tem o dia (precisão 11)
+		const dates = r.rows.map(b => ({ d: (/^(\d{4})-(\d{2})-(\d{2})/.exec(val(b, "date")) || []), p: Number(val(b, "prec")) || 0 })).filter(x => x.d[1]).sort((a, b) => a.d[0].localeCompare(b.d[0]));
+		const first = dates[0];
+		const rows = [
+			{ k: "genre", label: "Gêneros", cur: arr(fm.genre), val: this._wdGenres(ctx, pick("genreLabel")).slice(0, 4) },
+			{ k: "developer", label: "Desenvolvedora", cur: str(fm.developer), val: pick("devLabel").slice(0, 3).join(", ") },
+			{ k: "publisher", label: "Publicadora", cur: str(fm.publisher), val: pick("pubLabel").slice(0, 2).join(", ") },
+			{ k: "releaseYear", label: "Ano de lançamento", cur: str(fm.releaseYear), val: first ? Number(first.d[1]) : "" },
+			{ k: "releaseDate", label: "Data de lançamento", cur: C.iso(fm.releaseDate) || "", val: first && first.p >= 11 ? `${first.d[1]}-${first.d[2]}-${first.d[3]}` : "" }
+		].filter(row => Array.isArray(row.val) ? row.val.length : str(row.val));
+		return this._detailsReview(ctx, { g, f, rows, title: "Completar dados pelo Wikidata", same: "Os dados da ficha já batem com o Wikidata", none: "O Wikidata não tem esses dados para este jogo", done: n => `${U.plural(n, "campo atualizado", "campos atualizados")} com os dados do Wikidata`, log: "Wikidata", note: "Dados do Wikidata, base aberta de domínio público (CC0).", extra: { wikidataId: id } });
+	}
+
+	// "jogo eletrônico de ação-aventura" → "Ação-aventura"; se o vault já tem um
+	// gênero com esse nome (ou "Hack & Slash" × "hack and slash"), usa a grafia dele
+	_wdGenres(ctx, labels) {
+		const { C, model } = ctx;
+		const key = s => C.normalizeKey(String(s).replace(/&/g, " and "));
+		const known = new Map();
+		for (const x of [...(model.genres || []).map(p => p.title), ...model.games.flatMap(gm => [...(gm.genres || [])])]) if (x) known.set(key(x), x);
+		const out = [];
+		for (const raw of labels) {
+			let s = String(raw).trim().replace(/^(jogos? eletr[oô]nicos? de|jogos? de|videojogos? de)\s+/i, "").replace(/\s+eletr[oô]nico$/i, "").trim();
+			if (!s) continue;
+			s = known.get(key(s)) || s.charAt(0).toUpperCase() + s.slice(1);
+			if (!out.some(x => key(x) === key(s))) out.push(s);
+		}
+		return out;
+	}
+
+	// vários jogos com o mesmo nome (edições, remakes): a pessoa escolhe
+	_wdPick(ctx, g, list) {
+		const { U } = ctx;
+		return new Promise(resolve => {
+			const body = document.createElement("div");
+			body.className = "sv-sdetails";
+			body.innerHTML = `<p class="sv-sdetails-intro">Há mais de um jogo com esse nome. Escolha o certo.</p>
+				<ul class="sv-sdetails-list">${list.map((c, i) => `<li><label class="sv-sdetails-row">
+					<input type="radio" name="sv-wd-pick" data-wd="${i}"${i === 0 ? " checked" : ""}>
+					<span class="sv-sdetails-text"><b>${U.esc(c.label)}${c.year ? ` · ${c.year}` : ""}</b><small>${U.esc(c.desc || c.id)}</small></span>
+				</label></li>`).join("")}</ul>`;
+			let chosen = "";
+			const m = this.modal({ title: "Qual destes é o jogo?", sub: g.title, size: "sm", body, onClose: () => resolve(chosen), actions: `${U.btn("Cancelar", { kind: "ghost", attrs: "data-close" })}${U.btn("Continuar", { kind: "primary", attrs: "data-wd-go" })}` });
+			m.el.querySelector("[data-wd-go]").addEventListener("click", () => { chosen = list[Number(body.querySelector("[data-wd]:checked")?.dataset.wd)]?.id || ""; m.close(); });
 		});
 	}
 

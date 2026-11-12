@@ -23,6 +23,25 @@ node checks.js && node icons.js && node smoke.js && node responsive.js && node f
 O GitHub Actions roda os mesmos testes em cada envio. Mudanças de interface precisam passar em
 320, 360, 390 e 430 px e no desktop, nos temas claro e escuro (`responsive.js`).
 
+### No aparelho (antes de lançar uma versão)
+
+O harness simula o Obsidian; ele não pega tudo o que acontece no Android. Com o ZIP da versão num
+vault **novo**, no celular, confira em poucos minutos:
+
+1. Abrir a pasta como vault e **confiar**: Dataview e CustomJS já aparecem ativados.
+2. A tela de carregamento aparece só na abertura e some sozinha (no máximo 25 s).
+3. Trocar de aba pela barra inferior (Início, Biblioteca, Conquistas, Perfil): sem tela de
+   carregamento no meio e com as animações de entrada.
+4. Biblioteca: buscar por nome e por plataforma, aplicar e remover um filtro (status e subgênero).
+5. Abrir uma ficha, favoritar e desfavoritar, trocar as abas da ficha.
+6. Na ficha, *⋯ → Completar dados pelo Wikidata*: a revisão aparece e *Cancelar* não grava nada.
+7. Girar o celular e voltar: nada cortado nem fora da tela.
+8. Modo inglês (Configurações): as telas principais traduzidas.
+9. Fechar o Obsidian por completo e abrir de novo: a Início abre direto.
+10. Configurações mostra a versão certa.
+
+Anote o aparelho e a versão do Android no PR ou na issue.
+
 ## Estilo
 
 - Código, comentários e textos em português do Brasil; frase nova visível → tradução em
