@@ -11,6 +11,7 @@
 # .github/readme/ fica no ZIP: são as imagens do README.md.
 .github/tests/ export-ignore
 .github/tools/ export-ignore
+.github/plugins/ export-ignore
 .github/workflows/ export-ignore
 .github/ISSUE_TEMPLATE/ export-ignore
 .github/pull_request_template.md export-ignore

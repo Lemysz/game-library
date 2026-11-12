@@ -6,6 +6,19 @@ repositório (e no ZIP da versão) e **o que não é**, com a licença verificad
 > Licença do próprio projeto: **ainda não definida** — todos os direitos reservados ao autor até que
 > uma licença seja escolhida. Nada nesta página concede licença sobre o código da Game Library.
 
+## Redistribuído só no ZIP da versão (plugins obrigatórios)
+
+O código destes plugins **não** está no repositório. O workflow de versões baixa os arquivos do
+release oficial de cada um, numa versão fixa, confere o SHA-256 listado em
+[`.github/plugins/plugins.lock`](.github/plugins/plugins.lock) e os coloca no ZIP em
+`.obsidian/plugins/<id>/`, com o texto da licença ao lado (`LICENSE`). Do `main.js` sai só o
+*source map* embutido, como o próprio Obsidian faz ao instalar pela loja; o código não muda.
+
+| Componente | Versão | Uso | Licença | Fonte |
+|---|---|---|---|---|
+| [Dataview](https://github.com/blacksmithgu/obsidian-dataview) | 0.5.68 | Executa os blocos `dataviewjs` de cada tela | MIT — © 2021 Michael Brenan ([texto](.github/plugins/dataview.LICENSE.txt)) | Release oficial no GitHub |
+| [CustomJS](https://github.com/saml-dev/obsidian-custom-js) | 1.0.21 | Carrega os scripts de `Scripts/` | MIT — © 2021 Sam Lewis ([texto](.github/plugins/customjs.LICENSE.txt)) | Release oficial no GitHub |
+
 ## Não redistribuído (instalado pelo próprio Obsidian)
 
 O código destes plugins e do tema **não** está no repositório nem no ZIP. Cada pessoa instala pelo
@@ -15,8 +28,6 @@ própria do projeto.
 
 | Componente | Uso | Obrigatório | Licença | Fonte |
 |---|---|---|---|---|
-| [Dataview](https://github.com/blacksmithgu/obsidian-dataview) | Executa os blocos `dataviewjs` de cada tela | Sim | MIT (verificada no pacote npm e no cabeçalho do bundle) | Plugins da comunidade |
-| [CustomJS](https://github.com/saml-dev/obsidian-custom-js) | Carrega os scripts de `Scripts/` | Sim | Não verificada nesta sessão (consultar o repositório oficial) | Plugins da comunidade |
 | [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) | Ajustes visuais do snippet | Recomendado | Não verificada nesta sessão (consultar o repositório oficial) | Plugins da comunidade |
 | [Templater](https://github.com/SilentVoid13/Templater) | Modelos opcionais em `*/_Templates/` | Opcional | Não verificada nesta sessão (consultar o repositório oficial) | Plugins da comunidade |
 | [Minimal](https://github.com/kepano/obsidian-minimal) (tema) | Tema configurado em `appearance.json` | Opcional | MIT (cabeçalho do `theme.css`) | Temas da comunidade |
