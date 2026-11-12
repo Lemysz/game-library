@@ -9,7 +9,17 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Adicionado
+- **Completar dados pelo Wikidata** (ficha › ⋯): estúdio, distribuidora, gêneros, ano e data de
+  lançamento para jogos de qualquer plataforma, não só da Steam. Base aberta de domínio público
+  (CC0), sem chave e sem conta. Mostra a mesma revisão do *Completar dados pela Steam*: campos vazios
+  vêm marcados, os preenchidos só mudam se você marcar. Com várias edições do mesmo nome (remakes,
+  versões), escolhe pela data da ficha ou pergunta qual é. Os gêneros chegam limpos e com a grafia
+  dos gêneros que já existem no vault; o ID do item fica na ficha (`wikidataId`) para as próximas vezes.
+  Se o Wikidata pedir uma pausa, o app avisa e não grava nada.
+- **Aviso de versões novas dos plugins:** um workflow mensal (`plugins.yml`) confere se o Dataview e o
+  CustomJS têm versão nova e, se tiverem, abre uma issue com o passo a passo. Nada é atualizado sozinho.
+- **Roteiro de teste no aparelho** em CONTRIBUTING.md: 10 verificações rápidas antes de lançar.
 
 ## [1.2.1] · 2026-11-12
 
