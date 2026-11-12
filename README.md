@@ -125,8 +125,8 @@ Sem servidor, sem conta e sem banco de dados: tudo são arquivos Markdown e imag
 
 | Plugin | Situação | Para quê |
 |---|---|---|
-| Dataview | **Obrigatório** | Executa as telas (`dataviewjs`). A configuração do vault já liga *Enable JavaScript Queries* |
-| CustomJS | **Obrigatório** | Carrega os scripts de `Scripts/` (já configurado) |
+| Dataview | **Obrigatório** · já vem no ZIP | Executa as telas (`dataviewjs`). A configuração do vault já liga *Enable JavaScript Queries* |
+| CustomJS | **Obrigatório** · já vem no ZIP | Carrega os scripts de `Scripts/` (já configurado) |
 | Style Settings | Recomendado | Ajustes de cor, densidade e do modo aplicativo |
 | Templater | Opcional | Modelos em `*/_Templates/`; os botões do app fazem o mesmo sem ele |
 | Tema Minimal | Opcional | Tema configurado no vault; sem ele, o Obsidian usa o tema padrão |
@@ -139,11 +139,11 @@ Sem servidor, sem conta e sem banco de dados: tudo são arquivos Markdown e imag
    (é preciso estar conectado ao GitHub com acesso a este repositório privado).
 2. Descompacte. No **Android**, use uma pasta acessível ao Obsidian (ex.: `Documentos/`).
 3. No Obsidian: **Abrir pasta como vault** → escolha a pasta `Game_Library` → **Confiar no autor e
-   ativar plugins**.
-4. Em **Configurações › Plugins da comunidade › Procurar**, instale e ative **Dataview** e **CustomJS**
-   (e, se quiser, **Style Settings** e **Templater**). As configurações deles já estão no vault.
-5. Feche e abra o Obsidian. Abra `Dashboard/Home` — na primeira vez, os **primeiros passos** levam do
-   vault vazio à biblioteca pronta.
+   ativar plugins**. O **Dataview** e o **CustomJS** já vêm no ZIP, configurados e ativados.
+4. Opcional: em **Configurações › Plugins da comunidade › Procurar**, instale **Style Settings** e
+   **Templater**. As configurações deles já estão no vault.
+5. Abra `Dashboard/Home` — na primeira vez, os **primeiros passos** levam do vault vazio à biblioteca
+   pronta.
 
 > [!TIP]
 > Para conectar a Steam, abra **Integrações** e informe o link do seu perfil público. A tela de
