@@ -55,6 +55,7 @@ Parte dos desenhos vem de bibliotecas abertas, sem alteração de desenho (só a
 
 | Recurso | Uso | Licença |
 |---|---|---|
+| [Wikidata](https://www.wikidata.org) | Dados de *Completar dados pelo Wikidata* (estúdio, distribuidora, gêneros, datas), só quando a pessoa pede | CC0 1.0 (dados estruturados do Wikidata) |
 | [Archivo](https://fonts.google.com/specimen/Archivo) e [IBM Plex Sans](https://fonts.google.com/specimen/IBM+Plex+Sans) | Tipografia do snippet, via `@import` do Google Fonts | SIL Open Font License 1.1 |
 
 Sem internet, o snippet usa fontes do sistema (`Bahnschrift`, `Segoe UI`, `Roboto`…). O

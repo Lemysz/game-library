@@ -256,6 +256,49 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		await p.evaluate(([path, o]) => { const x = __PAGES.find(y => y.path === path); x.fm.publisher = o.publisher; delete x.fm.releaseDate; window.__mockReq = null; customJS.SteamVaultCore.invalidate?.(); }, [RE, orig]);
 	}
 
+	// ---- Completar dados pelo Wikidata (respostas simuladas; o CI não depende da internet)
+	{
+		const RE = "Games/PC/Resident Evil 4.md";
+		const orig = await fm(RE);
+		const b = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, { value: String(v) }]));
+		await p.evaluate(([path, search, details]) => {
+			const x = __PAGES.find(y => y.path === path); x.fm.publisher = ""; x.fm.genre = []; delete x.fm.wikidataId;
+			window.__wdUrls = [];
+			window.__mockReq = async u => {
+				window.__wdUrls.push(u);
+				if (window.__wdBusy) return { status: 429, headers: {}, text: "too many" };
+				const q = decodeURIComponent(new URL(u).searchParams.get("query") || "");
+				const rows = /EntitySearch/.test(q) ? search : details;
+				return { status: 200, headers: {}, text: JSON.stringify({ results: { bindings: rows } }) };
+			};
+			customJS.SteamVaultCore.invalidate?.();
+		}, [RE,
+			[b({ item: "http://www.wikidata.org/entity/Q275950", itemLabel: "Resident Evil 4", itemDescription: "jogo de 2005", ano: 2005 }), b({ item: "http://www.wikidata.org/entity/Q112231148", itemLabel: "Resident Evil 4", itemDescription: "jogo de 2023", ano: 2023 }), b({ item: "http://www.wikidata.org/entity/Q1", itemLabel: "Resident Evil 4 <img src=x onerror=alert(1)>", itemDescription: "edição", ano: 2014 })],
+			[b({ devLabel: "Capcom", pubLabel: "Capcom", genreLabel: "jogo eletrônico de ação", date: "2023-03-24T00:00:00Z", prec: 11 }), b({ devLabel: "Capcom", pubLabel: "Q999", genreLabel: "Survival horror", date: "2023-03-24T00:00:00Z", prec: 11 })]]);
+		await go(RE);
+		check("ficha: menu tem \"Completar dados pelo Wikidata\"", await count('[data-action="wikidata-details"]') === 1);
+		await openAction({ action: "wikidata-details", path: RE }); await p.waitForTimeout(900);
+		const rowsWd = await p.evaluate(() => [...document.querySelectorAll(".sv-sdetails-row")].map(r => ({ b: r.querySelector("b").textContent, on: r.querySelector("input").checked, v: r.querySelector(".sv-sdetails-new").textContent })));
+		check("Wikidata: com o ano da ficha, escolhe sozinho a edição certa e mostra a revisão", !(await count("[data-wd-go]")) && rowsWd.length >= 2, JSON.stringify(rowsWd));
+		check("Wikidata: só os campos vazios vêm marcados; gêneros limpos; ID sem nome é ignorado", rowsWd.filter(r => r.on).map(r => r.b).join("|") === "Gêneros|Publicadora|Data de lançamento" && (rowsWd.find(r => r.b === "Gêneros")?.v || "") === "Ação, Survival horror" && (rowsWd.find(r => r.b === "Publicadora")?.v || "") === "Capcom", JSON.stringify(rowsWd));
+		await click("[data-sd-apply]"); await p.waitForTimeout(600);
+		const afterWd = await fm(RE);
+		check("Wikidata: grava só o marcado, guarda o wikidataId e preserva o resto", afterWd.publisher === "Capcom" && afterWd.releaseDate === "2023-03-24" && JSON.stringify(afterWd.genre) === JSON.stringify(["Ação", "Survival horror"]) && afterWd.wikidataId === "Q112231148" && afterWd.developer === orig.developer && afterWd.summary === orig.summary, JSON.stringify({ p: afterWd.publisher, g: afterWd.genre, id: afterWd.wikidataId }));
+		check("Wikidata: só fala com query.wikidata.org", await p.evaluate(() => window.__wdUrls.length > 0 && window.__wdUrls.every(u => new URL(u).hostname === "query.wikidata.org")));
+		// sem ano na ficha e sem ID: várias edições → a pessoa escolhe (nome com HTML vira texto)
+		await p.evaluate(path => { const x = __PAGES.find(y => y.path === path); delete x.fm.wikidataId; x.fm.releaseYear = ""; customJS.SteamVaultCore.invalidate?.(); }, RE);
+		await go(RE);
+		await openAction({ action: "wikidata-details", path: RE }); await p.waitForTimeout(900);
+		check("Wikidata: várias edições com o mesmo nome → janela para escolher, sem interpretar HTML", await count("[data-wd-go]") === 1 && await count('.sv-modal-root img[src="x"]') === 0 && await p.evaluate(() => [...document.querySelectorAll(".sv-sdetails-row b")].some(b => b.textContent.includes("<img"))));
+		await closeModal();
+		// limite do Wikidata: aviso e nada gravado
+		await p.evaluate(path => { const x = __PAGES.find(y => y.path === path); delete x.fm.wikidataId; window.__wdBusy = true; customJS.SteamVaultCore.invalidate?.(); }, RE);
+		const before429 = JSON.stringify(await fm(RE));
+		await openAction({ action: "wikidata-details", path: RE }); await p.waitForTimeout(900);
+		check("Wikidata: limite (429) vira aviso amigável e não grava nada", await p.evaluate(() => [...document.querySelectorAll(".sv-toast")].some(t => /pausa/.test(t.textContent))) && JSON.stringify(await fm(RE)) === before429);
+		await p.evaluate(([path, o]) => { const x = __PAGES.find(y => y.path === path); for (const k of Object.keys(x.fm)) delete x.fm[k]; Object.assign(x.fm, o); window.__mockReq = null; window.__wdBusy = false; customJS.SteamVaultCore.invalidate?.(); }, [RE, orig]);
+	}
+
 	// ---- busca avançada da Biblioteca (3.64.0)
 	await go("Dashboard/Biblioteca.md");
 	const libCount = async () => visible(".sv-library .sv-grid > .sv-card");

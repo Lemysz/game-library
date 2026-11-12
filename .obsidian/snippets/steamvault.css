@@ -9153,6 +9153,7 @@ body.is-mobile .sv-modal-root { --sv-ctl-h: 44px; }
    52. Completar dados pela Steam (3.63.0)
    ========================================================================== */
 .sv-sdetails-intro { margin: 0 0 14px; font-size: var(--sv-fs-small); line-height: 1.45; color: var(--sv-text-2); }
+.sv-sdetails-note { margin: 14px 0 0; font-size: var(--sv-fs-micro); line-height: 1.45; color: var(--sv-muted); }
 .sv-sdetails-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .sv-sdetails-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: var(--sv-radius-lg); background: var(--sv-surface); box-shadow: inset 0 0 0 1px var(--sv-line); cursor: pointer; transition: box-shadow var(--sv-t-fast) var(--sv-ease), background-color var(--sv-t-fast) var(--sv-ease); }
 .sv-sdetails-row:has(input:checked) { background: color-mix(in srgb, var(--sv-accent, var(--sv-blue)) 9%, var(--sv-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sv-accent, var(--sv-blue)) 45%, transparent); }
