@@ -11,6 +11,18 @@ versões menores.
 
 Nada ainda.
 
+## [1.3.1] · 2026-11-13
+
+Ajustes visuais nas telas de integração. Sem mudança no formato das notas.
+
+### Alterado
+- **Telas de integração mais parecidas entre si**: o botão *Importar jogos* da Epic agora é azul
+  (antes branco, destoava das outras plataformas); o topo do Perfil Steam sem fundo de perfil ganhou
+  o mesmo brilho na cor da plataforma dos perfis Xbox/PlayStation/Nintendo.
+- **Perfis manuais sem jogos** (Xbox, PlayStation, Nintendo, Epic, Google Play): no lugar de vários
+  números "—", uma frase só ("Importe ou adicione jogos para ver seus números aqui"); o botão
+  *Importar jogos* não aparece mais repetido no aviso de lista vazia.
+
 ## [1.3.0] · 2026-11-12
 
 Dados dos jogos de qualquer plataforma pelo Wikidata. Sem mudança no formato das notas (só o campo novo opcional `wikidataId`).
@@ -211,7 +223,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.3.0...HEAD
+[Não lançado]: ../../compare/v1.3.1...HEAD
+[1.3.1]: ../../releases/tag/v1.3.1
 [1.3.0]: ../../releases/tag/v1.3.0
 [1.2.1]: ../../releases/tag/v1.2.1
 [1.2.0]: ../../releases/tag/v1.2.0

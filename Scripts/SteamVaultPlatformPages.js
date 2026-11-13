@@ -502,7 +502,7 @@ class SteamVaultPlatformPages {
 						<span class="sv-plathero-kicker"><i aria-hidden="true"></i>${U.esc(p.label)} · manual</span>
 						<h1>${U.esc(cfg.name || `Perfil ${p.label}`)}</h1>
 						<p class="sv-meta"><span>${cfg.name ? "Nome informado por você (não verificado)" : "Sem leitura automática legítima: o perfil é montado com o que está no vault"}</span></p>
-						<dl class="sv-figures sv-plathero-figs">${figs.map(([l, v]) => `<div class="sv-figure"><dt>${U.esc(l)}</dt><dd>${v}</dd></div>`).join("")}</dl>
+						${games.length ? `<dl class="sv-figures sv-plathero-figs">${figs.map(([l, v]) => `<div class="sv-figure"><dt>${U.esc(l)}</dt><dd>${v}</dd></div>`).join("")}</dl>` : `<p class="sv-plathero-hint">${U.icon("chart")}<span>Importe ou adicione jogos para ver seus números aqui.</span></p>`}
 					</div>
 					<div class="sv-plathero-actions">
 						${U.btn("Importar jogos", { icon: "plus", kind: "primary", action: "plat-import-list", attrs: `data-platform="${id}"` })}
@@ -517,7 +517,7 @@ class SteamVaultPlatformPages {
 				<div class="sv-split">
 					<section class="sv-split-main">
 						${games.length ? `${U.sectionHead("Seus jogos", { count: games.length, sub: isNin ? "Jogos de qualquer console Nintendo do vault" : "", action: U.btn(isPs ? "Registrar troféus" : isNin ? "Registrar objetivos" : "Registrar conquistas", { icon: "edit", kind: "ghost", size: "sm", action: "ach-manage-pick", attrs: `data-provider="${p.provider}"` }) })}<div class="sv-achgames">${games.sort((a, b) => (b.lastPlayed.date || "").localeCompare(a.lastPlayed.date || "") || a.title.localeCompare(b.title)).map(g => ctx.H ? ctx.H.gameRow(ctx, g) : "").join("")}</div>`
-							: U.empty({ icon: "plus", title: `Nenhum jogo de ${p.label} ainda`, text: "Importe uma lista de títulos (um por linha) ou adicione jogos com a origem " + p.label + ".", action: U.btn("Importar jogos", { icon: "plus", kind: "primary", size: "sm", action: "plat-import-list", attrs: `data-platform="${id}"` }) })}
+							: U.empty({ icon: "plus", title: `Nenhum jogo de ${p.label} ainda`, text: "Use o botão Importar jogos acima (um título por linha) ou adicione jogos com a origem " + p.label + "." })}
 					</section>
 					<aside class="sv-split-side">
 						<section class="sv-surface sv-plat-why">
