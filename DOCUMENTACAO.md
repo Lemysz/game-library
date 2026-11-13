@@ -367,7 +367,8 @@ Segue o tema claro/escuro do Obsidian. Os heros continuam escuros no tema claro,
   - **Galeria:** deslize para o lado para trocar a imagem.
   - **Barra inferior:** a aba ativa ganha uma pílula.
   - **Vibração leve** (Android) ao favoritar, trocar de aba ou filtro, abrir o menu e dispensar janelas e avisos. Desligável em *Configurações → Vibração leve ao tocar*.
-- **Detalhes.** Favoritar faz o coração pulsar. Menus, busca, janelas (no celular, painel que sobe da borda) e avisos entram com uma mola curta.
+- **Comemorações.** Ao marcar um jogo como Zerado, a borda da capa acende em verde por dentro e a faixa de luz atravessa a arte; ao chegar a 100%, a borda acende em dourado e o selo carimba de novo (desligável em *Configurações → Comemoração na ficha ao zerar ou chegar a 100%*). Desbloquear uma conquista à mão acende a linha em verde. Cada uma acontece uma vez, logo depois da mudança.
+- **Detalhes.** Favoritar faz o coração pulsar. Listas recolhíveis abrem com o conteúdo descendo suave. Menus, busca, janelas (no celular, painel que sobe da borda) e avisos entram com uma mola curta.
 - **Regras.** Tudo roda uma vez e só anima posição/escala/transparência (GPU). Um re-render da mesma tela (salvar, sync, Dataview) troca o conteúdo sem animar nem piscar. *Reduzir animações* (ou a preferência do sistema) desliga tudo. A inclinação 3D pode ser desligada à parte em *Configurações → Inclinação 3D das capas*.
 
 Atalhos: `/` ou `Ctrl/Cmd + K` para buscar; `Esc` fecha menus e modais.

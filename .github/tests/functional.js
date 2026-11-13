@@ -299,6 +299,23 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		await p.evaluate(([path, o]) => { const x = __PAGES.find(y => y.path === path); for (const k of Object.keys(x.fm)) delete x.fm[k]; Object.assign(x.fm, o); window.__mockReq = null; window.__wdBusy = false; customJS.SteamVaultCore.invalidate?.(); }, [RE, orig]);
 	}
 
+	// ---- comemoração na ficha ao zerar (1.4.0) e a opção que desliga
+	{
+		const BU = "Games/PS2/Bully.md";
+		const prevSt = (await fm(BU)).status;
+		const mark = async st => { await p.evaluate(([x, st]) => { __PAGES.find(y => y.path === x).fm.status = st; customJS.SteamVaultCore.invalidate(); rerender(); }, [BU, st]); await p.waitForTimeout(450); };
+		await go(BU); await mark("Playing");
+		await mark("Completed");
+		check("ficha: zerar agora comemora no topo (is-cel-complete)", await count(".sv-hero.is-cel-complete") === 1);
+		await go("Dashboard/Configurações.md");
+		const sw = await count("[data-ui-celebrate]");
+		await p.evaluate(() => { const i = document.querySelector("[data-ui-celebrate]"); i.checked = false; i.dispatchEvent(new Event("change")); });
+		await go(BU); await mark("Playing"); await mark("Completed");
+		check("Configurações: desligar a comemoração da ficha funciona", sw === 1 && await count(".sv-hero.is-cel-complete") === 0 && await p.evaluate(() => customJS.SteamVaultUI._store("celebrate")) === "0");
+		await p.evaluate(() => customJS.SteamVaultUI._store("celebrate", "1"));
+		await mark(prevSt);
+	}
+
 	// ---- busca avançada da Biblioteca (3.64.0)
 	await go("Dashboard/Biblioteca.md");
 	const libCount = async () => visible(".sv-library .sv-grid > .sv-card");

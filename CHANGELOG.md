@@ -11,6 +11,23 @@ versões menores.
 
 Nada ainda.
 
+## [1.4.0] · 2026-11-13
+
+Animações que respondem às suas ações. Sem mudança no formato das notas.
+
+### Adicionado
+- **Comemoração ao zerar ou chegar a 100%**: logo depois da mudança, a borda da capa acende por dentro
+  (verde ao zerar, dourado no 100%) e a faixa de luz atravessa a arte; no 100%, o selo carimba de
+  novo. Tudo dentro da capa, uma vez, só na ficha que mudou. Para desligar: *Configurações ›
+  Comemoração na ficha ao zerar ou chegar a 100%*.
+- **Conquista desbloqueada à mão**: a linha acende em verde por um instante.
+- **Listas recolhíveis** (ex.: "O que sincroniza", "Ver toda a atividade", importação de CSV): o
+  conteúdo desce suave ao abrir.
+- **Perfis de plataforma** (Xbox, PlayStation, Nintendo, GOG, Epic, Google Play): o ícone do topo
+  entra como o avatar dos perfis Steam e RetroAchievements.
+
+Tudo respeita *Reduzir animações* (do app ou do sistema).
+
 ## [1.3.1] · 2026-11-13
 
 Ajustes visuais nas telas de integração. Sem mudança no formato das notas.
@@ -223,7 +240,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.3.1...HEAD
+[Não lançado]: ../../compare/v1.4.0...HEAD
+[1.4.0]: ../../releases/tag/v1.4.0
 [1.3.1]: ../../releases/tag/v1.3.1
 [1.3.0]: ../../releases/tag/v1.3.0
 [1.2.1]: ../../releases/tag/v1.2.1
