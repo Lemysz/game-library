@@ -9,6 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.4.0] · 2026-11-13
+
+Animações que respondem às suas ações. Sem mudança no formato das notas.
+
 ### Adicionado
 - **Comemoração ao zerar ou chegar a 100%**: logo depois da mudança, a borda da capa acende por dentro
   (verde ao zerar, dourado no 100%) e a faixa de luz atravessa a arte; no 100%, o selo carimba de
@@ -234,7 +240,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.3.1...HEAD
+[Não lançado]: ../../compare/v1.4.0...HEAD
+[1.4.0]: ../../releases/tag/v1.4.0
 [1.3.1]: ../../releases/tag/v1.3.1
 [1.3.0]: ../../releases/tag/v1.3.0
 [1.2.1]: ../../releases/tag/v1.2.1
