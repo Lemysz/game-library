@@ -3531,5 +3531,8 @@
 	"Gamerscore: cadastre as conquistas e os G na ficha do jogo (uma a uma ou em lote)": "Gamerscore: add the achievements and their G on the game page (one by one or in bulk)",
 	"Conquistas, G e ícones cadastrados por você na ficha do jogo, uma a uma ou em lote.": "Achievements, G and icons added by you on the game page, one by one or in bulk.",
 	"Você registra o que desbloqueou · Conquistas, G e ícones cadastrados por você na ficha do jogo, uma a uma ou em lote.": "You record what you unlocked · Achievements, G and icons added by you on the game page, one by one or in bulk.",
-	"Remove a Web API Key do RetroAchievements guardada neste aparelho. As fichas e o que já foi sincronizado continuam; para usar de novo, conecte outra vez.": "Removes the RetroAchievements Web API Key stored on this device. Game pages and what was already synced stay; to use it again, connect again."
+	"Remove a Web API Key do RetroAchievements guardada neste aparelho. As fichas e o que já foi sincronizado continuam; para usar de novo, conecte outra vez.": "Removes the RetroAchievements Web API Key stored on this device. Game pages and what was already synced stay; to use it again, connect again.",
+	"Importe ou adicione jogos para ver seus números aqui.": "Import or add games to see your numbers here.",
+	"Use o botão Importar jogos acima (um título por linha) ou adicione jogos com a origem {0}.": "Use the Import games button above (one title per line) or add games with the source {0}.",
+	"Use o botão Importar jogos acima (um título por linha) ou adicione jogos com a origem": "Use the Import games button above (one title per line) or add games with the source"
 }

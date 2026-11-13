@@ -9,7 +9,13 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Alterado
+- **Telas de integração mais parecidas entre si**: o botão *Importar jogos* da Epic agora é azul
+  (antes branco, destoava das outras plataformas); o topo do Perfil Steam sem fundo de perfil ganhou
+  o mesmo brilho na cor da plataforma dos perfis Xbox/PlayStation/Nintendo.
+- **Perfis manuais sem jogos** (Xbox, PlayStation, Nintendo, Epic, Google Play): no lugar de vários
+  números "—", uma frase só ("Importe ou adicione jogos para ver seus números aqui"); o botão
+  *Importar jogos* não aparece mais repetido no aviso de lista vazia.
 
 ## [1.3.0] · 2026-11-12
 
