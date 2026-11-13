@@ -10,8 +10,10 @@ versões menores.
 ## [Não lançado]
 
 ### Adicionado
-- **Comemoração ao zerar ou chegar a 100%**: logo depois da mudança, um anel de luz sai da capa no
-  topo da ficha (verde ao zerar, dourado no 100%) e, no 100%, o selo carimba de novo. Acontece uma
+- **Comemoração ao zerar ou chegar a 100%**: logo depois da mudança, a borda da capa acende por dentro, a
+  faixa de luz atravessa a arte e um brilho parte da capa em direção às informações, seguindo o lado
+  em que a capa está (verde ao zerar, dourado no 100%); no 100%, o selo carimba de novo. Nada sai
+  da tela. Acontece uma
   vez, só na ficha que mudou.
 - **Conquista desbloqueada à mão**: a linha acende em verde por um instante.
 - **Listas recolhíveis** (ex.: "O que sincroniza", "Ver toda a atividade", importação de CSV): o

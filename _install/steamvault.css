@@ -9337,21 +9337,38 @@ body.is-mobile .sv-modal-root { --sv-ctl-h: 44px; }
    Só animações que mostram o que acabou de mudar por uma ação sua; nada em
    loop. As regras de "Reduzir animações" (seção 20) desligam tudo aqui.
    ========================================================================== */
-@keyframes sv-cel-ring { from { opacity: 0.9; transform: scale(0.92); } to { opacity: 0; transform: scale(1.22); } }
+@property --sv-cel-p { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
 @keyframes sv-cel-tag { 0% { transform: scale(1); } 35% { transform: scale(1.14); } 100% { transform: scale(1); } }
+@keyframes sv-cel-edge { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes sv-cel-wave { 0% { opacity: 0; --sv-cel-p: 0%; } 30% { opacity: 1; } 100% { opacity: 0; --sv-cel-p: 42%; } }
 @keyframes sv-unlock-glow { from { background-color: color-mix(in srgb, var(--sv-green) 24%, var(--sv-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sv-green) 60%, transparent); } }
 @keyframes sv-open-in { from { opacity: 0; translate: 0 -6px; } to { opacity: 1; translate: 0 0; } }
 
-/* ficha que acabou de ser zerada (verde) ou chegar a 100% (dourado): um anel
-   de luz sai da capa; no 100%, o selo carimba de novo */
-.sv-hero.is-cel-complete .sv-hero-cover::after,
-.sv-hero.is-cel-perfect .sv-hero-cover::after {
-	content: ""; position: absolute; inset: -6px; z-index: 3; pointer-events: none;
-	border-radius: calc(var(--sv-radius) + 6px);
-	box-shadow: 0 0 0 3px var(--sv-green), 0 0 28px 4px color-mix(in srgb, var(--sv-green) 55%, transparent);
-	animation: sv-cel-ring 1100ms var(--sv-ease) 120ms both;
+/* ficha que acabou de ser zerada (verde) ou chegar a 100% (dourado). Nada sai
+   da capa para fora da tela: a borda acende por dentro, a faixa de luz das
+   capas atravessa a arte, e um brilho parte da capa em direção às
+   informações (para a direita com a capa à esquerda, para a esquerda com a
+   capa à direita, para os dois lados com o topo centralizado); no 100%, o
+   selo carimba de novo */
+.sv-hero.is-cel-complete, .sv-hero.is-cel-perfect { --sv-cel: var(--sv-green); --sv-cel-x: 18%; --sv-cel-a: 1; --sv-cel-b: 1; }
+.sv-hero.is-cel-perfect { --sv-cel: var(--sv-gold); }
+.sv-app[data-lay-game-cover="right"] .sv-hero--page:is(.is-cel-complete, .is-cel-perfect) { --sv-cel-x: 82%; --sv-cel-a: -1; --sv-cel-b: -1; }
+.sv-app[data-lay-game-align="center"] .sv-hero--page:is(.is-cel-complete, .is-cel-perfect) { --sv-cel-x: 50%; --sv-cel-a: 1; --sv-cel-b: -1; }
+.sv-hero:is(.is-cel-complete, .is-cel-perfect)::after {
+	content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+	background:
+		radial-gradient(55% 42% at calc(var(--sv-cel-x) + var(--sv-cel-p) * var(--sv-cel-a)) 66%, color-mix(in srgb, var(--sv-cel) 34%, transparent), transparent 70%),
+		radial-gradient(55% 42% at calc(var(--sv-cel-x) + var(--sv-cel-p) * var(--sv-cel-b)) 66%, color-mix(in srgb, var(--sv-cel) 20%, transparent), transparent 70%);
+	mix-blend-mode: screen;
+	animation: sv-cel-wave 1500ms var(--sv-ease) 100ms both;
 }
-.sv-hero.is-cel-perfect .sv-hero-cover::after { box-shadow: 0 0 0 3px var(--sv-gold), 0 0 32px 6px color-mix(in srgb, var(--sv-gold) 60%, transparent); }
+.sv-hero:is(.is-cel-complete, .is-cel-perfect) .sv-hero-cover::after {
+	content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+	border-radius: var(--sv-radius);
+	box-shadow: inset 0 0 0 2px var(--sv-cel), inset 0 0 22px color-mix(in srgb, var(--sv-cel) 55%, transparent), 0 0 18px -4px var(--sv-cel);
+	animation: sv-cel-edge 1300ms var(--sv-ease) 80ms both;
+}
+.sv-hero:is(.is-cel-complete, .is-cel-perfect) .sv-hero-cover .sv-cover::after { animation: sv-shine 1000ms cubic-bezier(0.3, 0.1, 0.25, 1) 220ms 1 both; }
 .sv-app .sv-hero.is-cel-perfect .sv-hero-seal { animation: sv-seal-in 620ms cubic-bezier(0.2, 0.9, 0.25, 1.1) 80ms both; }
 .sv-hero.is-cel-complete .sv-hero-tags > :first-child { animation: sv-cel-tag 520ms cubic-bezier(0.3, 0.7, 0.3, 1) 160ms; }
 
