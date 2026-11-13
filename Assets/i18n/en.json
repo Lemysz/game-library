@@ -3534,5 +3534,6 @@
 	"Remove a Web API Key do RetroAchievements guardada neste aparelho. As fichas e o que já foi sincronizado continuam; para usar de novo, conecte outra vez.": "Removes the RetroAchievements Web API Key stored on this device. Game pages and what was already synced stay; to use it again, connect again.",
 	"Importe ou adicione jogos para ver seus números aqui.": "Import or add games to see your numbers here.",
 	"Use o botão Importar jogos acima (um título por linha) ou adicione jogos com a origem {0}.": "Use the Import games button above (one title per line) or add games with the source {0}.",
-	"Use o botão Importar jogos acima (um título por linha) ou adicione jogos com a origem": "Use the Import games button above (one title per line) or add games with the source"
+	"Use o botão Importar jogos acima (um título por linha) ou adicione jogos com a origem": "Use the Import games button above (one title per line) or add games with the source",
+	"Comemoração na ficha ao zerar ou chegar a 100%": "Celebration on the game page when you finish it or reach 100%"
 }

@@ -18,7 +18,7 @@ class SteamVaultCare {
 		this.backupEveryDays = 30;
 		// o que acompanha a pessoa entre aparelhos (o resto é do aparelho:
 		// barra lateral, aba aberta, áreas seguras da tela…)
-		this.syncKeys = ["accent", "homeLayout", "libraryView", "collView", "reducedMotion", "shine", "tilt", "haptics", "sfx", "sfxVol",
+		this.syncKeys = ["accent", "homeLayout", "libraryView", "collView", "reducedMotion", "shine", "celebrate", "tilt", "haptics", "sfx", "sfxVol",
 			"onboardHidden", "shareFormat", "statsPeriod", "goalsDone", "oled", "textScale", "backupRemind", "lang", "theme", "dailyLog", "monthSeen",
 			// 3.58.0: Personalização da Interface (perfil de layout e combinações salvas)
 			"layout", "layoutPresets"];
