@@ -170,6 +170,7 @@ class SteamVault {
 		this._observeSize(host, surface);
 		this._applyPrefs();
 		this._wire(root, ctx);
+		try { this._celebrate(root); } catch (_) {}
 		try { res.wire?.(root, ctx); } catch (err) { console.error("Game Library: falha ao ligar a página", page, err); }
 		try { M.X?.wireCalendar(root, ctx); } catch (err) { console.warn("Game Library: calendário", err); }
 		this._wireImages(root);
@@ -1969,16 +1970,37 @@ class SteamVault {
 	}
 	// momentos grandes descobertos entre um modelo e o seguinte (vale para o
 	// que mudou por edição, sync ou outro aparelho): 100% e zerado
+	// 1.4.0: comemoração de uma vez só no topo da ficha que acabou de ser
+	// zerada (anel verde) ou chegar a 100% (o selo carimba e solta um anel
+	// dourado). Só depois de uma mudança feita agora (até 4 s); cada jogo
+	// comemora uma vez. "Reduzir animações" desliga pelo CSS.
+	_celebrate(root) {
+		const c = window.__svCelebrate;
+		if (!c) return;
+		if (Date.now() - c.at > 4000) { window.__svCelebrate = null; return; }
+		root.querySelectorAll(".sv-hero[data-game]").forEach(h => {
+			const p = h.dataset.game;
+			const kind = c.full.includes(p) ? "is-cel-perfect" : c.done.includes(p) ? "is-cel-complete" : "";
+			if (!kind) return;
+			c.full = c.full.filter(x => x !== p); c.done = c.done.filter(x => x !== p);
+			h.classList.add(kind);
+			setTimeout(() => h.classList.remove(kind), 2000);
+		});
+	}
+
 	_sfxDiff(model, M) {
 		if (!model || window.__svSfxBuilt === model.builtAt) return;
 		window.__svSfxBuilt = model.builtAt;
 		const snap = { games: new Map(model.games.map(g => [g.path, { st: g.status, pf: !!g.ach?.perfect }])) };
 		const prev = window.__svSfxSnap;
 		window.__svSfxSnap = snap;
-		if (!prev || !this._sfxOn()) return;
-		let perfect = false, complete = false;
-		for (const [p, v] of snap.games) { const o = prev.games.get(p); if (!o) continue; if (v.pf && !o.pf) perfect = true; if (v.st === "Completed" && o.st !== "Completed") complete = true; }
-		const sound = perfect ? "perfect" : complete ? "complete" : "";
+		if (!prev) return;
+		const full = [], done = [];
+		for (const [p, v] of snap.games) { const o = prev.games.get(p); if (!o) continue; if (v.pf && !o.pf) full.push(p); if (v.st === "Completed" && o.st !== "Completed") done.push(p); }
+		// 1.4.0: a ficha que acabou de virar Zerado/100% comemora no próximo desenho (_celebrate)
+		if (full.length || done.length) window.__svCelebrate = { full, done, at: Date.now() };
+		if (!this._sfxOn()) return;
+		const sound = full.length ? "perfect" : done.length ? "complete" : "";
 		if (sound) setTimeout(() => this.sfx(sound, { force: true }), 380);
 	}
 

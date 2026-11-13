@@ -9,7 +9,17 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Adicionado
+- **Comemoração ao zerar ou chegar a 100%**: logo depois da mudança, um anel de luz sai da capa no
+  topo da ficha (verde ao zerar, dourado no 100%) e, no 100%, o selo carimba de novo. Acontece uma
+  vez, só na ficha que mudou.
+- **Conquista desbloqueada à mão**: a linha acende em verde por um instante.
+- **Listas recolhíveis** (ex.: "O que sincroniza", "Ver toda a atividade", importação de CSV): o
+  conteúdo desce suave ao abrir.
+- **Perfis de plataforma** (Xbox, PlayStation, Nintendo, GOG, Epic, Google Play): o ícone do topo
+  entra como o avatar dos perfis Steam e RetroAchievements.
+
+Tudo respeita *Reduzir animações* (do app ou do sistema).
 
 ## [1.3.1] · 2026-11-13
 

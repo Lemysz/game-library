@@ -88,6 +88,8 @@ class SteamVaultAchievements {
 		el.classList.toggle("is-on", on); el.setAttribute("aria-pressed", String(on));
 		el.closest(".sv-ach")?.classList.toggle("is-unlocked", on);
 		el.closest(".sv-ach")?.classList.toggle("is-locked", !on);
+		// 1.4.0: a linha acende uma vez ao desbloquear (o redesenho espera o brilho)
+		if (on) { const row = el.closest(".sv-ach"); row?.classList.remove("is-just"); void row?.offsetWidth; row?.classList.add("is-just"); }
 		this.V._haptic?.(on ? [10, 40, 16] : 8);
 		// som: as raras (até 10% dos jogadores) têm um brilho a mais
 		if (on) { const r = Number(el.closest("[data-ach-rarity]")?.dataset.achRarity); this.V.sfx?.(r > 0 && r <= 10 ? "ach-rare" : "ach"); }
@@ -99,7 +101,7 @@ class SteamVaultAchievements {
 			});
 			this.C.invalidate();
 			this.V.toast(on ? "Conquista desbloqueada" : "Conquista bloqueada de novo", { icon: on ? "trophy" : "lock", tone: on ? "ok" : "" });
-			setTimeout(() => this.V.refresh(), 300);
+			setTimeout(() => this.V.refresh(), on ? 650 : 300);
 		} catch (err) { this.V.toast(`Não foi possível salvar: ${err.message}`, { tone: "error" }); }
 	}
 
