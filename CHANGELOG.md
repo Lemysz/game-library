@@ -9,6 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.3.1] · 2026-11-13
+
+Ajustes visuais nas telas de integração. Sem mudança no formato das notas.
+
 ### Alterado
 - **Telas de integração mais parecidas entre si**: o botão *Importar jogos* da Epic agora é azul
   (antes branco, destoava das outras plataformas); o topo do Perfil Steam sem fundo de perfil ganhou
@@ -217,7 +223,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.3.0...HEAD
+[Não lançado]: ../../compare/v1.3.1...HEAD
+[1.3.1]: ../../releases/tag/v1.3.1
 [1.3.0]: ../../releases/tag/v1.3.0
 [1.2.1]: ../../releases/tag/v1.2.1
 [1.2.0]: ../../releases/tag/v1.2.0
