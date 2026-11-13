@@ -12,8 +12,8 @@ versões menores.
 ### Adicionado
 - **Comemoração ao zerar ou chegar a 100%**: logo depois da mudança, a borda da capa acende por dentro
   (verde ao zerar, dourado no 100%) e a faixa de luz atravessa a arte; no 100%, o selo carimba de
-  novo. Tudo dentro da capa. Acontece uma
-  vez, só na ficha que mudou.
+  novo. Tudo dentro da capa, uma vez, só na ficha que mudou. Para desligar: *Configurações ›
+  Comemoração na ficha ao zerar ou chegar a 100%*.
 - **Conquista desbloqueada à mão**: a linha acende em verde por um instante.
 - **Listas recolhíveis** (ex.: "O que sincroniza", "Ver toda a atividade", importação de CSV): o
   conteúdo desce suave ao abrir.

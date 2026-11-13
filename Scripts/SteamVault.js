@@ -1977,6 +1977,7 @@ class SteamVault {
 	_celebrate(root) {
 		const c = window.__svCelebrate;
 		if (!c) return;
+		if (this.mods().U._store("celebrate") === "0") { window.__svCelebrate = null; return; }
 		if (Date.now() - c.at > 4000) { window.__svCelebrate = null; return; }
 		root.querySelectorAll(".sv-hero[data-game]").forEach(h => {
 			const p = h.dataset.game;

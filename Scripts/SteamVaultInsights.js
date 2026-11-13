@@ -969,6 +969,7 @@ class SteamVaultInsights {
 					<label class="sv-switch"><input type="checkbox" data-ui-oled ${U._store("oled") === "1" ? "checked" : ""}><span></span>Preto puro no tema escuro (telas OLED gastam menos bateria)</label>
 					<label class="sv-switch"><input type="checkbox" data-ui-reduced ${U._store("reducedMotion") === "1" ? "checked" : ""}><span></span>Reduzir animações</label>
 					<label class="sv-switch"><input type="checkbox" data-ui-shine ${U._store("shine") === "0" ? "" : "checked"}><span></span>Brilho nas capas (estilo Big Picture)</label>
+					<label class="sv-switch"><input type="checkbox" data-ui-celebrate ${U._store("celebrate") === "0" ? "" : "checked"}><span></span>Comemoração na ficha ao zerar ou chegar a 100%</label>
 					<label class="sv-switch"><input type="checkbox" data-ui-tilt ${U._store("tilt") === "0" ? "" : "checked"}><span></span>Inclinação 3D das capas ao passar o mouse</label>
 					${U._store("onboardHidden") === "1" ? `<div class="sv-row-actions">${U.btn("Mostrar os primeiros passos na Início", { icon: "sparkles", kind: "ghost", size: "sm", action: "onboard-show" })}</div>` : ""}
 					<label class="sv-switch"><input type="checkbox" data-ui-haptics ${U._store("haptics") === "0" ? "" : "checked"}><span></span>Vibração leve ao tocar (celular)</label>
@@ -1085,6 +1086,7 @@ class SteamVaultInsights {
 					U._store("shine", e.target.checked ? "1" : "0");
 					document.body.classList.toggle("sv-no-shine", !e.target.checked);
 				});
+				root.querySelector("[data-ui-celebrate]")?.addEventListener("change", e => U._store("celebrate", e.target.checked ? "1" : "0"));
 				root.querySelector("[data-ui-tilt]")?.addEventListener("change", e => {
 					U._store("tilt", e.target.checked ? "1" : "0");
 					document.body.classList.toggle("sv-no-tilt", !e.target.checked);
