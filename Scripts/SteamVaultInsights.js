@@ -970,6 +970,9 @@ class SteamVaultInsights {
 					<label class="sv-switch"><input type="checkbox" data-ui-reduced ${U._store("reducedMotion") === "1" ? "checked" : ""}><span></span>Reduzir animações</label>
 					<label class="sv-switch"><input type="checkbox" data-ui-shine ${U._store("shine") === "0" ? "" : "checked"}><span></span>Brilho nas capas (estilo Big Picture)</label>
 					<label class="sv-switch"><input type="checkbox" data-ui-celebrate ${U._store("celebrate") === "0" ? "" : "checked"}><span></span>Comemoração na ficha ao zerar ou chegar a 100%</label>
+					<div class="sv-accentpick"><span class="sv-label" id="sv-fav-label">Ícone de favorito nos cards</span>
+						<div class="sv-favpick" role="radiogroup" aria-labelledby="sv-fav-label">${[["dot", "Ponto"], ["glass", "Selo de vidro"], ["ribbon", "Marcador"], ["corner", "Canto dobrado"], ["outline", "Contorno"], ["label", "Etiqueta"]].map(([v, l]) => { const on = (U._store("favStyle") || "dot") === v; return `<button type="button" role="radio" class="sv-favpick-opt${on ? " is-active" : ""}" data-ui-fav="${v}" aria-checked="${on}"><span class="sv-favpick-art" data-fav="${v}"><span class="sv-card-favmark" aria-hidden="true">${U.icon("heart")}<span>Favorito</span></span></span><span class="sv-favpick-name">${l}</span></button>`; }).join("")}</div>
+					</div>
 					<label class="sv-switch"><input type="checkbox" data-ui-tilt ${U._store("tilt") === "0" ? "" : "checked"}><span></span>Inclinação 3D das capas ao passar o mouse</label>
 					${U._store("onboardHidden") === "1" ? `<div class="sv-row-actions">${U.btn("Mostrar os primeiros passos na Início", { icon: "sparkles", kind: "ghost", size: "sm", action: "onboard-show" })}</div>` : ""}
 					<label class="sv-switch"><input type="checkbox" data-ui-haptics ${U._store("haptics") === "0" ? "" : "checked"}><span></span>Vibração leve ao tocar (celular)</label>
@@ -1060,6 +1063,11 @@ class SteamVaultInsights {
 					U._store("textScale", b.dataset.uiTs);
 					ctx.V._applyPrefs?.();
 					root.querySelectorAll("[data-ui-ts]").forEach(x => { const on = x === b; x.classList.toggle("is-active", on); x.setAttribute("aria-checked", String(on)); });
+				}));
+				root.querySelectorAll("[data-ui-fav]").forEach(b => b.addEventListener("click", () => {
+					U._store("favStyle", b.dataset.uiFav);
+					ctx.V._applyPrefs?.();
+					root.querySelectorAll("[data-ui-fav]").forEach(x => { const on = x === b; x.classList.toggle("is-active", on); x.setAttribute("aria-checked", String(on)); });
 				}));
 				root.querySelector("[data-ui-oled]")?.addEventListener("change", e => {
 					U._store("oled", e.target.checked ? "1" : "0");

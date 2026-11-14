@@ -9,7 +9,11 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Adicionado
+- **Ícone de favorito nos cards à sua escolha** (*Configurações › Ícone de favorito nos cards*):
+  ponto (o de antes), selo de vidro, marcador de página, canto dobrado, coração com contorno ou
+  etiqueta "Favorito" na base da capa. Cada opção mostra uma prévia; a escolha acompanha você entre
+  aparelhos. No computador, o botão de favoritar continua aparecendo ao passar o mouse.
 
 ## [1.4.0] · 2026-11-13
 
