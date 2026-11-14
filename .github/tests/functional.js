@@ -316,6 +316,20 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		await mark(prevSt);
 	}
 
+	// ---- ícone de favorito nos cards (1.5.0)
+	{
+		await go("Dashboard/Configurações.md");
+		const opts = await count("[data-ui-fav]");
+		await p.evaluate(() => document.querySelector('[data-ui-fav="ribbon"]').click());
+		await go("Dashboard/Biblioteca.md");
+		const shown = await p.evaluate(() => { const m = document.querySelector(".sv-card.is-favorite .sv-card-favmark"); return !!m && getComputedStyle(m).display !== "none" && document.body.classList.contains("sv-fav--ribbon"); });
+		check("Configurações: 6 estilos de favorito e o escolhido aparece nos cards", opts === 6 && shown && await p.evaluate(() => customJS.SteamVaultUI._store("favStyle")) === "ribbon");
+		await go("Dashboard/Configurações.md");
+		await p.evaluate(() => document.querySelector('[data-ui-fav="dot"]').click());
+		await go("Dashboard/Biblioteca.md");
+		check("favorito: o ponto (padrão) esconde a marca nova", await p.evaluate(() => { const m = document.querySelector(".sv-card.is-favorite .sv-card-favmark"); return !!m && getComputedStyle(m).display === "none" && !document.body.classList.contains("sv-fav--ribbon"); }));
+	}
+
 	// ---- busca avançada da Biblioteca (3.64.0)
 	await go("Dashboard/Biblioteca.md");
 	const libCount = async () => visible(".sv-library .sv-grid > .sv-card");

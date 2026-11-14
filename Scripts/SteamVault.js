@@ -554,6 +554,9 @@ class SteamVault {
 		document.body.classList.toggle("sv-reduced-motion", reduced);
 		document.body.classList.toggle("sv-no-shine", U._store("shine") === "0");
 		document.body.classList.toggle("sv-no-tilt", U._store("tilt") === "0");
+		// 1.5.0: ícone de favorito nos cards (sem classe = ponto, o padrão antigo)
+		const fav = U._store("favStyle") || "dot";
+		for (const [k, cls] of [["glass", "sv-fav--glass"], ["ribbon", "sv-fav--ribbon"], ["corner", "sv-fav--corner"], ["outline", "sv-fav--outline"], ["label", "sv-fav--label"]]) document.body.classList.toggle(cls, fav === k);
 		document.body.classList.toggle("sv-no-haptics", U._store("haptics") === "0");
 		// 3.23.0: preto puro (telas OLED) e tamanho do texto, por aparelho ou sincronizados
 		document.body.classList.toggle("sv-oled", U._store("oled") === "1");

@@ -9367,3 +9367,68 @@ body.is-mobile .sv-modal-root { --sv-ctl-h: 44px; }
    dos perfis Steam e RetroAchievements */
 .sv-plathero-ava { animation: sv-rise 560ms var(--sv-ease) both; }
 .sv-app.is-refresh .sv-plathero-ava { animation: none; }
+
+/* ==========================================================================
+   58. ÍCONE DE FAVORITO NOS CARDS (1.5.0)
+   Configurações › Ícone de favorito nos cards. Sem classe no body fica o
+   ponto de antes. Com um estilo escolhido, a marca (.sv-card-favmark) aparece
+   na capa; no computador, o botão de favoritar volta ao passar o mouse e a
+   marca sai da frente. A mesma regra desenha as prévias da escolha.
+   ========================================================================== */
+.sv-card-favmark { display: none; }
+.sv-card-favmark .sv-i { fill: currentColor; }
+.sv-card-favmark > span { display: none; }
+body:is(.sv-fav--glass, .sv-fav--ribbon, .sv-fav--corner, .sv-fav--outline, .sv-fav--label) .sv-card-art .sv-card-favmark { display: grid; }
+body:is(.sv-fav--glass, .sv-fav--ribbon, .sv-fav--corner, .sv-fav--outline, .sv-fav--label) .sv-app.sv-bp-sm .sv-card.is-favorite .sv-card-art::after { content: none; }
+body:is(.sv-fav--glass, .sv-fav--ribbon, .sv-fav--corner, .sv-fav--outline, .sv-fav--label) .sv-card:not(:hover) .sv-card-favbtn.is-on:not(:focus-visible) { opacity: 0; }
+.sv-card-favmark { position: absolute; z-index: 3; pointer-events: none; transition: opacity var(--sv-t) var(--sv-ease); }
+.sv-card:hover .sv-card-favmark { opacity: 0; }
+
+/* o tema escuro pinta todo ícone de branco (regra com :not(#sv-x) mais acima); a marca mantém a própria cor */
+body:not(.theme-light) .sv-card-favmark .sv-i:not(#sv-x) { color: inherit; }
+
+/* 1 · selo de vidro */
+:is(body.sv-fav--glass .sv-card-art, .sv-favpick-art[data-fav="glass"]) .sv-card-favmark {
+	display: grid; place-items: center; right: 6px; top: 6px; width: 26px; height: 26px; border-radius: 50%;
+	color: #ff5d7a; background: rgba(8, 12, 18, 0.62); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 4px 10px -4px rgba(0, 0, 0, 0.7);
+}
+:is(body.sv-fav--glass .sv-card-art, .sv-favpick-art[data-fav="glass"]) .sv-card-favmark .sv-i { width: 14px; height: 14px; color: #ff5d7a; }
+/* 2 · marcador de página */
+:is(body.sv-fav--ribbon .sv-card-art, .sv-favpick-art[data-fav="ribbon"]) .sv-card-favmark {
+	display: grid; justify-items: center; align-content: start; right: 10px; top: 0; width: 20px; height: 30px; padding-top: 6px; box-sizing: border-box;
+	color: #fff; background: linear-gradient(#ff7d94, #e8455f);
+	clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+	filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5));
+}
+:is(body.sv-fav--ribbon .sv-card-art, .sv-favpick-art[data-fav="ribbon"]) .sv-card-favmark .sv-i { width: 11px; height: 11px; color: #fff; }
+/* 3 · canto dobrado */
+:is(body.sv-fav--corner .sv-card-art, .sv-favpick-art[data-fav="corner"]) .sv-card-favmark {
+	display: block; right: 0; top: 0; width: 40px; height: 40px; color: #fff;
+	background: linear-gradient(225deg, #ff5d7a 50%, transparent 50%);
+}
+:is(body.sv-fav--corner .sv-card-art, .sv-favpick-art[data-fav="corner"]) .sv-card-favmark .sv-i { position: absolute; right: 5px; top: 5px; width: 12px; height: 12px; color: #fff; }
+/* 4 · coração com contorno */
+:is(body.sv-fav--outline .sv-card-art, .sv-favpick-art[data-fav="outline"]) .sv-card-favmark { display: block; right: 7px; top: 7px; color: #ff5d7a; }
+:is(body.sv-fav--outline .sv-card-art, .sv-favpick-art[data-fav="outline"]) .sv-card-favmark .sv-i { width: 20px; height: 20px; color: #ff5d7a; stroke: #fff; filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.9)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7)); }
+:is(body.sv-fav--outline .sv-card-art, .sv-favpick-art[data-fav="outline"]) .sv-card-favmark .sv-i g { stroke-width: 1.6; }
+/* 5 · etiqueta na base (sobe quando a capa já tem a etiqueta da plataforma ou do preço) */
+:is(body.sv-fav--label .sv-card-art, .sv-favpick-art[data-fav="label"]) .sv-card-favmark {
+	display: flex; align-items: center; gap: 4px; left: 6px; bottom: 6px; height: 22px; padding: 0 8px 0 6px; border-radius: 999px;
+	font-size: var(--sv-fs-micro); font-weight: 700; color: #ff5d7a;
+	background: rgba(8, 12, 18, 0.66); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+	box-shadow: 0 0 0 1px rgba(255, 93, 122, 0.55);
+}
+:is(body.sv-fav--label .sv-card-art, .sv-favpick-art[data-fav="label"]) .sv-card-favmark > span { display: inline; color: #ffd0d9; }
+:is(body.sv-fav--label .sv-card-art, .sv-favpick-art[data-fav="label"]) .sv-card-favmark .sv-i { width: 12px; height: 12px; color: #ff5d7a; }
+body.sv-fav--label .sv-card-art:has(.sv-card-plat, .sv-card-price) .sv-card-favmark { bottom: 34px; }
+
+/* escolha em Configurações: uma capa de exemplo por estilo */
+.sv-favpick { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; }
+.sv-favpick-opt, .sv-host button.sv-favpick-opt { display: flex; flex-direction: column; align-items: center; gap: 6px; height: auto; min-height: 0; padding: 8px 6px; border: 0; border-radius: var(--sv-radius-lg); background: var(--sv-surface); box-shadow: inset 0 0 0 1px var(--sv-line); color: var(--sv-text-2); font-size: var(--sv-fs-micro); font-weight: 600; cursor: pointer; }
+.sv-favpick-opt.is-active, .sv-host button.sv-favpick-opt.is-active { color: var(--sv-text); box-shadow: inset 0 0 0 2px var(--sv-blue); background: var(--sv-blue-soft); }
+.sv-favpick-art { position: relative; display: block; flex: none; width: 64px; height: 96px; min-height: 96px; overflow: hidden; border-radius: 8px; background: radial-gradient(90% 60% at 30% 20%, #3f6a93, transparent 70%), linear-gradient(165deg, #23384d, #0d1620); }
+.sv-favpick-art[data-fav="dot"]::after { content: ""; position: absolute; right: 6px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: #ff5d7a; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45); }
+.sv-favpick .sv-favpick-art[data-fav="label"] .sv-card-favmark { left: 4px; bottom: 5px; height: 17px; gap: 3px; padding: 0 5px 0 4px; font-size: 8.5px; }
+.sv-favpick .sv-favpick-art[data-fav="label"] .sv-card-favmark .sv-i { width: 9px; height: 9px; }
+.sv-favpick-name { text-align: center; line-height: 1.2; }
