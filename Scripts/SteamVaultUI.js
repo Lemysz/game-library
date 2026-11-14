@@ -527,6 +527,7 @@ class SteamVaultUI {
 		return `<article class="sv-card${size ? ` sv-card--${size}` : ""}${g.favorite ? " is-favorite" : ""}${wide ? " has-wide" : ""}" data-game="${this.attr(g.path)}"${wide ? ` style="--sv-art:url(&quot;${this.attr(wide)}&quot;)"` : ""}>
 			<a class="sv-card-art" ${this.openAttrs(g.path)} aria-label="${this.attr(g.title)}">
 				${this.cover(g)}
+				${g.favorite ? `<span class="sv-card-favmark" aria-hidden="true">${this.icon("heart")}<span>Favorito</span></span>` : ""}
 				<div class="sv-card-overlay">
 					<div class="sv-card-overlay-top">${g.favorite ? `<span class="sv-card-fav" title="Favorito">${this.icon("heart")}</span>` : ""}</div>
 					<div class="sv-card-overlay-body">
