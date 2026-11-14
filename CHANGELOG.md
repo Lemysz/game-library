@@ -9,6 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.5.0] · 2026-11-14
+
+Ícone de favorito nos cards à sua escolha. Sem mudança no formato das notas.
+
 ### Adicionado
 - **Ícone de favorito nos cards à sua escolha** (*Configurações › Ícone de favorito nos cards*):
   ponto (o de antes), selo de vidro, marcador de página, canto dobrado, coração com contorno ou
@@ -244,7 +250,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.4.0...HEAD
+[Não lançado]: ../../compare/v1.5.0...HEAD
+[1.5.0]: ../../releases/tag/v1.5.0
 [1.4.0]: ../../releases/tag/v1.4.0
 [1.3.1]: ../../releases/tag/v1.3.1
 [1.3.0]: ../../releases/tag/v1.3.0
