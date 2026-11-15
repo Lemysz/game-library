@@ -9,6 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.6.0] · 2026-11-15
+
+Configurações organizadas por categoria. Sem mudança no formato das notas.
+
 ### Alterado
 - **Configurações por categoria**: Aparência, Efeitos e toque, Idioma e rotina, Integrações e
   conquistas, e Biblioteca e dados, cada uma com ícone e um resumo. O índice no topo leva a cada
@@ -254,7 +260,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.5.0...HEAD
+[Não lançado]: ../../compare/v1.6.0...HEAD
+[1.6.0]: ../../releases/tag/v1.6.0
 [1.5.0]: ../../releases/tag/v1.5.0
 [1.4.0]: ../../releases/tag/v1.4.0
 [1.3.1]: ../../releases/tag/v1.3.1
