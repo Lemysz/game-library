@@ -9,7 +9,11 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Alterado
+- **Configurações por categoria**: Aparência, Efeitos e toque, Idioma e rotina, Integrações e
+  conquistas, e Biblioteca e dados, cada uma com ícone e um resumo. O índice no topo leva a cada
+  categoria. As opções de liga/desliga viraram uma lista com o nome, uma linha explicando o que faz
+  e a chave à direita. Nenhuma opção mudou de comportamento.
 
 ## [1.5.0] · 2026-11-14
 

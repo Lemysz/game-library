@@ -350,6 +350,8 @@ A Steam é a plataforma principal da Game Library; o RetroAchievements tem uma s
 
 ## Aparência
 
+**Tela de Configurações.** Organizada em cinco categorias, com um índice no topo: *Aparência* (tema, cor de destaque, preto puro, tamanho do texto, ícone de favorito e Personalização da Interface), *Efeitos e toque* (animações, brilho, comemoração, inclinação 3D, vibração e sons), *Idioma e rotina* (idioma e nota diária), *Integrações e conquistas* e *Biblioteca e dados* (saúde, backup, importação e diagnóstico).
+
 Segue o tema claro/escuro do Obsidian. Os heros continuam escuros no tema claro, de propósito (arte sobre palco). Em *Style Settings → Game Library*: azul principal, ciano, destaque a partir da arte, largura das capas, arredondamento e densidade compacta. Em *Configurações* do app: reduzir animações.
 
 **Brilho nas capas (estilo Big Picture):** uma faixa de luz atravessa a capa quando você passa o mouse ou foca com o teclado; no celular, ao tocar na capa, e uma vez na capa do jogo aberto. Anima só posição e transparência (roda na GPU, sem recalcular a página), nunca fica em loop e respeita "Reduzir animações". Dá para desligar em *Configurações → Brilho nas capas*.

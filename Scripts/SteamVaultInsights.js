@@ -926,6 +926,86 @@ class SteamVaultInsights {
 		const html = `<div class="sv-page sv-pad">
 			${U.pageHead("Configurações", { sub: `Game Library ${C.VERSION}${C.STAGE ? ` · ${C.STAGE}` : ""}` })}
 			<div class="sv-settings">
+				<section class="sv-setgroup" id="sv-set-look">
+					<header class="sv-setgroup-head"><span class="sv-setgroup-icon" aria-hidden="true">${U.icon("sparkles")}</span><div><h2>Aparência</h2><p>Tema, cores, texto e o jeito de cada tela</p></div></header>
+					<div class="sv-setgroup-body">
+				<section class="sv-surface">
+					<h3>Tema e cores</h3>
+					<p class="sv-muted">A Game Library segue o tema claro/escuro do Obsidian. No escuro, escolha o tema e a cor de destaque.</p>
+					<div class="sv-accentpick"><span class="sv-label" id="sv-theme-label">Tema</span>
+						<div class="sv-themepick-row" role="radiogroup" aria-labelledby="sv-theme-label">${Object.entries(U.themes()).map(([k, [name, sub, [bg, s1, s2]]]) => { const on = (U._store("theme") || "steam") === k; return `<button type="button" role="radio" aria-checked="${on}" class="sv-themepick-sw${on ? " is-active" : ""}" data-ui-theme="${k}" style="--p-bg:${bg};--p-s1:${s1};--p-s2:${s2}"><span class="sv-themepick-prev"><i></i><i></i></span><span>${U.esc(name)}<small>${U.esc(sub)}</small></span></button>`; }).join("")}</div>
+						<small class="sv-muted">Muda fundos e cartões no tema escuro. Combine com qualquer cor de destaque.</small>
+					</div>
+					<div class="sv-accentpick"><span class="sv-label" id="sv-accent-label">Cor de destaque</span>
+						<div class="sv-accentpick-row" role="radiogroup" aria-labelledby="sv-accent-label">${Object.entries(U.accents()).map(([k, [name, c]]) => { const on = (U._store("accent") || "blue") === k; return `<button type="button" role="radio" class="sv-accentpick-sw${on ? " is-active" : ""}" data-accent="${k}" aria-checked="${on}" aria-label="${U.attr(name)}" title="${U.attr(name)}" style="--sw:${c}"><span aria-hidden="true">${U.icon("check")}</span></button>`; }).join("")}</div>
+						<small class="sv-muted">Botões, abas, barras e destaques usam esta cor neste aparelho. As cores de cada plataforma continuam as delas.</small>
+					</div>
+					<div class="sv-setlist">
+					<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-oled ${U._store("oled") === "1" ? "checked" : ""}><span></span><b>Preto puro no tema escuro</b><small>Fundo totalmente preto; telas OLED gastam menos bateria.</small></label>
+					</div>
+				</section>
+				<section class="sv-surface">
+					<h3>Texto e cards</h3>
+					<div class="sv-accentpick"><span class="sv-label" id="sv-ts-label">Tamanho do texto</span>
+						<div class="sv-segmented" role="radiogroup" aria-labelledby="sv-ts-label">${[["0.92", "Menor"], ["1", "Padrão"], ["1.08", "Maior"], ["1.16", "Bem maior"]].map(([v, l]) => { const on = String(Number(U._store("textScale") || 1)) === String(Number(v)); return `<button type="button" role="radio" data-ui-ts="${v}" class="${on ? "is-active" : ""}" aria-checked="${on}" style="font-size:${Number(v) * 0.86}rem">${l}</button>`; }).join("")}</div>
+						<small class="sv-muted">Vale para os textos da Game Library; o resto do Obsidian não muda.</small>
+					</div>
+					<div class="sv-accentpick"><span class="sv-label" id="sv-fav-label">Ícone de favorito nos cards</span>
+						<div class="sv-favpick" role="radiogroup" aria-labelledby="sv-fav-label">${[["dot", "Ponto"], ["glass", "Selo de vidro"], ["ribbon", "Marcador"], ["corner", "Canto dobrado"], ["outline", "Contorno"], ["label", "Etiqueta"]].map(([v, l]) => { const on = (U._store("favStyle") || "dot") === v; return `<button type="button" role="radio" class="sv-favpick-opt${on ? " is-active" : ""}" data-ui-fav="${v}" aria-checked="${on}"><span class="sv-favpick-art" data-fav="${v}"><span class="sv-card-favmark" aria-hidden="true">${U.icon("heart")}<span>Favorito</span></span></span><span class="sv-favpick-name">${l}</span></button>`; }).join("")}</div>
+					</div>
+					<div class="sv-row-actions"><a class="sv-btn sv-btn--ghost sv-btn--sm" ${U.openAttrs("Dashboard/Ícones")}>${U.icon("grid")}<span>Galeria de ícones</span></a></div>
+				</section>
+				${ctx.LK ? ctx.LK.section(ctx) : ""}
+					</div>
+				</section>
+				<section class="sv-setgroup" id="sv-set-motion">
+					<header class="sv-setgroup-head"><span class="sv-setgroup-icon" aria-hidden="true">${U.icon("bolt")}</span><div><h2>Efeitos e toque</h2><p>Animações, brilho, som e vibração</p></div></header>
+					<div class="sv-setgroup-body">
+				<section class="sv-surface">
+					<h3>Animações e efeitos</h3>
+					<div class="sv-setlist">
+					<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-reduced ${U._store("reducedMotion") === "1" ? "checked" : ""}><span></span><b>Reduzir animações</b><small>Desliga entradas, brilhos e movimentos do app.</small></label>
+					<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-shine ${U._store("shine") === "0" ? "" : "checked"}><span></span><b>Brilho nas capas (estilo Big Picture)</b><small>Uma faixa de luz atravessa a capa ao tocar ou passar o mouse.</small></label>
+					<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-celebrate ${U._store("celebrate") === "0" ? "" : "checked"}><span></span><b>Comemoração na ficha ao zerar ou chegar a 100%</b><small>A capa acende no topo da ficha logo depois da mudança.</small></label>
+					<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-tilt ${U._store("tilt") === "0" ? "" : "checked"}><span></span><b>Inclinação 3D das capas</b><small>Só no computador.</small></label>
+					</div>
+				</section>
+				<section class="sv-surface">
+					<h3>Som e vibração</h3>
+					<div class="sv-setlist">
+					<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-haptics ${U._store("haptics") === "0" ? "" : "checked"}><span></span><b>Vibração leve ao tocar</b><small>Ao favoritar, trocar de aba e dispensar avisos (Android).</small></label>
+					<div class="sv-sfxset">
+						<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-sfx ${U._store("sfx") === "1" ? "checked" : ""}><span></span><b>Efeitos sonoros</b><small>Conquistas, jogo zerado e 100%, sessão ao vivo e favoritos. Sons curtos criados pelo próprio app, sem arquivos nem internet.</small></label>
+						<div class="sv-sfxset-row"${U._store("sfx") === "1" ? "" : " hidden"}>
+							<div class="sv-segmented" role="radiogroup" aria-label="Volume dos efeitos">${[["low", "Baixo"], ["mid", "Médio"], ["high", "Alto"]].map(([v, l]) => { const on = (U._store("sfxVol") || "mid") === v; return `<button type="button" role="radio" data-ui-sfxvol="${v}" class="${on ? "is-active" : ""}" aria-checked="${on}">${l}</button>`; }).join("")}</div>
+							${U.btn("Ouvir", { icon: "play", kind: "ghost", size: "sm", attrs: "data-ui-sfxtest" })}
+						</div>
+					</div>
+					</div>
+				</section>
+					</div>
+				</section>
+				<section class="sv-setgroup" id="sv-set-general">
+					<header class="sv-setgroup-head"><span class="sv-setgroup-icon" aria-hidden="true">${U.icon("sliders")}</span><div><h2>Idioma e rotina</h2><p>Idioma do app, nota diária e primeiros passos</p></div></header>
+					<div class="sv-setgroup-body">
+				<section class="sv-surface">
+					<h3>Geral</h3>
+					<div class="sv-accentpick sv-no-i18n"><span class="sv-label" id="sv-lang-label">Idioma · Language</span>
+						<div class="sv-segmented" role="radiogroup" aria-labelledby="sv-lang-label">${[["pt", "Português"], ["en", "English"]].map(([v, l]) => { const on = (ctx.T?.lang || "pt") === v; return `<button type="button" role="radio" data-ui-lang="${v}" class="${on ? "is-active" : ""}" aria-checked="${on}">${l}</button>`; }).join("")}</div>
+						<small class="sv-muted">${ctx.T?.on ? "Screens, menus, cards and messages. Your notes (titles, synopses, reviews) stay as you wrote them." : "Telas, menus, cartões e avisos. As suas notas (títulos, sinopses, análises) ficam como você escreveu."}</small>
+					</div>
+					${U._store("onboardHidden") === "1" ? `<div class="sv-row-actions">${U.btn("Mostrar os primeiros passos na Início", { icon: "sparkles", kind: "ghost", size: "sm", action: "onboard-show" })}</div>` : ""}
+				</section>
+				${ctx.CA ? (() => { const cfg = ctx.CA.dailyConfig(); return `<section class="sv-surface sv-care">
+					<h3>Nota diária</h3>
+					<div class="sv-setlist"><label class="sv-switch sv-setrow"><input type="checkbox" data-ui-dailylog ${ctx.CA.dailyOn() ? "checked" : ""}><span></span><b>Anotar cada sessão na nota diária do Obsidian</b></label></div>
+					<p class="sv-muted sv-care-note">Uma linha sob <code>## Jogos</code> com link para o jogo, as horas e a anotação da sessão. Nota de hoje: <code>${U.esc(ctx.CA.dailyPath(cfg))}</code>${cfg.enabled ? "" : " (o plugin Notas diárias está desligado; a pasta e o formato padrão são usados)"}.${cfg.template ? " Como há um modelo de nota diária, a nota precisa ter sido aberta uma vez no dia." : ""}</p>
+				</section>`; })() : ""}
+					</div>
+				</section>
+				<section class="sv-setgroup" id="sv-set-intg">
+					<header class="sv-setgroup-head"><span class="sv-setgroup-icon" aria-hidden="true">${U.icon("link")}</span><div><h2>Integrações e conquistas</h2><p>Contas conectadas, origens e ícones das conquistas</p></div></header>
+					<div class="sv-setgroup-body">
 				${ctx.PP ? ctx.PP.settingsSummary(ctx) : ""}
 				${ctx.A ? (() => { const n = ctx.A.legacyCount(); return `<section class="sv-surface sv-settings-ach">
 					<h3>Conquistas</h3>
@@ -939,52 +1019,11 @@ class SteamVaultInsights {
 						${ip.remote.length ? `<div class="sv-row-actions">${U.btn(`Salvar ${U.plural(ip.remote.length, "ícone", "ícones")} no vault`, { icon: "download", kind: "secondary", size: "sm", action: "ach-icons-local" })}</div>` : ""}
 					</div>`; })()}
 				</section>`; })() : ""}
-				<section class="sv-surface">
-					<h3>Diagnóstico do vault</h3>
-					<p class="sv-muted">Problemas de dados encontrados agora. Corrija na origem (na nota indicada).</p>
-					${issues.length ? `<ul class="sv-issues">${issues.slice(0, 60).map(i => `<li class="sv-issue sv-issue--${i.level}"><span class="sv-issue-level">${levels[i.level]}</span><span class="sv-issue-area">${U.esc(i.area)}</span><span class="sv-issue-msg">${U.esc(i.message)}${i.path ? ` <a ${U.openAttrs(i.path)}>${U.esc(i.label || i.path.split("/").pop().replace(/\.md$/, ""))}</a>` : ""}</span></li>`).join("")}</ul>${issues.length > 60 ? `<p class="sv-fineprint">+${issues.length - 60} itens</p>` : ""}` : U.empty({ icon: "check", title: "Nenhum problema encontrado", compact: true })}
-					<div class="sv-row-actions">${U.btn("Reparar nomes de arquivo escapados", { icon: "refresh", kind: "ghost", size: "sm", action: "repair-names" })}</div>
-				</section>
-				${ctx.LK ? ctx.LK.section(ctx) : ""}
-				<section class="sv-surface">
-					<h3>Aparência</h3>
-					<p class="sv-muted">A Game Library segue o tema claro/escuro do Obsidian. No escuro, escolha o tema e a cor de destaque abaixo.</p>
-					<div class="sv-accentpick"><span class="sv-label" id="sv-theme-label">Tema</span>
-						<div class="sv-themepick-row" role="radiogroup" aria-labelledby="sv-theme-label">${Object.entries(U.themes()).map(([k, [name, sub, [bg, s1, s2]]]) => { const on = (U._store("theme") || "steam") === k; return `<button type="button" role="radio" aria-checked="${on}" class="sv-themepick-sw${on ? " is-active" : ""}" data-ui-theme="${k}" style="--p-bg:${bg};--p-s1:${s1};--p-s2:${s2}"><span class="sv-themepick-prev"><i></i><i></i></span><span>${U.esc(name)}<small>${U.esc(sub)}</small></span></button>`; }).join("")}</div>
-						<small class="sv-muted">Muda fundos e cartões no tema escuro. Combine com qualquer cor de destaque.</small>
-					</div>
-					<div class="sv-accentpick"><span class="sv-label" id="sv-accent-label">Cor de destaque</span>
-						<div class="sv-accentpick-row" role="radiogroup" aria-labelledby="sv-accent-label">${Object.entries(U.accents()).map(([k, [name, c]]) => { const on = (U._store("accent") || "blue") === k; return `<button type="button" role="radio" class="sv-accentpick-sw${on ? " is-active" : ""}" data-accent="${k}" aria-checked="${on}" aria-label="${U.attr(name)}" title="${U.attr(name)}" style="--sw:${c}"><span aria-hidden="true">${U.icon("check")}</span></button>`; }).join("")}</div>
-						<small class="sv-muted">Botões, abas, barras e destaques usam esta cor neste aparelho. As cores de cada plataforma continuam as delas.</small>
-					</div>
-					<div class="sv-accentpick sv-no-i18n"><span class="sv-label" id="sv-lang-label">Idioma · Language</span>
-						<div class="sv-segmented" role="radiogroup" aria-labelledby="sv-lang-label">${[["pt", "Português"], ["en", "English"]].map(([v, l]) => { const on = (ctx.T?.lang || "pt") === v; return `<button type="button" role="radio" data-ui-lang="${v}" class="${on ? "is-active" : ""}" aria-checked="${on}">${l}</button>`; }).join("")}</div>
-						<small class="sv-muted">${ctx.T?.on ? "Screens, menus, cards and messages. Your notes (titles, synopses, reviews) stay as you wrote them." : "Telas, menus, cartões e avisos. As suas notas (títulos, sinopses, análises) ficam como você escreveu."}</small>
-					</div>
-					<div class="sv-accentpick"><span class="sv-label" id="sv-ts-label">Tamanho do texto</span>
-						<div class="sv-segmented" role="radiogroup" aria-labelledby="sv-ts-label">${[["0.92", "Menor"], ["1", "Padrão"], ["1.08", "Maior"], ["1.16", "Bem maior"]].map(([v, l]) => { const on = String(Number(U._store("textScale") || 1)) === String(Number(v)); return `<button type="button" role="radio" data-ui-ts="${v}" class="${on ? "is-active" : ""}" aria-checked="${on}" style="font-size:${Number(v) * 0.86}rem">${l}</button>`; }).join("")}</div>
-						<small class="sv-muted">Vale para os textos da Game Library; o resto do Obsidian não muda.</small>
-					</div>
-					<div class="sv-row-actions"><a class="sv-btn sv-btn--ghost sv-btn--sm" ${U.openAttrs("Dashboard/Ícones")}>${U.icon("grid")}<span>Galeria de ícones</span></a></div>
-					<label class="sv-switch"><input type="checkbox" data-ui-oled ${U._store("oled") === "1" ? "checked" : ""}><span></span>Preto puro no tema escuro (telas OLED gastam menos bateria)</label>
-					<label class="sv-switch"><input type="checkbox" data-ui-reduced ${U._store("reducedMotion") === "1" ? "checked" : ""}><span></span>Reduzir animações</label>
-					<label class="sv-switch"><input type="checkbox" data-ui-shine ${U._store("shine") === "0" ? "" : "checked"}><span></span>Brilho nas capas (estilo Big Picture)</label>
-					<label class="sv-switch"><input type="checkbox" data-ui-celebrate ${U._store("celebrate") === "0" ? "" : "checked"}><span></span>Comemoração na ficha ao zerar ou chegar a 100%</label>
-					<div class="sv-accentpick"><span class="sv-label" id="sv-fav-label">Ícone de favorito nos cards</span>
-						<div class="sv-favpick" role="radiogroup" aria-labelledby="sv-fav-label">${[["dot", "Ponto"], ["glass", "Selo de vidro"], ["ribbon", "Marcador"], ["corner", "Canto dobrado"], ["outline", "Contorno"], ["label", "Etiqueta"]].map(([v, l]) => { const on = (U._store("favStyle") || "dot") === v; return `<button type="button" role="radio" class="sv-favpick-opt${on ? " is-active" : ""}" data-ui-fav="${v}" aria-checked="${on}"><span class="sv-favpick-art" data-fav="${v}"><span class="sv-card-favmark" aria-hidden="true">${U.icon("heart")}<span>Favorito</span></span></span><span class="sv-favpick-name">${l}</span></button>`; }).join("")}</div>
-					</div>
-					<label class="sv-switch"><input type="checkbox" data-ui-tilt ${U._store("tilt") === "0" ? "" : "checked"}><span></span>Inclinação 3D das capas ao passar o mouse</label>
-					${U._store("onboardHidden") === "1" ? `<div class="sv-row-actions">${U.btn("Mostrar os primeiros passos na Início", { icon: "sparkles", kind: "ghost", size: "sm", action: "onboard-show" })}</div>` : ""}
-					<label class="sv-switch"><input type="checkbox" data-ui-haptics ${U._store("haptics") === "0" ? "" : "checked"}><span></span>Vibração leve ao tocar (celular)</label>
-					<div class="sv-sfxset">
-						<label class="sv-switch"><input type="checkbox" data-ui-sfx ${U._store("sfx") === "1" ? "checked" : ""}><span></span>Efeitos sonoros</label>
-						<div class="sv-sfxset-row"${U._store("sfx") === "1" ? "" : " hidden"}>
-							<div class="sv-segmented" role="radiogroup" aria-label="Volume dos efeitos">${[["low", "Baixo"], ["mid", "Médio"], ["high", "Alto"]].map(([v, l]) => { const on = (U._store("sfxVol") || "mid") === v; return `<button type="button" role="radio" data-ui-sfxvol="${v}" class="${on ? "is-active" : ""}" aria-checked="${on}">${l}</button>`; }).join("")}</div>
-							${U.btn("Ouvir", { icon: "play", kind: "ghost", size: "sm", attrs: "data-ui-sfxtest" })}
-						</div>
-						<small class="sv-muted">Conquistas, jogo zerado e 100%, sessão ao vivo e favoritos. Sons curtos criados pelo próprio app, sem arquivos nem internet.</small>
 					</div>
 				</section>
+				<section class="sv-setgroup" id="sv-set-data">
+					<header class="sv-setgroup-head"><span class="sv-setgroup-icon" aria-hidden="true">${U.icon("box")}</span><div><h2>Biblioteca e dados</h2><p>Saúde, backup, importação e diagnóstico</p></div></header>
+					<div class="sv-setgroup-body">
 				${ctx.CA ? (() => { const h = ctx.CA.healthData(ctx), sc = ctx.CA.healthScore(h); return `<section class="sv-surface sv-care">
 					<h3>Saúde da biblioteca</h3>
 					<div class="sv-care-row">
@@ -994,10 +1033,18 @@ class SteamVaultInsights {
 					</div>
 					<div class="sv-row-actions">${U.btn("Ver e corrigir", { icon: "heartbeat", kind: "secondary", size: "sm", action: "library-health" })}</div>
 				</section>`; })() : ""}
-				${ctx.CA ? (() => { const cfg = ctx.CA.dailyConfig(); return `<section class="sv-surface sv-care">
-					<h3>Nota diária</h3>
-					<label class="sv-switch"><input type="checkbox" data-ui-dailylog ${ctx.CA.dailyOn() ? "checked" : ""}><span></span>Anotar cada sessão na nota diária do Obsidian</label>
-					<p class="sv-muted sv-care-note">Uma linha sob <code>## Jogos</code> com link para o jogo, as horas e a anotação da sessão. Nota de hoje: <code>${U.esc(ctx.CA.dailyPath(cfg))}</code>${cfg.enabled ? "" : " (o plugin Notas diárias está desligado; a pasta e o formato padrão são usados)"}.${cfg.template ? " Como há um modelo de nota diária, a nota precisa ter sido aberta uma vez no dia." : ""}</p>
+				${ctx.CA ? (() => { const CA = ctx.CA, last = CA.lastBackup(), days = CA.daysSinceBackup(), n = CA.backups().length; return `<section class="sv-surface sv-care">
+					<h3>Backup e aparelhos</h3>
+					<div class="sv-care-row">
+						<span class="sv-care-icon" aria-hidden="true">${U.icon("download")}</span>
+						<div><b>${last ? `Último backup ${days === 0 ? "hoje" : days === 1 ? "ontem" : `há ${U.plural(days, "dia", "dias")}`}` : "Nenhum backup ainda"}</b>
+						<p class="sv-muted">Um .zip com todas as notas da biblioteca (jogos, conquistas, coleções, categorias e telas) na pasta <code>${U.esc(CA.backupFolder)}/</code> do vault. ${n ? `Há ${U.plural(n, "backup guardado", "backups guardados")}. ` : ""}Ficam os ${CA.keepBackups} mais recentes; os antigos vão para a lixeira do Obsidian.</p></div>
+					</div>
+					<div class="sv-row-actions">${U.btn("Fazer backup agora", { icon: "download", kind: "primary", size: "sm", action: "backup-now" })}${last ? `<a class="sv-btn sv-btn--ghost sv-btn--sm" ${U.openAttrs(last.file.path)}>${U.icon("external")}<span>Abrir o último</span></a>` : ""}</div>
+					<div class="sv-setlist"><label class="sv-switch sv-setrow"><input type="checkbox" data-ui-backupremind ${U._store("backupRemind") === "0" ? "" : "checked"}><span></span><b>Lembrar na Início quando o último backup passar de ${CA.backupEveryDays} dias</b></label></div>
+					<hr class="sv-care-sep">
+					<div class="sv-setlist"><label class="sv-switch sv-setrow"><input type="checkbox" data-ui-prefsync ${CA.syncOn() ? "checked" : ""}><span></span><b>Mesmas preferências em todos os aparelhos</b></label></div>
+					<p class="sv-muted sv-care-note">Cor de destaque, tema, Personalização da Interface (modelos, cards, banners e combinações salvas), tamanho do texto, preto puro, layout da Início, visualização e filtros da Biblioteca, animações e lembretes ficam em <code>${U.esc(CA.prefsPath)}</code>, que vai junto com o vault (Obsidian Sync, iCloud, Syncthing…). Ligue em cada aparelho. Nenhuma chave, senha ou dado de conta entra nesse arquivo.</p>
 				</section>`; })() : ""}
 				${ctx.CA ? `<section class="sv-surface sv-care">
 					<h3>Importar biblioteca</h3>
@@ -1009,19 +1056,14 @@ class SteamVaultInsights {
 					<div class="sv-row-actions">${U.btn("Importar CSV", { icon: "upload", kind: "secondary", size: "sm", action: "csv-import" })}${U.btn("Exportar CSV", { icon: "download", kind: "ghost", size: "sm", action: "csv-export" })}</div>
 					${(u => u ? `<p class="sv-formmsg sv-undo-line">${U.icon("refresh")}<span>Última ação em lote: <b>${U.esc(u.label)}</b> (${U.esc(U.relDate(customJS.SteamVaultCore.localIso(u.at)))}).</span>${U.btn("Desfazer", { kind: "ghost", size: "sm", action: "undo-last" })}</p>` : "")(ctx.CA.undoInfo())}
 				</section>` : ""}
-				${ctx.CA ? (() => { const CA = ctx.CA, last = CA.lastBackup(), days = CA.daysSinceBackup(), n = CA.backups().length; return `<section class="sv-surface sv-care">
-					<h3>Backup e aparelhos</h3>
-					<div class="sv-care-row">
-						<span class="sv-care-icon" aria-hidden="true">${U.icon("download")}</span>
-						<div><b>${last ? `Último backup ${days === 0 ? "hoje" : days === 1 ? "ontem" : `há ${U.plural(days, "dia", "dias")}`}` : "Nenhum backup ainda"}</b>
-						<p class="sv-muted">Um .zip com todas as notas da biblioteca (jogos, conquistas, coleções, categorias e telas) na pasta <code>${U.esc(CA.backupFolder)}/</code> do vault. ${n ? `Há ${U.plural(n, "backup guardado", "backups guardados")}. ` : ""}Ficam os ${CA.keepBackups} mais recentes; os antigos vão para a lixeira do Obsidian.</p></div>
+				<section class="sv-surface">
+					<h3>Diagnóstico do vault</h3>
+					<p class="sv-muted">Problemas de dados encontrados agora. Corrija na origem (na nota indicada).</p>
+					${issues.length ? `<ul class="sv-issues">${issues.slice(0, 60).map(i => `<li class="sv-issue sv-issue--${i.level}"><span class="sv-issue-level">${levels[i.level]}</span><span class="sv-issue-area">${U.esc(i.area)}</span><span class="sv-issue-msg">${U.esc(i.message)}${i.path ? ` <a ${U.openAttrs(i.path)}>${U.esc(i.label || i.path.split("/").pop().replace(/\.md$/, ""))}</a>` : ""}</span></li>`).join("")}</ul>${issues.length > 60 ? `<p class="sv-fineprint">+${issues.length - 60} itens</p>` : ""}` : U.empty({ icon: "check", title: "Nenhum problema encontrado", compact: true })}
+					<div class="sv-row-actions">${U.btn("Reparar nomes de arquivo escapados", { icon: "refresh", kind: "ghost", size: "sm", action: "repair-names" })}</div>
+				</section>
 					</div>
-					<div class="sv-row-actions">${U.btn("Fazer backup agora", { icon: "download", kind: "primary", size: "sm", action: "backup-now" })}${last ? `<a class="sv-btn sv-btn--ghost sv-btn--sm" ${U.openAttrs(last.file.path)}>${U.icon("external")}<span>Abrir o último</span></a>` : ""}</div>
-					<label class="sv-switch"><input type="checkbox" data-ui-backupremind ${U._store("backupRemind") === "0" ? "" : "checked"}><span></span>Lembrar na Início quando o último backup passar de ${CA.backupEveryDays} dias</label>
-					<hr class="sv-care-sep">
-					<label class="sv-switch"><input type="checkbox" data-ui-prefsync ${CA.syncOn() ? "checked" : ""}><span></span>Mesmas preferências em todos os aparelhos</label>
-					<p class="sv-muted sv-care-note">Cor de destaque, tema, Personalização da Interface (modelos, cards, banners e combinações salvas), tamanho do texto, preto puro, layout da Início, visualização e filtros da Biblioteca, animações e lembretes ficam em <code>${U.esc(CA.prefsPath)}</code>, que vai junto com o vault (Obsidian Sync, iCloud, Syncthing…). Ligue em cada aparelho. Nenhuma chave, senha ou dado de conta entra nesse arquivo.</p>
-				</section>`; })() : ""}
+				</section>
 			</div>
 		</div>`;
 		return {
@@ -1029,14 +1071,15 @@ class SteamVaultInsights {
 				// 3.58.0: Personalização da Interface (central com prévia)
 				try { ctx.LK?.wire(root, ctx); } catch (err) { console.warn("Game Library: personalização", err); }
 				// 3.29.0: índice das seções no topo (a tela é longa no celular)
-				const secs = [...root.querySelectorAll(".sv-settings > section")].filter(sec => sec.querySelector(":scope > h3"));
+				// 1.6.0: o índice lista as categorias (cada uma com o seu ícone)
+				const secs = [...root.querySelectorAll(".sv-settings > .sv-setgroup")];
 				if (secs.length > 2) {
 					const nav = document.createElement("nav");
 					nav.className = "sv-setnav"; nav.setAttribute("aria-label", "Seções das configurações");
-					secs.forEach((sec, i) => {
-						sec.id ||= `sv-set-${i}`;
+					secs.forEach(sec => {
 						const b = document.createElement("button");
-						b.type = "button"; b.textContent = sec.querySelector(":scope > h3").textContent.trim();
+						b.type = "button";
+						b.innerHTML = `${sec.querySelector(".sv-setgroup-icon")?.innerHTML || ""}<span>${U.esc(sec.querySelector("h2").textContent.trim())}</span>`;
 						b.addEventListener("click", () => sec.scrollIntoView({ behavior: ctx.V._motionOn() ? "smooth" : "auto", block: "start" }));
 						nav.appendChild(b);
 					});
