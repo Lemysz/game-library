@@ -206,9 +206,17 @@ class SteamVaultCore {
 		return Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000);
 	}
 
+	// 1.7.0: com memória. É chamada milhares de vezes por tela com os mesmos
+	// nomes (gêneros, plataformas, títulos); o resultado só depende do texto.
 	normalizeKey(s) {
-		return String(s ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-			.replace(/[^a-z0-9]+/g, " ").trim();
+		const str = String(s ?? "");
+		const memo = this._nkMemo || (this._nkMemo = new Map());
+		let v = memo.get(str);
+		if (v !== undefined) return v;
+		v = str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+		if (memo.size > 20000) memo.clear();
+		memo.set(str, v);
+		return v;
 	}
 
 	slug(s) { return this.normalizeKey(s).replace(/ /g, "-"); }

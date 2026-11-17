@@ -1677,26 +1677,36 @@ class SteamVault {
 	// Faixas de abas que rolam para o lado: indicam quando há abas escondidas
 	// e trazem a aba ativa para a área visível (ao abrir e ao tocar).
 	_wireTabs(root) {
-		root.querySelectorAll(".sv-tabs").forEach(tabs => {
-			// dica visual de que há mais abas escondidas nas bordas
-			const update = () => {
-				const max = tabs.scrollWidth - tabs.clientWidth;
-				tabs.classList.toggle("has-more-right", max > 2 && tabs.scrollLeft < max - 2);
-				tabs.classList.toggle("has-more-left", max > 2 && tabs.scrollLeft > 2);
-			};
-			tabs.addEventListener("scroll", update, { passive: true });
-			// só ao abrir: se a aba ativa estiver fora da vista, rola o mínimo
-			// para mostrá-la (sem centralizar e sem mexer ao tocar nas abas)
-			requestAnimationFrame(() => {
+		const all = [...root.querySelectorAll(".sv-tabs")];
+		if (!all.length) return;
+		// dica visual de que há mais abas escondidas nas bordas
+		const measure = tabs => { const max = tabs.scrollWidth - tabs.clientWidth; return [max > 2 && tabs.scrollLeft < max - 2, max > 2 && tabs.scrollLeft > 2]; };
+		const apply = (tabs, [right, left]) => { tabs.classList.toggle("has-more-right", right); tabs.classList.toggle("has-more-left", left); };
+		all.forEach(tabs => tabs.addEventListener("scroll", () => apply(tabs, measure(tabs)), { passive: true }));
+		// só ao abrir: se a aba ativa estiver fora da vista, rola o mínimo para
+		// mostrá-la (sem centralizar e sem mexer ao tocar nas abas).
+		// 1.7.0: medido num ResizeObserver, que roda logo depois do layout do
+		// próprio quadro (antes, um requestAnimationFrame lia as medidas com a
+		// página ainda por montar e forçava layouts extras ao abrir a ficha);
+		// todas as faixas são lidas primeiro e escritas depois
+		const first = new WeakSet();
+		const run = list => {
+			const shifts = list.map(tabs => {
+				if (first.has(tabs)) return 0;
+				first.add(tabs);
 				const t = tabs.querySelector(".sv-tab.is-active");
-				if (t) {
-					const tr = tabs.getBoundingClientRect(), r = t.getBoundingClientRect();
-					if (r.right > tr.right) tabs.scrollLeft += r.right - tr.right + 16;
-					else if (r.left < tr.left) tabs.scrollLeft -= tr.left - r.left + 16;
-				}
-				update();
+				if (!t || !tabs.getClientRects().length) return 0;
+				const tr = tabs.getBoundingClientRect(), r = t.getBoundingClientRect();
+				return r.right > tr.right ? r.right - tr.right + 16 : r.left < tr.left ? -(tr.left - r.left + 16) : 0;
 			});
-		});
+			list.forEach((tabs, i) => { if (shifts[i]) tabs.scrollLeft += shifts[i]; });
+			const states = list.map(measure);
+			list.forEach((tabs, i) => apply(tabs, states[i]));
+		};
+		if (typeof ResizeObserver === "function") {
+			const ro = new ResizeObserver(entries => run(entries.map(e => e.target).filter(t => t.isConnected)));
+			all.forEach(tabs => ro.observe(tabs));
+		} else requestAnimationFrame(() => run(all));
 	}
 
 	// 3.26.2: zonas de arrasto (barras de energia, controles deslizantes). O
@@ -1779,8 +1789,20 @@ class SteamVault {
 	// deixa o fallback (tipográfico/gradiente) que já está por baixo
 	// mapa de calor: abre mostrando os dias mais recentes (a direita), não o
 	// começo do ano; no celular a faixa rola na horizontal
+	// 1.7.0: as chamadas do mesmo quadro viram uma só, e todas as leituras vêm antes
+	// das escritas (antes, ler-escrever-ler forçava um layout por mapa; na ficha
+	// eram 3 layouts seguidos ao abrir). Mapas em aba escondida ficam de fora.
 	_heatmapsToEnd(root) {
-		requestAnimationFrame(() => root?.querySelectorAll?.(".sv-heatmap-wrap").forEach(w => { if (w.scrollWidth > w.clientWidth + 2 && w.getClientRects().length) w.scrollLeft = w.scrollWidth; }));
+		if (!root?.querySelector?.(".sv-heatmap-wrap")) return;
+		const q = this.__heatQ || (this.__heatQ = new Set());
+		q.add(root);
+		if (q.size > 1) return;
+		requestAnimationFrame(() => {
+			const wraps = [...q].flatMap(r => r.isConnected ? [...r.querySelectorAll(".sv-heatmap-wrap")] : []).filter(w => !w.closest("[hidden]"));
+			q.clear();
+			const todo = wraps.filter(w => w.getClientRects().length && w.scrollWidth > w.clientWidth + 2);
+			todo.forEach(w => { w.scrollLeft = w.scrollWidth; });
+		});
 	}
 
 	_imgFail(img) {

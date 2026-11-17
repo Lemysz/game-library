@@ -9,7 +9,16 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Adicionado
+- **Tempo para zerar pelo seu histórico**: sem horas estimadas na ficha, a Previsão calcula sozinha
+  quanto falta, pela mediana dos jogos que você zerou do mesmo gênero (ou de todos), e diz no seu
+  ritmo quantas semanas faltam.
+- **Navegação por controle** no computador: direcional move o foco, A abre, B volta, LB/RB trocam
+  de aba e Start abre a busca. Desligável em *Configurações › Efeitos e toque*.
+
+### Melhorado
+- **Desempenho**: a normalização de nomes (usada em filtros, gêneros e buscas) guarda o resultado;
+  as faixas de abas e os mapas de atividade medem tudo de uma vez, sem leituras de layout repetidas.
 
 ## [1.6.0] · 2026-11-15
 
