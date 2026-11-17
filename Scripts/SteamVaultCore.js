@@ -187,6 +187,20 @@ class SteamVaultCore {
 		return dates.filter(Boolean).sort().pop() || "";
 	}
 
+	// 1.7.0: quanto um jogo deve levar para zerar, pelo seu próprio histórico:
+	// mediana das horas dos jogos que você zerou, de preferência do mesmo gênero
+	// (3 ou mais); senão, de todos os zerados (3 ou mais). Sem histórico, null.
+	historyEstimate(model, g) {
+		const done = model.games.filter(x => x !== g && x.status === "Completed" && x.playtime.hours > 0);
+		const med = list => { const h = list.map(x => x.playtime.hours).sort((a, b) => a - b); const m = Math.floor(h.length / 2); return h.length % 2 ? h[m] : (h[m - 1] + h[m]) / 2; };
+		for (const genre of g.genres || []) {
+			const k = this.normalizeKey(genre);
+			const same = done.filter(x => (x.genres || []).some(y => this.normalizeKey(y) === k));
+			if (same.length >= 3) return { hours: med(same), n: same.length, genre };
+		}
+		return done.length >= 3 ? { hours: med(done), n: done.length, genre: "" } : null;
+	}
+
 	daysBetween(a, b) {
 		if (!a || !b) return null;
 		return Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000);
