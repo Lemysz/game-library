@@ -3572,5 +3572,8 @@
 	"No seu ritmo ({0}/semana), {1}. Pela sua média nos {2}: ~{3}": "At your pace ({0}/week), {1}. From your average across {2}: ~{3}",
 	"Você já passou da sua média": "You're already past your average",
 	"{0} jogos zerados": "{0} games finished",
-	"1 jogo zerado": "1 game finished"
+	"1 jogo zerado": "1 game finished",
+	"Navegação por controle": "Controller navigation",
+	"No computador, com um controle conectado: o direcional move, A abre, B volta, LB/RB trocam de aba e Start abre a busca.": "On desktop, with a controller connected: the D-pad moves, A opens, B goes back, LB/RB switch tabs and Start opens search.",
+	"Controle conectado: o direcional move, A abre e B volta": "Controller connected: the D-pad moves, A opens and B goes back"
 }

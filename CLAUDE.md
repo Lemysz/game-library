@@ -91,7 +91,7 @@ node checks.js        # sintaxe, versão, CSS, segredos, higiene do repositório
 node icons.js         # SVGs em dia com o registro
 node smoke.js         # todas as telas em 410 px e 1400 px, português e inglês
 node responsive.js    # 320/360/390/430 px e desktop, temas escuro e claro
-node functional.js    # 227 testes de uso (filtros, modais, gravação nas notas)
+node functional.js    # 228 testes de uso (filtros, modais, gravação nas notas)
 ```
 
 Num ambiente com Chromium já instalado, use `CHROMIUM_PATH=/caminho/do/chrome`. O harness simula o

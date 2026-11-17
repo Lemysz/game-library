@@ -330,6 +330,21 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		check("favorito: o ponto (padrão) esconde a marca nova", await p.evaluate(() => { const m = document.querySelector(".sv-card.is-favorite .sv-card-favmark"); return !!m && getComputedStyle(m).display === "none" && !document.body.classList.contains("sv-fav--ribbon"); }));
 	}
 
+	// ---- navegação por controle (1.7.0): controle simulado pela Gamepad API
+	{
+		await go("Dashboard/Biblioteca.md");
+		await p.evaluate(() => { const mk = () => ({ buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })), axes: [0, 0, 0, 0], connected: true, index: 0, id: "teste" }); window.__pad = mk(); window.__padOld = navigator.getGamepads; navigator.getGamepads = () => [window.__pad]; window.dispatchEvent(new Event("gamepadconnected")); });
+		const press = async i => { await p.evaluate(i => { window.__pad.buttons[i].pressed = true; }, i); await p.waitForTimeout(90); await p.evaluate(i => { window.__pad.buttons[i].pressed = false; }, i); await p.waitForTimeout(140); };
+		await press(13);
+		const first = await p.evaluate(() => document.activeElement?.matches(".sv-card-art") && document.body.classList.contains("sv-pad-active"));
+		await press(15);
+		const moved = await p.evaluate(() => document.activeElement?.matches(".sv-card-art"));
+		await press(0); await p.waitForTimeout(700);
+		check("controle: direcional foca os cards e A abre o jogo", first && moved && await p.evaluate(() => document.querySelector(".sv-layer .sv-app")?.dataset.page === "game"));
+		await p.evaluate(() => { navigator.getGamepads = window.__padOld; document.body.classList.remove("sv-pad-active"); });
+		await p.waitForTimeout(100);
+	}
+
 	// ---- busca avançada da Biblioteca (3.64.0)
 	await go("Dashboard/Biblioteca.md");
 	const libCount = async () => visible(".sv-library .sv-grid > .sv-card");
