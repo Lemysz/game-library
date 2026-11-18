@@ -9,7 +9,11 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Alterado
+- **Listas de escolha no visual do app (celular)**: tocar num campo de seleção (plataforma, status,
+  origem das conquistas e os demais dos formulários) abre uma janela da Game Library que sobe da
+  borda, com a opção atual marcada e busca quando a lista é longa, em vez da lista cinza do Android.
+  No computador continua a lista do sistema.
 
 ## [1.7.0] · 2026-11-18
 
