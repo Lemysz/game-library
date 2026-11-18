@@ -36,6 +36,8 @@ class SteamVaultSteam {
 			profile_not_found: "Perfil Steam não encontrado",
 			private_profile: "O perfil Steam precisa ser público",
 			private_game_details: "Os detalhes de jogos estão privados na Steam",
+			login_required: "A Steam só mostra a lista completa de jogos com login: as horas vêm dos jogados recentemente",
+			ach_hidden: "As conquistas deste jogo não aparecem no perfil público (detalhes de jogos privados ou jogo fora da conta)",
 			no_stats: "Este jogo não tem conquistas públicas na Steam",
 			not_owned: "Jogo não encontrado no perfil público",
 			no_app_id: "Jogo sem Steam AppID",
@@ -216,6 +218,12 @@ class SteamVaultSteam {
 		return m ? m[1].toLowerCase() : "";
 	}
 
+	// 1.10.2: a Steam passou a mandar visitantes sem login da lista de jogos
+	// para a tela de entrar (a requisição segue o redirecionamento)
+	_isLoginPage(text) {
+		return /"route":"\/login"|<title>[^<]*(?:Sign In|Iniciar sess)/i.test(String(text || ""));
+	}
+
 	_isPrivatePage(text) {
 		return /profile_private_info|This profile is private|perfil é privado/i.test(text);
 	}
@@ -287,7 +295,10 @@ class SteamVaultSteam {
 					});
 				}
 			}
-			return { list, hasUser: !!user?.achievements, rarity: { byHash, byName } };
+			// 1.10.2: sem permissão para ver (detalhes privados ou jogo fora da
+			// conta) a Steam manda "achievements: {}" com schema_hash 0 — não é "0 de N"
+			const hasUser = Object.keys(mine).length > 0 || Number(user?.schema_hash) > 0;
+			return { list, hasUser, rarity: { byHash, byName } };
 		} catch (_) { return null; }
 	}
 
@@ -308,6 +319,8 @@ class SteamVaultSteam {
 				if (!ssr.list.length) return { ok: false, code: "no_stats" };
 				return { ok: true, via: "ssr", list: ssr.list, total: ssr.list.length, unlocked: ssr.list.filter(a => a.unlocked).length, rarity: ssr.rarity };
 			}
+			// as páginas antigas (XML e HTML) hoje redirecionam para esta mesma
+			if (ssr) return { ok: false, code: ssr.list.length ? "ach_hidden" : "no_stats" };
 		}
 
 		const xmlRes = await this._get(`${base}/stats/${encodeURIComponent(appId)}/achievements/?xml=1&l=${lang}`);
@@ -395,6 +408,7 @@ class SteamVaultSteam {
 
 		const xml = await this._get(`${base}/games/?tab=all&xml=1`);
 		if (!xml.ok && xml.code === "rate_limited") return xml;
+		if (xml.ok && this._isLoginPage(xml.text)) return { ok: false, code: "login_required" };
 		if (xml.ok) {
 			const doc = this._xml(xml.text);
 			const games = [...(doc?.querySelectorAll("gamesList > games > game") || [])].map(el => ({
@@ -408,6 +422,7 @@ class SteamVaultSteam {
 
 		const res = await this._get(`${base}/games/?tab=all&l=english`);
 		if (!res.ok) return res;
+		if (this._isLoginPage(res.text)) return { ok: false, code: "login_required" };
 		if (this._isPrivatePage(res.text)) return { ok: false, code: "private_profile" };
 		let raw = null;
 		const attr = /data-profile-gameslist="([^"]+)"/.exec(res.text);
@@ -494,7 +509,7 @@ class SteamVaultSteam {
 			const link = el.querySelector(".game_name a")?.getAttribute("href") || "";
 			const details = this._t(el, ".game_info_details");
 			const achText = this._t(el, ".game_info_achievement_summary .ellipsis, .achievement_progress_bar_ctn");
-			const ach = /(\d+)\s*of\s*(\d+)/i.exec(this._t(el, ".game_info_achievement_summary") || achText);
+			const ach = /(\d+)\s*(?:of|\/)\s*(\d+)/i.exec(this._t(el, ".game_info_achievement_summary") || achText);
 			return {
 				name: this._t(el, ".game_name"), appId: (/app\/(\d+)/.exec(link) || [])[1] || "",
 				capsule: el.querySelector(".game_capsule")?.getAttribute("src") || "",

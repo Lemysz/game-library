@@ -759,6 +759,28 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	check("conquistas Steam no layout novo: lidas do valve-ssr-data (arquivada e de desenvolvedor fora)", r.via === "ssr" && r.total === 2, JSON.stringify(r));
 	check("conquistas Steam no layout novo: nota existente casada pelo ícone, sem duplicar", r.n === 2 && r.res.updated === 1 && r.res.created === 1 && r.oldUnlocked === true && /^\d{4}-\d{2}-\d{2}$/.test(r.oldDate) && r.oldApi === "ACH_WELCOME" && r.oldPct === 91.3, JSON.stringify(r));
 	check("conquistas Steam no layout novo: conquista nova criada bloqueada, com raridade e ícone", r.nightUnlocked === false && r.nightPct === 12 && /shared\.fastly\.steamstatic\.com\/community_assets\/images\/apps\/239140\/b{40}\.jpg/.test(r.nightIcon) && r.gTotal === 2 && r.gEarned === 1 && r.status === "ok", JSON.stringify(r));
+	// ---- Steam 1.10.2: formato atual para visitantes sem login
+	r = await p.evaluate(async () => {
+		const S = customJS.SteamVaultSteam; S.minIntervalMs = 0;
+		const cfg = { configured: true, steamId64: "76561190000000002", language: "english" };
+		const ssr = user => `<html><script id="valve-ssr-data" type="application/json">${JSON.stringify({ route: "/profiles/:steamid/achievements/:appid", renderContext: { queryData: JSON.stringify({ queries: [
+			{ queryKey: ["achievements", 620, "user_achievements", cfg.steamId64], state: { data: user } },
+			{ queryKey: ["achievements", 620, "schema_v2"], state: { data: { groups: [{ achievements: [{ internal_key: 1, api_name: "A", name: "A", icon_achieved: "a.jpg" }, { internal_key: 2, api_name: "B", name: "B", icon_achieved: "b.jpg" }] }] } } }
+		] }) } })}</script></html>`;
+		const login = `<html><head><title>Steam Community :: Sign In</title></head><script id="valve-ssr-data" type="application/json">{"route":"/login"}</script></html>`;
+		let user = { achievements: {}, groups: {}, schema_hash: 0 };
+		window.__mockReq = u => /\/games\//.test(u) ? { status: 200, headers: {}, text: login } : /\/stats\/620\//.test(u) ? { status: 200, headers: {}, text: ssr(user) } : null;
+		const owned = await S.fetchOwnedGames(cfg);
+		const hidden = await S.fetchPlayerAchievements("620", cfg);
+		user = { achievements: { "2": { internal_key: 2, unlocked: true, unlock_time: 1700000000 } }, schema_hash: 123 };
+		const shown = await S.fetchPlayerAchievements("620", cfg);
+		const rec = S._parseProfileHtml(`<div class="recent_game"><div class="game_info_details">216 hrs on record<br> last played on Oct 26</div><div class="game_name"><a href="https://steamcommunity.com/app/1808500">Jogo</a></div><span class="game_info_achievement_summary"><a>46 / 50 Achievements</a></span></div>`).recentGames[0];
+		window.__mockReq = null; S.minIntervalMs = 1600;
+		return { owned: owned.code, hidden: hidden.code, shown: shown.ok && `${shown.unlocked}/${shown.total}`, rec: `${rec.hours}h ${rec.achUnlocked}/${rec.achTotal} ${rec.lastPlayedText}` };
+	});
+	check("Steam sem login: lista de jogos que pede login vira aviso claro, não erro de formato", r.owned === "login_required", JSON.stringify(r));
+	check("Steam sem login: conquistas ocultas não viram \"0 de N\"; visíveis são lidas", r.hidden === "ach_hidden" && r.shown === "1/2", JSON.stringify(r));
+	check("Steam: jogados recentemente leem \"46 / 50\" conquistas e as horas", r.rec === "216h 46/50 Oct 26", JSON.stringify(r));
 	// ---- hubs de categoria (3.57.0): linguagem neutra, arte dos jogos, busca intacta
 	await go("Dashboard/Gêneros.md");
 	r = await p.evaluate(() => {
