@@ -8851,10 +8851,9 @@ body.theme-light .sv-plathero dt { color: var(--sv-text-2); }
 /* coleções automáticas: o card é um botão (zera o estilo de botão) */
 .sv-gtile--smart, .sv-host button.sv-gtile--smart { width: 100%; height: auto; min-height: 0; padding: 0; border: 0; font: inherit; text-align: left; white-space: normal; align-items: stretch; justify-content: flex-start; background: var(--sv-surface); color: var(--sv-text); box-shadow: inset 0 0 0 1px var(--sv-line); cursor: pointer; }
 .sv-host button.sv-gtile--smart:hover { background: var(--sv-surface-2); box-shadow: inset 0 0 0 1px var(--sv-line-strong); }
-.sv-gtile--smart strong { white-space: normal; }
-.sv-gtile--smart .sv-gtile-art { height: 76px; }
-.sv-app.sv-bp-sm .sv-gtile--smart .sv-gtile-art { height: 70px; }
-.sv-gtile--smart .sv-gtile-covers .sv-cover { width: 40px; margin-right: -12px; }
+.sv-gtile--smart strong { white-space: normal; -webkit-line-clamp: 3; }
+/* 1.8.1: a faixa de capas tem a mesma altura e as mesmas capas das coleções
+   comuns (antes era mais baixa e cortava as capas no topo) */
 /* página da coleção: capa vazia neutra (o ícone leva a cor), como os ícones dos gêneros */
 .sv-plart.is-empty { background: var(--sv-surface-2); box-shadow: inset 0 0 0 1px var(--sv-line), 0 14px 28px -16px rgba(0, 0, 0, 0.8); }
 .sv-plart.is-empty .sv-plart-icon { color: color-mix(in oklab, var(--sv-id) 72%, var(--sv-text)); opacity: 1; }
@@ -9524,3 +9523,43 @@ body:not(.theme-light) .sv-selsheet .sv-selsheet-opt .sv-i:not(#sv-x) { color: v
 @media (min-width: 761px) { .sv-selsheet { align-items: center; } .sv-selsheet-panel { border-radius: 20px; } }
 body.sv-reduced-motion .sv-selsheet * { transition-duration: 0ms !important; }
 @media (prefers-reduced-motion: reduce) { .sv-selsheet * { transition-duration: 0ms !important; } }
+
+/* ==========================================================================
+   62. STEAM: IMPORTAR, IDENTIFICAR E DIAGNÓSTICO (1.9.0)
+   ========================================================================== */
+.sv-recent-text .sv-btn { margin-top: 6px; }
+.sv-steamlib-actions { margin: 0 0 var(--sv-s4); }
+.sv-steamfix-row { grid-template-columns: 40px minmax(0, 1fr) auto; }
+.sv-steamfix-cover .sv-cover { width: 40px; }
+.sv-steamfix-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sv-steamfix-text a { color: var(--sv-text); text-decoration: none; }
+.sv-steamfix-text small { font-size: var(--sv-fs-micro); color: var(--sv-muted); line-height: 1.35; }
+.sv-app.sv-bp-sm .sv-steamfix-row { grid-template-columns: 40px minmax(0, 1fr); }
+.sv-app.sv-bp-sm .sv-steamfix-row > .sv-btn { grid-column: 2; justify-self: start; }
+
+/* janela "Importar da biblioteca Steam" */
+.sv-steampick { display: flex; flex-direction: column; gap: 10px; }
+.sv-steampick-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.sv-steampick-search { flex: 1 1 220px; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border-radius: 12px; background: var(--sv-surface); box-shadow: inset 0 0 0 1px var(--sv-line-strong); color: var(--sv-muted); }
+.sv-steampick-search .sv-i { width: 16px; height: 16px; flex: none; }
+.sv-steampick-search input, .sv-steampick-search input:focus { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; background: transparent; box-shadow: none; outline: none; color: var(--sv-text); font: inherit; }
+.sv-steampick-note { margin: 0; font-size: var(--sv-fs-micro); color: var(--sv-muted); }
+.sv-steampick-list { display: flex; flex-direction: column; border-radius: var(--sv-radius-lg); background: var(--sv-surface); box-shadow: inset 0 0 0 1px var(--sv-line); overflow: hidden; }
+.sv-steampick-row { display: grid; grid-template-columns: auto 92px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--sv-line); cursor: pointer; content-visibility: auto; contain-intrinsic-size: auto 56px; }
+.sv-steampick-row:first-child { border-top: 0; }
+.sv-steampick-row[hidden] { display: none; }
+.sv-steampick-row.is-in { cursor: default; opacity: 0.72; }
+.sv-steampick-row img { width: 92px; aspect-ratio: 184 / 69; object-fit: cover; border-radius: var(--sv-radius-xs) !important; background: var(--sv-surface-2); }
+.sv-steampick-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sv-steampick-text b { font-weight: 600; color: var(--sv-text); overflow-wrap: anywhere; }
+.sv-steampick-text small { font-size: var(--sv-fs-micro); color: var(--sv-muted); }
+.sv-steampick-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: var(--sv-fs-micro); font-weight: 700; color: var(--sv-green); background: color-mix(in srgb, var(--sv-green) 14%, transparent); }
+.sv-steampick-tag .sv-i { width: 12px; height: 12px; }
+body:not(.theme-light) .sv-steampick-tag .sv-i:not(#sv-x) { color: inherit; }
+.sv-app.sv-bp-sm .sv-steampick-row, .sv-modal-root .sv-steampick-row { grid-template-columns: auto 72px minmax(0, 1fr); }
+.sv-modal-root .sv-steampick-row img { width: 72px; }
+.sv-modal-root .sv-steampick-row > .sv-steampick-tag { grid-column: 3; justify-self: start; }
+@media (min-width: 761px) { .sv-modal-root .sv-steampick-row { grid-template-columns: auto 92px minmax(0, 1fr) auto; } .sv-modal-root .sv-steampick-row img { width: 92px; } .sv-modal-root .sv-steampick-row > .sv-steampick-tag { grid-column: auto; } }
+.sv-steampick-modal .sv-modal-foot { flex-wrap: wrap; }
+body.is-mobile .sv-steampick-modal .sv-modal-foot [data-pick-go] { order: -1; flex: 1 1 100%; }
+@media (max-width: 760px) { .sv-steampick-modal .sv-modal-foot [data-pick-go] { order: -1; flex: 1 1 100%; } .sv-steampick-modal .sv-modal-foot > .sv-btn--ghost { flex: 1 1 0; } }

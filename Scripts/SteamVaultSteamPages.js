@@ -145,14 +145,28 @@ class SteamVaultSteamPages {
 		</a>`;
 	}
 
+	// 1.9.0: a ficha de um jogo do perfil: pelo AppID ou, numa ficha de PC/Steam
+	// ainda sem AppID, pelo nome (a próxima sincronização grava o AppID)
+	localFor(ctx, appId, name) {
+		const { C, model } = ctx;
+		const byId = model.games.find(g => g.steamAppId && g.steamAppId === String(appId));
+		if (byId) return byId;
+		const [k1, k2] = C.steamTitleKeys(name);
+		const cands = model.games.filter(g => !g.steamAppId && (g.provider === "steam" || /^(pc|steam|windows)$/i.test(g.platform)));
+		const exact = cands.filter(g => C.steamTitleKeys(g.title)[0] === k1);
+		if (exact.length === 1) return exact[0];
+		const loose = cands.filter(g => C.steamTitleKeys(g.title)[1] === k2);
+		return loose.length === 1 ? loose[0] : null;
+	}
+
 	recentSteamRow(ctx, r) {
-		const { U, model } = ctx;
-		const local = model.games.find(g => g.steamAppId && g.steamAppId === r.appId);
+		const { U } = ctx;
+		const local = this.localFor(ctx, r.appId, r.name);
 		const pct = r.achTotal ? Math.floor((r.achUnlocked / r.achTotal) * 100) : null;
 		const tag = local ? `a ${U.openAttrs(local.path)}` : `div`;
 		return `<${tag} class="sv-recent-row">
 			${r.capsule ? `<img src="${U.attr(r.capsule)}" alt="" loading="lazy">` : `<span class="sv-recent-thumb">${local ? U.cover(local, { cls: "sv-cover--xs" }) : U.icon("joystick")}</span>`}
-			<span class="sv-recent-text"><b>${U.esc(r.name)}</b><span>${r.hours !== null ? `${U.fmtHours(r.hours)} registradas` : ""}${r.lastPlayedText ? `, ${U.esc(this.enDate(r.lastPlayedText))}` : ""}${local ? "" : `<em class="sv-muted"> fora do vault</em>`}</span></span>
+			<span class="sv-recent-text"><b>${U.esc(r.name)}</b><span>${r.hours !== null ? `${U.fmtHours(r.hours)} registradas` : ""}${r.lastPlayedText ? `, ${U.esc(this.enDate(r.lastPlayedText))}` : ""}${local ? "" : `<em class="sv-muted"> fora do vault</em>`}</span>${!local && r.appId ? U.btn("Adicionar", { icon: "plus", kind: "ghost", size: "sm", action: "steam-import", attrs: `data-appid="${U.attr(r.appId)}" data-name="${U.attr(r.name)}" data-hours="${U.attr(r.hours ?? "")}"`, title: `Criar a ficha de ${r.name} com conquistas, horas e artes` }) : ""}</span>
 			${pct !== null ? `<span class="sv-recent-ach">${U.progressBar(pct, { thin: true })}<small class="sv-num">${r.achUnlocked}/${r.achTotal}</small></span>` : ""}
 		</${tag.split(" ")[0]}>`;
 	}
@@ -222,13 +236,12 @@ class SteamVaultSteamPages {
 		const cfg = S.getConfig();
 		const owned = await S._readCache("games");
 		const steamGames = model.games.filter(g => C.isSteamGame(g));
-		const inVault = new Set(steamGames.map(g => g.steamAppId));
-		const missing = (owned?.games || []).filter(x => !inVault.has(String(x.appId)) && x.hours > 0).sort((a, b) => b.hours - a.hours).slice(0, 30);
+		const missing = (owned?.games || []).filter(x => x.hours > 0 && !this.localFor(ctx, x.appId, x.name)).sort((a, b) => b.hours - a.hours).slice(0, 30);
 		window.__svSteamMissing = missing;
 		const unsynced = steamGames.filter(g => g.provider === "steam" && C.autoSync(g) && !g.steam.lastSync);
 		const noArt = steamGames.filter(g => g.steamAppId && (!g.images.cover || !g.images.background || !g.images.logoFile));
 		const artNote = noArt.length ? `<div class="sv-callout">${U.icon("image")}<div><strong>${U.plural(noArt.length, "jogo sem todas as artes", "jogos sem todas as artes")}</strong><p>Capa, fundo e logo vêm da loja Steam, convertidos para um formato leve.</p></div>${U.btn("Baixar artes", { icon: "download", size: "sm", action: "steam-art-all" })}</div>` : "";
-		const head = `${this.subnav(ctx, "steam-library")}${this.connectionState(ctx, cfg, null)}${artNote}
+		const head = `${this.subnav(ctx, "steam-library")}${this.connectionState(ctx, cfg, null)}${this.attention(ctx, cfg)}${cfg.configured ? `<div class="sv-row-actions sv-steamlib-actions">${U.btn("Importar da biblioteca Steam", { icon: "download", kind: "primary", size: "sm", action: "steam-library-picker" })}${U.btn("Sincronizar agora", { icon: "refresh", kind: "ghost", size: "sm", action: "steam-sync" })}</div>` : ""}${artNote}
 			${unsynced.length && cfg.configured ? `<div class="sv-callout">${U.icon("cloudOff")}<div><strong>${U.plural(unsynced.length, "jogo nunca sincronizado", "jogos nunca sincronizados")}</strong><p>${unsynced.slice(0, 5).map(g => U.esc(g.title)).join(", ")}${unsynced.length > 5 ? "…" : ""}</p></div>${U.btn("Sincronizar", { icon: "refresh", size: "sm", action: "steam-sync" })}</div>` : ""}`;
 		const res = ctx.P.library(ctx, { games: steamGames, title: "Biblioteca Steam", active: "steam-library", sub: `${U.plural(steamGames.length, "jogo Steam no vault", "jogos Steam no vault")}${owned?.games ? `, ${U.fmtNum(owned.games.length)} no perfil público` : ""}`, headExtra: head, hideAchFilter: true });
 		if (missing.length) {
@@ -236,6 +249,25 @@ class SteamVaultSteamPages {
 				<div class="sv-steamlist">${missing.map(x => `<div class="sv-steamlist-row"><img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${U.attr(x.appId)}/capsule_184x69.jpg" alt="" loading="lazy" onerror="this.outerHTML='<span class=&quot;sv-steamlist-ph&quot;></span>'"><b>${U.esc(x.name)}</b><span class="sv-num">${U.fmtHours(x.hours)}</span>${U.btn("Adicionar", { icon: "plus", kind: "ghost", size: "sm", action: "steam-import", attrs: `data-appid="${U.attr(x.appId)}"`, title: `Criar a ficha de ${x.name} com conquistas e artes` })}</div>`).join("")}</div></section></div>`);
 		}
 		return res;
+	}
+
+	// 1.9.0: o que impede a sincronização, jogo a jogo (sem AppID, erro de
+	// sync, tempo que não veio e por quê). Tocar em Sincronizar tenta
+	// identificar o AppID sozinho antes de sincronizar.
+	attention(ctx, cfg) {
+		const { U, S, model } = ctx;
+		if (!cfg.configured) return "";
+		const rows = [];
+		for (const g of model.games) {
+			const cand = g.provider === "steam" || (["unset", "none"].includes(g.provider) && /^(pc|steam|windows)$/i.test(g.platform));
+			if (!g.steamAppId) { if (cand) rows.push([g, "Sem Steam AppID: tocar em Sincronizar procura pelo nome no seu perfil e na loja"]); continue; }
+			if (g.steam.status && !["ok", "no_stats"].includes(g.steam.status)) rows.push([g, S.message(g.steam.status)]);
+			else if (g.steam.lastSync && g.steam.playtimeHours === null && g.steam.hoursNote) rows.push([g, `Tempo de jogo não veio: ${S.message(g.steam.hoursNote === "not_owned" ? "not_owned" : g.steam.hoursNote)}`]);
+		}
+		if (!rows.length) return "";
+		return `<section class="sv-block sv-steamfix">${U.sectionHead("Precisam de atenção", { count: rows.length, sub: "Jogos que a sincronização não conseguiu completar" })}
+			<div class="sv-steamlist">${rows.slice(0, 20).map(([g, why]) => `<div class="sv-steamlist-row sv-steamfix-row"><span class="sv-steamfix-cover">${U.cover(g, { cls: "sv-cover--xs" })}</span><span class="sv-steamfix-text"><a ${U.openAttrs(g.path)}><b>${U.esc(g.title)}</b></a><small>${U.esc(why)}</small></span>${U.btn("Sincronizar", { icon: "refresh", kind: "ghost", size: "sm", action: "steam-sync-game", attrs: `data-path="${U.attr(g.path)}"` })}</div>`).join("")}</div>
+		</section>`;
 	}
 
 	// ============================================================== VITRINE
