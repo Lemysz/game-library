@@ -484,7 +484,13 @@ class SteamVaultPlatformPages {
 		const grades = isPs && ctx.H ? [["platinum", "Platinas"], ["gold", "Ouro"], ["silver", "Prata"], ["bronze", "Bronze"]].map(([k, l]) => [l, games.reduce((s, g) => s + g.achievements.filter(a => a.unlocked && ctx.H.grade(a) === k).length, 0)]) : [];
 		const isNin = id === "nintendo", isGp = id === "googleplay", isXb = id === "xbox";
 		// 3.70.0: Gamerscore (soma dos G) conquistado e disponível nos jogos de Xbox do vault
-		const gs = isXb ? games.reduce((o, g) => { for (const a of g.achievements) { const v = Number(a.points) || 0; o.total += v; if (a.unlocked) o.earned += v; } return o; }, { earned: 0, total: 0 }) : null;
+		// 1.10.0: sem G nas notas, vale o Gamerscore colado do TrueAchievements/Exophase
+		const gs = isXb ? games.reduce((o, g) => {
+			const pts = g.achievements.filter(a => Number(a.points) > 0);
+			if (!pts.length && g.xbox.gsTotal !== null) { o.total += g.xbox.gsTotal; o.earned += g.xbox.gsEarned ?? 0; return o; }
+			for (const a of pts) { const v = Number(a.points); o.total += v; if (a.unlocked) o.earned += v; }
+			return o;
+		}, { earned: 0, total: 0 }) : null;
 		const hours = games.reduce((s, g) => s + (g.playtime?.hours || 0), 0);
 		const byConsole = [...C.groupBy(games, g => g.platform)].sort((a, b) => b[1].length - a[1].length);
 		const xp = games.reduce((s, g) => s + g.achievements.filter(a => a.unlocked).reduce((t, a) => t + (a.points || 0), 0), 0);
@@ -506,6 +512,7 @@ class SteamVaultPlatformPages {
 					</div>
 					<div class="sv-plathero-actions">
 						${U.btn("Importar jogos", { icon: "plus", kind: "primary", action: "plat-import-list", attrs: `data-platform="${id}"` })}
+						${id === "xbox" ? U.btn("Colar do TrueAchievements/Exophase", { icon: "copy", kind: "ghost", action: "xbox-tracker-import" }) : ""}
 						${U.btn(cfg.name ? "Editar perfil" : "Configurar perfil", { icon: "user", kind: "ghost", action: "plat-connect", attrs: `data-platform="${id}"` })}
 						${link ? `<a class="sv-btn sv-btn--ghost" href="${U.attr(link)}">${U.icon("external")}<span>Abrir perfil</span></a>` : ""}
 					</div>
@@ -562,6 +569,50 @@ class SteamVaultPlatformPages {
 	}
 
 	// importar lista colada: pré-visualização (novos × já no vault) antes de criar
+	// 1.10.0: importar o perfil do TrueAchievements ou do Exophase por texto
+	// colado (os dois bloqueiam leitura automática). Prévia antes de gravar.
+	openTrackerImport(ctx) {
+		const U = this.U, PL = this.PL;
+		const body = document.createElement("div");
+		body.innerHTML = `<div class="sv-platconnect sv-trackimp">
+			<ol class="sv-trackimp-steps">
+				<li>No navegador, abra o seu perfil no <b>TrueAchievements</b> (aba Games) ou no <b>Exophase</b> (lista de jogos do Xbox).</li>
+				<li>Selecione a página inteira, copie e cole abaixo.</li>
+				<li>Confira a prévia e toque em Importar. Repita quando quiser atualizar.</li>
+			</ol>
+			<div class="sv-segmented" role="radiogroup" aria-label="De onde vem o texto">${[["trueachievements", "TrueAchievements"], ["exophase", "Exophase"]].map(([v, l], i) => `<button type="button" role="radio" data-trk="${v}" class="${i ? "" : "is-active"}" aria-checked="${!i}">${l}</button>`).join("")}</div>
+			<label class="sv-mgr-field"><span class="sv-label">Texto copiado</span><textarea class="sv-input sv-import-text" rows="7" data-trktext spellcheck="false" placeholder="Halo Infinite&#10;85 / 119&#10;1,040 / 1,600&#10;42h 15m"></textarea></label>
+			<div class="sv-trackimp-prev" data-trkprev><p class="sv-muted">Nenhum jogo reconhecido ainda.</p></div>
+		</div>`;
+		const m = this.V.modal({ title: "Importar do TrueAchievements/Exophase", sub: "Sem login: só o texto que você copiou", size: "md", body,
+			actions: `${U.btn("Cancelar", { kind: "ghost", attrs: "data-close" })}${U.btn("Importar", { kind: "primary", icon: "download", attrs: "data-trkgo disabled" })}` });
+		const go = m.el.querySelector("[data-trkgo]"), prev = body.querySelector("[data-trkprev]");
+		let source = "trueachievements", rows = [];
+		body.querySelectorAll("[data-trk]").forEach(b => b.addEventListener("click", () => {
+			source = b.dataset.trk;
+			body.querySelectorAll("[data-trk]").forEach(x => { const on = x === b; x.classList.toggle("is-active", on); x.setAttribute("aria-checked", String(on)); });
+		}));
+		const fmt = r => [r.achTotal !== null ? `${U.fmtNum(r.achUnlocked)}/${U.fmtNum(r.achTotal)} conquistas` : "", r.gsTotal !== null ? `${U.fmtNum(r.gsEarned)}/${U.fmtNum(r.gsTotal)} G` : "", r.hours !== null ? U.fmtHours(r.hours) : "", r.lastPlayed ? U.fmtDate(r.lastPlayed) : ""].filter(Boolean).join(" · ");
+		const update = () => {
+			rows = PL.parseTrackerText(body.querySelector("[data-trktext]").value);
+			go.disabled = !rows.length;
+			if (!rows.length) { prev.innerHTML = `<p class="sv-muted">Nenhum jogo reconhecido ainda.</p>`; return; }
+			const known = rows.filter(r => PL.xboxGameFor(r.title, ctx.model.games)).length;
+			prev.innerHTML = `<p class="sv-trackimp-sum"><b>${U.plural(rows.length, "jogo reconhecido", "jogos reconhecidos")}</b> · ${U.plural(known, "já tem ficha", "já têm ficha")} · ${U.plural(rows.length - known, "novo", "novos")}</p>
+				<ul class="sv-trackimp-list">${rows.slice(0, 60).map(r => `<li><b>${U.esc(r.title)}</b><small>${U.esc(fmt(r) || "—")}</small><span class="sv-trackimp-tag${PL.xboxGameFor(r.title, ctx.model.games) ? " is-in" : ""}">${PL.xboxGameFor(r.title, ctx.model.games) ? "Atualizar" : "Novo"}</span></li>`).join("")}</ul>
+				${rows.length > 60 ? `<p class="sv-muted">E mais ${rows.length - 60}.</p>` : ""}`;
+		};
+		body.querySelector("[data-trktext]").addEventListener("input", update);
+		go.addEventListener("click", async () => {
+			if (!rows.length) return;
+			go.disabled = true;
+			const r = await PL.importTrackerRows(rows, source, ctx, (i, n) => { prev.innerHTML = `<p class="sv-muted">Gravando ${i}/${n}…</p>`; });
+			m.close();
+			this.V.toast(`Xbox: ${[U.plural(r.updated, "ficha atualizada", "fichas atualizadas"), U.plural(r.created, "ficha criada", "fichas criadas"), r.fail ? `${r.fail} com falha` : ""].filter(Boolean).join(", ")}`, { tone: r.fail ? "warn" : "ok", icon: "check" });
+			setTimeout(() => this.V.refresh(), 300);
+		});
+	}
+
 	openImportList(ctx, id) {
 		const U = this.U, PL = this.PL, p = PL.get(id);
 		const body = document.createElement("div");

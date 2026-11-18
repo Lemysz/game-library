@@ -9563,3 +9563,18 @@ body:not(.theme-light) .sv-steampick-tag .sv-i:not(#sv-x) { color: inherit; }
 .sv-steampick-modal .sv-modal-foot { flex-wrap: wrap; }
 body.is-mobile .sv-steampick-modal .sv-modal-foot [data-pick-go] { order: -1; flex: 1 1 100%; }
 @media (max-width: 760px) { .sv-steampick-modal .sv-modal-foot [data-pick-go] { order: -1; flex: 1 1 100%; } .sv-steampick-modal .sv-modal-foot > .sv-btn--ghost { flex: 1 1 0; } }
+
+/* ==========================================================================
+   63. XBOX: COLAR DO TRUEACHIEVEMENTS/EXOPHASE (1.10.0)
+   ========================================================================== */
+.sv-trackimp { display: flex; flex-direction: column; gap: 12px; }
+.sv-trackimp-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: var(--sv-fs-small); color: var(--sv-text-2); line-height: 1.45; }
+.sv-trackimp-sum { margin: 0 0 8px; font-size: var(--sv-fs-small); color: var(--sv-text-2); }
+.sv-trackimp-sum b { color: var(--sv-text); }
+.sv-trackimp-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; border-radius: var(--sv-radius-lg); background: var(--sv-surface); box-shadow: inset 0 0 0 1px var(--sv-line); max-height: 280px; overflow-y: auto; }
+.sv-trackimp-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--sv-line); }
+.sv-trackimp-list li:first-child { border-top: 0; }
+.sv-trackimp-list b { grid-column: 1; font-weight: 600; color: var(--sv-text); overflow-wrap: anywhere; }
+.sv-trackimp-list small { grid-column: 1; font-size: var(--sv-fs-micro); color: var(--sv-muted); }
+.sv-trackimp-tag { grid-column: 2; grid-row: 1 / span 2; padding: 2px 8px; border-radius: 999px; font-size: var(--sv-fs-micro); font-weight: 700; color: var(--sv-blue); background: var(--sv-blue-soft); }
+.sv-trackimp-tag.is-in { color: var(--sv-green); background: color-mix(in srgb, var(--sv-green) 14%, transparent); }
