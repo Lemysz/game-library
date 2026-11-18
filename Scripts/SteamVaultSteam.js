@@ -546,9 +546,13 @@ class SteamVaultSteam {
 	// ============================================ sincronizar UM jogo
 	// Grava `steam:` na nota do jogo e o estado real em cada nota de
 	// conquista. Falha → preserva tudo que já existia e registra o motivo.
-	async syncGame(gameFile, { force = false, cfg = this.getConfig(), owned = null } = {}) {
+	// 1.9.0: achievements=false sincroniza só o tempo (jogo com AppID cuja origem
+	// das conquistas não é Steam Automática); recent = "Jogados recentemente" do
+	// perfil, usado quando a lista de jogos não traz o jogo; appId vem do
+	// chamador quando acabou de ser gravado (o índice do Obsidian demora)
+	async syncGame(gameFile, { force = false, cfg = this.getConfig(), owned = null, recent = null, achievements = true, appId: given = "" } = {}) {
 		const fm = app.metadataCache.getFileCache(gameFile)?.frontmatter || {};
-		const appId = String(fm.steamAppId || "").trim();
+		let appId = String(given || fm.steamAppId || "").trim();
 		const now = new Date().toISOString();
 		const prev = fm.steam && typeof fm.steam === "object" ? fm.steam : {};
 
@@ -560,42 +564,66 @@ class SteamVaultSteam {
 		};
 
 		if (!cfg.configured) return { ok: false, code: "not_configured" };
+		// sem AppID: tenta achar o jogo pelo nome na lista do seu perfil
+		if (!appId && owned?.ok) {
+			const hit = this.matchOwned(fm.title || gameFile.basename, owned.games);
+			if (hit) { appId = hit.appId; await this._linkAppId(gameFile, appId, "perfil"); }
+		}
 		if (!appId) { await writeState({ syncStatus: "no_app_id", syncError: this.message("no_app_id") }); return { ok: false, code: "no_app_id" }; }
 		if (!force && prev.lastSync && (Date.now() - Date.parse(prev.lastSync)) < this.staleHours * 3600000) {
 			return { ok: true, skipped: true };
 		}
 
 		const patch = {};
+		const prevHours = Number(prev.playtimeHours);
+		// o total da Steam é a referência (nada é somado); um zero ou "sem dado"
+		// nunca apaga horas que já tinham vindo da Steam
+		const setHours = (h, via) => {
+			if (h === null || h === undefined || !Number.isFinite(Number(h))) return false;
+			h = Number(h);
+			if (h === 0 && prevHours > 0) return false;
+			patch.playtimeHours = Math.round(h * 100) / 100;
+			patch.hoursVia = via;
+			return true;
+		};
 		// tempo/último jogado vêm da lista pública de jogos (1 requisição
 		// para a biblioteca toda — reaproveitada no sync em lote)
 		const ownedRes = owned || await this.fetchOwnedGames(cfg);
 		if (ownedRes.ok) {
 			const hit = ownedRes.games.find(x => x.appId === appId);
 			if (hit) {
-				patch.playtimeHours = hit.hours;
-				if (hit.hours2Weeks !== null) patch.playtime2Weeks = hit.hours2Weeks;
+				setHours(hit.hours, "lista");
+				if (hit.hours2Weeks !== null && hit.hours2Weeks !== undefined) patch.playtime2Weeks = hit.hours2Weeks;
 				if (hit.lastPlayed) patch.lastPlayed = hit.lastPlayed;
 				patch.owned = true;
 			} else patch.owned = false;
 		}
+		// 1.9.0: sem a lista (privada ou fora do ar), os "Jogados recentemente"
+		// do perfil também trazem o total de horas de cada jogo
+		const rec = (recent || []).find(x => String(x.appId) === appId);
+		if (patch.playtimeHours === undefined && rec && setHours(rec.hours, "recentes")) patch.owned = true;
 
-		const achRes = await this.fetchPlayerAchievements(appId, cfg);
+		const achRes = achievements ? await this.fetchPlayerAchievements(appId, cfg) : { ok: false, code: "skipped" };
 		let written = { updated: 0, created: 0 };
 		if (achRes.ok) {
 			written = await this._applyAchievements(gameFile, fm, appId, achRes, cfg);
 			patch.achievements = { total: achRes.total, unlocked: achRes.unlocked, via: achRes.via };
-			if (patch.playtimeHours === undefined && achRes.hoursPlayed) patch.playtimeHours = achRes.hoursPlayed;
+			if (patch.playtimeHours === undefined && achRes.hoursPlayed) setHours(achRes.hoursPlayed, "conquistas");
 		}
+		// por que o tempo não veio (fica visível no diagnóstico da Biblioteca Steam)
+		patch.hoursNote = patch.playtimeHours !== undefined ? "" : !ownedRes.ok ? (ownedRes.code || "unavailable") : patch.owned === false ? "not_owned" : "unavailable";
 
-		const gotSomething = achRes.ok || (ownedRes.ok && patch.owned);
-		const code = achRes.ok ? "ok" : (achRes.code === "no_stats" && gotSomething ? "ok" : achRes.code);
+		const gotSomething = achRes.ok || patch.playtimeHours !== undefined || (ownedRes.ok && patch.owned);
+		// sem conquistas (ou sem pedir conquistas) e sem tempo: o motivo é o da lista de jogos
+		const soft = achRes.code === "no_stats" || achRes.code === "skipped";
+		const code = achRes.ok ? "ok" : soft && gotSomething ? "ok" : soft ? (!ownedRes.ok ? ownedRes.code || "unavailable" : patch.hoursNote || "unavailable") : achRes.code;
 		if (gotSomething) {
 			patch.lastSync = now;
 			patch.syncStatus = code;
 			patch.syncError = code === "ok" ? "" : this.message(code);
 			if (achRes.code === "no_stats") patch.achievements = { total: 0, unlocked: 0, via: "none" };
 		} else {
-			patch.syncStatus = achRes.code || ownedRes.code || "unavailable";
+			patch.syncStatus = code || "unavailable";
 			patch.syncError = this.message(patch.syncStatus);
 		}
 		await writeState(patch);
@@ -679,6 +707,95 @@ class SteamVaultSteam {
 		return { updated, created };
 	}
 
+	// ================================================ identificar AppID
+	// 1.9.0: casa o nome da ficha com a lista de jogos do SEU perfil (é a fonte
+	// mais confiável: só tem jogos que você tem). Primeiro o nome exato
+	// (ignorando ™/®, acentos e pontuação), depois sem o nome da edição. Só
+	// aceita quando há um único candidato; com dois ou mais, não escolhe.
+	matchOwned(title, games) {
+		const C = customJS.SteamVaultCore;
+		const [k1, k2] = C.steamTitleKeys(title);
+		if (!k1) return null;
+		const keyed = (games || []).map(g => ({ g, k: C.steamTitleKeys(g.name) }));
+		const one = list => list.length === 1 ? list[0].g : null;
+		const exact = keyed.filter(x => x.k[0] === k1);
+		if (exact.length) return one(exact);
+		return one(keyed.filter(x => x.k[1] === k2));
+	}
+
+	_isSteamCandidate(fm) {
+		const C = customJS.SteamVaultCore, provider = C.achievementProvider(fm);
+		return provider === "steam" || (["unset", "none"].includes(provider) && /^(pc|steam|windows)$/i.test(String(fm.platform || "").trim()));
+	}
+
+	async _linkAppId(file, appId, from) {
+		await app.fileManager.processFrontMatter(file, f => {
+			if (String(f.steamAppId || "").trim()) return;
+			f.steamAppId = String(appId);
+			const cur = f.steam && typeof f.steam === "object" ? f.steam : {};
+			f.steam = { ...cur, appIdFrom: from };
+		});
+	}
+
+	// um jogo: AppID pela lista do perfil (cache ou consulta) e, se não der,
+	// pela busca da loja Steam (o mesmo "Identificar na Steam" do formulário,
+	// que só aceita nome igual). Devolve { appId, from } ou { code }.
+	async identifyGame(file) {
+		const fm = app.metadataCache.getFileCache(file)?.frontmatter || {};
+		const cur = String(fm.steamAppId || "").trim();
+		if (cur) return { appId: cur, from: "ficha" };
+		const title = fm.title || file.basename;
+		const cached = await this._readCache("games");
+		let owned = cached?.games?.length ? { ok: true, games: cached.games } : null;
+		if (!owned && this.getConfig().configured) {
+			owned = await this.fetchOwnedGames().catch(() => ({ ok: false }));
+			if (owned?.ok) await this._writeCache("games", { fetchedAt: new Date().toISOString(), games: owned.games });
+		}
+		const hit = owned?.ok ? this.matchOwned(title, owned.games) : null;
+		if (hit) { await this._linkAppId(file, hit.appId, "perfil"); return { appId: String(hit.appId), from: "perfil" }; }
+		const L = customJS.SteamVaultLegacy;
+		try {
+			const r = L?.findSteamApp ? await L.findSteamApp(title, { year: fm.releaseYear || "" }) : null;
+			if (r?.appid) { await this._linkAppId(file, r.appid, "loja"); return { appId: String(r.appid), from: "loja", name: r.name }; }
+		} catch (_) { /* sem resultado na loja */ }
+		return { code: "no_app_id" };
+	}
+
+	// sincronizar UM jogo com tudo que o lote usa (lista do perfil em cache,
+	// recentes, AppID automático); conquistas só com origem Steam Automática
+	async syncOne(file) {
+		const C = customJS.SteamVaultCore, cfg = this.getConfig();
+		const id = await this.identifyGame(file);
+		if (!id.appId) return { ok: false, code: "no_app_id" };
+		const cached = await this._readCache("games");
+		const owned = cached?.games?.length ? { ok: true, games: cached.games } : null;
+		const recent = (await this.readProfileCache())?.recentGames || [];
+		const fm = app.metadataCache.getFileCache(file)?.frontmatter || {};
+		const provider = C.achievementProvider(fm);
+		const r = await this.syncGame(file, { force: true, cfg, owned, recent, appId: id.appId, achievements: provider === "steam" && C.achievementSync(fm, provider) === "automatic" });
+		return { ...r, identified: id.from !== "ficha" ? id.from : "" };
+	}
+
+	// fichas de PC/Steam sem AppID → AppID pelo nome na lista do perfil
+	async resolveAppIds(owned) {
+		const out = { resolved: [], ambiguous: [] };
+		if (!owned?.ok) return out;
+		const taken = new Set();
+		const files = app.vault.getMarkdownFiles().filter(f => app.metadataCache.getFileCache(f)?.frontmatter?.type === "game");
+		for (const f of files) { const id = String(app.metadataCache.getFileCache(f).frontmatter.steamAppId || "").trim(); if (id) taken.add(id); }
+		for (const f of files) {
+			const fm = app.metadataCache.getFileCache(f).frontmatter;
+			if (String(fm.steamAppId || "").trim() || !this._isSteamCandidate(fm)) continue;
+			const hit = this.matchOwned(fm.title || f.basename, owned.games);
+			if (!hit) { const C = customJS.SteamVaultCore, [, k2] = C.steamTitleKeys(fm.title || f.basename); if (owned.games.some(g => C.steamTitleKeys(g.name)[1] === k2)) out.ambiguous.push({ path: f.path, title: fm.title || f.basename }); continue; }
+			if (taken.has(String(hit.appId))) continue; // outra ficha já usa este AppID
+			taken.add(String(hit.appId));
+			await this._linkAppId(f, hit.appId, "perfil");
+			out.resolved.push({ path: f.path, appId: String(hit.appId), name: hit.name });
+		}
+		return out;
+	}
+
 	// ================================================ sincronizar tudo
 	// incremental: só jogos Steam com cache vencido; uma lista de jogos
 	// do perfil para o lote inteiro; para no primeiro bloqueio
@@ -706,19 +823,30 @@ class SteamVaultSteam {
 			const owned = await this.fetchOwnedGames(cfg);
 			if (owned.ok) await this._writeCache("games", { fetchedAt: new Date().toISOString(), games: owned.games });
 			else if (owned.code === "rate_limited") return owned;
+			summary.ownedCode = owned.ok ? "ok" : owned.code;
+			const recent = profileRes.profile?.recentGames || [];
 
+			// 1.9.0: fichas sem AppID ganham o AppID pelo nome, na lista do seu perfil
+			const linked = owned.ok ? await this.resolveAppIds(owned) : { resolved: [], ambiguous: [] };
+			summary.identified = linked.resolved.length;
+			summary.ambiguous = linked.ambiguous.length;
+			const given = new Map(linked.resolved.map(r => [r.path, r.appId]));
+
+			// conquistas: só origem Steam em modo Automática (Manual = o usuário
+			// registra). Tempo de jogo: todo jogo com AppID (1.9.0)
+			const C = customJS.SteamVaultCore;
 			const files = app.vault.getMarkdownFiles().filter(f => {
 				const fm = app.metadataCache.getFileCache(f)?.frontmatter;
-				if (fm?.type !== "game") return false;
-				// só origem Steam em modo Automática (Manual = o usuário registra)
-				const C = customJS.SteamVaultCore, provider = C.achievementProvider(fm);
-				return provider === "steam" && C.achievementSync(fm, provider) === "automatic" && String(fm.steamAppId || "").trim();
+				return fm?.type === "game" && (String(fm.steamAppId || "").trim() || given.has(f.path));
 			});
 			let i = 0;
 			for (const f of files) {
 				i++;
 				onProgress({ index: i, total: files.length, name: f.basename });
-				const r = await this.syncGame(f, { force, cfg, owned });
+				const fm = app.metadataCache.getFileCache(f)?.frontmatter || {};
+				const provider = C.achievementProvider(fm);
+				const achievements = provider === "steam" && C.achievementSync(fm, provider) === "automatic";
+				const r = await this.syncGame(f, { force, cfg, owned, recent, achievements, appId: given.get(f.path) || "" });
 				if (r.skipped) summary.skipped++;
 				else if (r.ok) { summary.synced++; summary.created += r.created || 0; }
 				else summary.failed++;
@@ -840,29 +968,105 @@ class SteamVaultSteam {
 	// ============================================ jogos do perfil → fichas
 	// Cria a ficha de jogos que estão no perfil público e ainda não existem
 	// no vault, já com AppID, sincroniza as conquistas e baixa as artes.
+	// ================================================ dados da loja (appdetails)
+	// 1.9.0: gêneros, estúdio, distribuidora, ano, data e sinopse da página
+	// pública da loja (sem login). Usado na importação e em "Completar dados".
+	async storeDetails(appId) {
+		const L = customJS.SteamVaultLegacy;
+		if (!appId || !L?._steamFetchText) return null;
+		let d = null;
+		try {
+			const text = await L._steamFetchText(`https://store.steampowered.com/api/appdetails?appids=${encodeURIComponent(appId)}&cc=br&l=portuguese`, { "Accept": "application/json,text/plain,*/*" });
+			const node = JSON.parse(text)?.[String(appId)];
+			d = node?.success && node.data ? node.data : null;
+		} catch (_) { d = null; }
+		if (!d) return null;
+		const clean = s => (L._htmlDecode ? L._htmlDecode(String(s || "").replace(/<[^>]+>/g, " ")) : String(s || "")).replace(/\s+/g, " ").trim();
+		const year = (String(d.release_date?.date || "").match(/(?:19|20)\d{2}/) || [])[0];
+		// data completa ("24 mar. 2023", "24 de mar. de 2023", "Mar 24, 2023");
+		// "Em breve" ou só o trimestre não viram data
+		const mo = { jan: 1, fev: 2, feb: 2, mar: 3, abr: 4, apr: 4, mai: 5, may: 5, jun: 6, jul: 7, ago: 8, aug: 8, set: 9, sep: 9, out: 10, oct: 10, nov: 11, dez: 12, dec: 12 };
+		const raw = String(d.release_date?.date || "").toLowerCase();
+		let m = raw.match(/(\d{1,2})\s*(?:de\s*)?([a-z]{3})[a-zç]*\.?\s*(?:de\s*)?((?:19|20)\d{2})/);
+		if (!m) { const n = raw.match(/([a-z]{3})[a-z]*\.?\s*(\d{1,2}),?\s*((?:19|20)\d{2})/); if (n) m = [n[0], n[2], n[1], n[3]]; }
+		return {
+			name: clean(d.name),
+			genre: [...new Set((d.genres || []).map(x => clean(x.description)).filter(Boolean))],
+			developer: (d.developers || []).map(clean).filter(Boolean).join(", "),
+			publisher: (d.publishers || []).map(clean).filter(Boolean).join(", "),
+			releaseYear: year ? Number(year) : "",
+			releaseDate: m && mo[m[2]] ? `${m[3]}-${String(mo[m[2]]).padStart(2, "0")}-${String(m[1]).padStart(2, "0")}` : "",
+			summary: clean(d.short_description)
+		};
+	}
+
+	// só preenche o que está vazio na ficha (nada é sobrescrito)
+	async _fillEmpty(file, d) {
+		if (!d) return 0;
+		let n = 0;
+		await app.fileManager.processFrontMatter(file, f => {
+			const empty = v => v === undefined || v === null || v === "" || (Array.isArray(v) && !v.length);
+			for (const k of ["genre", "developer", "publisher", "releaseYear", "releaseDate", "summary"]) {
+				const v = d[k];
+				if ((Array.isArray(v) ? v.length : v !== "" && v !== undefined) && empty(f[k])) { f[k] = v; n++; }
+			}
+		});
+		return n;
+	}
+
+	// a ficha que já representa este jogo: mesmo AppID, ou mesmo nome numa
+	// ficha de PC/Steam ainda sem AppID (evita duplicar ao importar)
+	existingFor(appId, name) {
+		const C = customJS.SteamVaultCore;
+		const files = app.vault.getMarkdownFiles().filter(f => app.metadataCache.getFileCache(f)?.frontmatter?.type === "game");
+		const byId = files.find(f => String(app.metadataCache.getFileCache(f).frontmatter.steamAppId || "").trim() === String(appId));
+		if (byId) return { file: byId, how: "appid" };
+		const hits = files.filter(f => {
+			const fm = app.metadataCache.getFileCache(f).frontmatter;
+			return !String(fm.steamAppId || "").trim() && this._isSteamCandidate(fm) && this.matchOwned(fm.title || f.basename, [{ appId, name }]);
+		});
+		return hits.length === 1 ? { file: hits[0], how: "nome" } : null;
+	}
+
+	// jogos do perfil → fichas. Um jogo que já tem ficha não é duplicado: a
+	// ficha existente recebe o AppID (se faltava) e é sincronizada.
 	async importOwned(list, onProgress = () => {}) {
 		const C = customJS.SteamVaultCore;
 		const cfg = this.getConfig();
 		// a lista do perfil já está em cache (foi ela que montou "fora do vault")
 		const cached = await this._readCache("games");
 		const owned = cached?.games?.length ? { ok: true, games: cached.games } : await this.fetchOwnedGames(cfg).catch(() => ({ ok: false }));
-		let done = 0, failed = 0;
+		const recent = (await this.readProfileCache?.())?.recentGames || [];
+		let done = 0, failed = 0, linked = 0, skipped = 0;
 		for (let i = 0; i < list.length; i++) {
 			const it = list[i];
 			onProgress({ index: i + 1, total: list.length, name: it.name });
 			try {
-				const file = await C.createGameNote({
-					title: it.name, platform: "PC", achievementProvider: "steam", achievementSync: "automatic", steamAppId: String(it.appId),
-					status: it.hours > 0 ? "Paused" : "Backlog", lastPlayed: it.lastPlayed || ""
-				});
+				const ex = this.existingFor(it.appId, it.name);
+				if (ex?.how === "appid") { skipped++; continue; }
+				let file = ex?.file;
+				const meta = await this.storeDetails(it.appId).catch(() => null);
+				if (file) { await this._linkAppId(file, it.appId, "importação"); linked++; }
+				else {
+					file = await C.createGameNote({
+						// nome da loja sem ™/®/© (vai para o título e para o nome do arquivo)
+						title: String(it.name || "").replace(/[™®©]/g, "").replace(/\s+/g, " ").trim() || it.name, platform: "PC", achievementProvider: "steam", achievementSync: "automatic", steamAppId: String(it.appId),
+						status: it.hours > 0 ? "Paused" : "Backlog", lastPlayed: it.lastPlayed || "",
+						genre: meta?.genre || [], developer: meta?.developer || "", publisher: meta?.publisher || "",
+						releaseYear: meta?.releaseYear || "", releaseDate: meta?.releaseDate || "", summary: meta?.summary || ""
+					});
+					done++;
+				}
 				await this._waitMeta(file, "steamAppId");
-				await this.syncGame(file, { force: true, cfg, owned: owned?.ok ? owned : null });
+				if (ex?.file) await this._fillEmpty(file, meta);
+				const fm = app.metadataCache.getFileCache(file)?.frontmatter || {};
+				const provider = C.achievementProvider(fm);
+				await this.syncGame(file, { force: true, cfg, owned: owned?.ok ? owned : null, recent, appId: String(it.appId), achievements: provider === "steam" && C.achievementSync(fm, provider) === "automatic" });
 				await this.fetchArt(file).catch(() => {});
-				done++;
 			} catch (err) { failed++; console.warn("Game Library: importar", it.name, err); }
 		}
 		C.invalidate();
-		return { done, failed };
+		return { done, failed, linked, skipped };
 	}
 
 	// o Obsidian indexa o frontmatter de uma nota nova um instante depois

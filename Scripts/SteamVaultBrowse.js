@@ -109,6 +109,7 @@ class SteamVaultBrowse {
 			<div class="sv-gtile-art">${bg ? `<img class="sv-gtile-bg" src="${U.attr(bg)}" alt="" loading="lazy" decoding="async" data-sv-img>` : ""}${sc.games.length ? `<div class="sv-gtile-covers">${sc.games.slice(0, 3).map(g => U.cover(g)).join("")}</div>` : `<span class="sv-gtile-mark">${U.icon(icon)}</span>`}</div>
 			<div class="sv-gtile-body">
 				<span class="sv-gtile-head"><span class="sv-gtile-icon">${U.icon(icon)}</span><strong>${U.esc(sc.title)}</strong></span>
+				${sc.sub ? `<em>${U.esc(sc.sub)}</em>` : ""}
 				<span class="sv-gtile-meta"><span>${U.plural(sc.games.length, "jogo", "jogos")}</span>${s.hours ? `<span>${U.esc(U.fmtHours(s.hours))}</span>` : ""}</span>
 			</div>
 		</button>`;

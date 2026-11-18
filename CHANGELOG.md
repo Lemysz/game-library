@@ -11,6 +11,32 @@ versões menores.
 
 Nada ainda.
 
+## [1.9.0] · 2026-11-18
+
+Integração com a Steam mais completa: AppID automático, horas confiáveis e importação da biblioteca. Sem mudança obrigatória no formato das notas (campo novo opcional `playtimeSource`).
+
+### Adicionado
+- **Importar da biblioteca Steam**: a lista inteira do perfil, com busca, filtros (fora do vault, no
+  vault, todos) e seleção de alguns ou de todos. As fichas novas vêm com gêneros, desenvolvedora,
+  publicadora, ano, sinopse, horas, conquistas e artes.
+- **Adicionar a partir de "Jogados recentemente"** no Perfil Steam.
+- **Precisam de atenção** na Biblioteca Steam: jogos sem AppID ou com sincronização incompleta, com o
+  motivo e um botão para tentar de novo.
+- **Usar as minhas horas** (ficha › ⋯): mantém o tempo registrado por você no lugar do da Steam.
+
+### Corrigido
+- **AppID da Steam identificado sozinho**: fichas sem AppID (como um *Rise of the Tomb Raider*
+  cadastrado à mão) ganham o AppID pelo nome na lista do seu perfil, ignorando ™/® e o nome da
+  edição. Antes, se a busca da loja falhasse ao criar a ficha, ela ficava sem AppID para sempre.
+- **Horas da Steam**: passam a vir para todo jogo com AppID, inclusive com conquistas em modo Manual;
+  um zero ou uma resposta vazia não apaga mais horas já sincronizadas; com a lista de jogos privada,
+  as horas dos jogados recentemente são usadas; o motivo aparece quando não vierem.
+- **Importação sem duplicatas**: jogo que já tem ficha (pelo AppID ou pelo nome) não ganha outra;
+  o nome da loja entra sem ™/®.
+- **Coleções automáticas alinhadas com as suas coleções**: a faixa de capas tinha altura menor e
+  cortava as capas no topo; agora tem o mesmo tamanho, o título usa até 3 linhas (sem "...") e cada
+  uma mostra a sua descrição curta.
+
 ## [1.8.0] · 2026-11-18
 
 Listas de escolha no visual do app, no celular. Sem mudança no formato das notas.
@@ -285,7 +311,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.8.0...HEAD
+[Não lançado]: ../../compare/v1.9.0...HEAD
+[1.9.0]: ../../releases/tag/v1.9.0
 [1.8.0]: ../../releases/tag/v1.8.0
 [1.7.0]: ../../releases/tag/v1.7.0
 [1.6.0]: ../../releases/tag/v1.6.0
