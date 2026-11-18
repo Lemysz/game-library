@@ -961,7 +961,9 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 			am: typeof customJS.SteamVaultAchManager?.open === "function" }; });
 		check("Xbox: as integrações e importações antigas foram removidas (API, fontes, página salva, favorito)", !gone.a.length && !gone.pl.length && !gone.legacy && gone.kind === "manual" && gone.am, JSON.stringify(gone));
 		await go("Dashboard/Xbox.md");
-		check("Xbox: a página do perfil é manual, sem conexão nem sites externos", await p.evaluate(() => { const t = document.querySelector(".sv-app").innerText; return !/TrueAchievements|Exophase|MetaGamerScore|XB\.Live|OpenXBL/i.test(t) && ![...document.querySelectorAll(".sv-app button, .sv-app a")].some(b => /Xbox|Microsoft/i.test(b.textContent) && /Conectar|Entrar com/i.test(b.textContent)); }));
+		// 1.10.0: TrueAchievements/Exophase voltam só como texto colado (pedido do dono do projeto);
+		// a página continua sem conexão: nenhum outro site e nenhuma requisição a eles
+		check("Xbox: a página do perfil é manual, sem conexão nem sites externos", await p.evaluate(() => { const t = document.querySelector(".sv-app").innerText; return !/MetaGamerScore|XB\.Live|OpenXBL/i.test(t) && !(window.__reqs || []).some(u => /trueachievements|exophase/i.test(u)) && ![...document.querySelectorAll(".sv-app button, .sv-app a")].some(b => /Xbox|Microsoft/i.test(b.textContent) && /Conectar|Entrar com/i.test(b.textContent)); }));
 		// leitura da lista em lote
 		const P = await p.evaluate(() => { const AM = customJS.SteamVaultAchManager; const s = r => r.rows.map(x => `${x.name}|${x.description}|${x.points}|${x.category}|${x.set}`);
 			return { pipe: s(AM.parseBulk("Primeiro passo | Complete o primeiro capítulo | 10\nGuerreiro | Derrote o chefe | 20 | Combate\n## Farewell\nAdeus | Fim | 50 | História | \n## Jogo base\nVolta | Base | 5")),
