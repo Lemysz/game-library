@@ -760,7 +760,7 @@ class SteamVault {
 	}
 
 	_handles(a) {
-		return ["favorite", "menu", "manage", "steam-sync-game", "steam-sync", "steam-sync-force", "steam-connect", "steam-clear",
+		return ["favorite", "menu", "manage", "steam-sync-game", "steam-hours-source", "steam-library-picker", "steam-sync", "steam-sync-force", "steam-connect", "steam-clear",
 			"add-game", "random-game", "legacy", "toggle-sidebar", "open-drawer", "close-drawer", "shelf-prev", "shelf-next",
 			"repair-names", "collection-games", "open-category", "identity-edit", "smart-back",
 			"ra-connect", "ra-sync", "ra-sync-force", "ra-sync-game", "ra-import-game", "ra-import-all", "ra-disconnect", "obs", "search-open", "search-close", "live-toggle", "live-stop", "live-pause", "queue-toggle", "queue-manage",
@@ -845,6 +845,8 @@ class SteamVault {
 			case "steam-sync": return this.steamSyncAll(ctx, false);
 			case "steam-sync-force": return this.steamSyncAll(ctx, true);
 			case "steam-sync-game": this._closeMenus(root); return this.steamSyncGame(ctx, path);
+			case "steam-hours-source": this._closeMenus(root); return this.steamHoursSource(ctx, path);
+			case "steam-library-picker": return this.steamLibraryPicker(ctx);
 			case "steam-import": return this.steamImport(ctx, el.dataset.appid || null, el);
 			case "steam-art": this._closeMenus(root); return this.steamArt(ctx, path ? [path] : null, el);
 			case "steam-details": this._closeMenus(root); return this.steamDetails(ctx, path);
@@ -3127,11 +3129,14 @@ class SteamVault {
 	}
 
 	// jogos do perfil público → fichas (um ou todos da lista "fora do vault")
-	async steamImport(ctx, appId, el) {
+	async steamImport(ctx, appId, el, picked = null) {
 		const { S } = ctx;
 		if (!S.getConfig().configured) return this.steamConnect(ctx);
 		const all = window.__svSteamMissing || [];
-		const list = appId ? all.filter(x => String(x.appId) === String(appId)) : all;
+		// 1.9.0: também aceita um jogo dos "Jogados recentemente" (dados no botão)
+		// ou a seleção da janela da biblioteca inteira
+		let list = picked || (appId ? all.filter(x => String(x.appId) === String(appId)) : all);
+		if (!list.length && appId && el?.dataset?.name) list = [{ appId: String(appId), name: el.dataset.name, hours: Number(el.dataset.hours) || 0, lastPlayed: "" }];
 		if (!list.length) return this.toast("Nada para adicionar", { tone: "warn" });
 		if (list.length > 1) {
 			const ok = await this.confirm({ title: `Adicionar ${list.length} jogos ao vault?`, text: "Cada jogo vira uma ficha com o schema completo, sincroniza as conquistas do seu perfil público e baixa capa, fundo e logo da loja. Pode levar alguns minutos (a Steam é consultada com calma).", confirm: "Adicionar" });
@@ -3141,7 +3146,9 @@ class SteamVault {
 		const t = this.toast("Steam: criando fichas…", { sticky: true, progress: 0 });
 		try {
 			const r = await S.importOwned(list, ({ index, total, name }) => t.update(`Steam: ${name} (${index}/${total})`, { progress: (index / total) * 100 }));
-			t.update(`Steam: ${customJS.SteamVaultUI.plural(r.done, "ficha criada", "fichas criadas")}${r.failed ? `, ${r.failed} com falha` : ""}`, { tone: r.failed ? "warn" : "ok" });
+			const U = customJS.SteamVaultUI;
+			const parts = [U.plural(r.done, "ficha criada", "fichas criadas"), r.linked ? U.plural(r.linked, "ficha existente ligada à Steam", "fichas existentes ligadas à Steam") : "", r.skipped ? U.plural(r.skipped, "já estava no vault", "já estavam no vault") : "", r.failed ? `${r.failed} com falha` : ""].filter(Boolean);
+			t.update(`Steam: ${parts.join(", ")}`, { tone: r.failed ? "warn" : "ok" });
 			window.__svSteamMissing = all.filter(x => !list.includes(x));
 			if (list.length === 1 && r.done) {
 				const g = ctx.C.model(ctx.dv).games.find(x => x.steamAppId === String(list[0].appId));
@@ -3150,6 +3157,82 @@ class SteamVault {
 		} catch (err) { t.update(`Steam: ${err.message}`, { tone: "error" }); }
 		t.close(5000);
 		this.refresh();
+	}
+
+	// 1.9.0: a biblioteca Steam inteira (lista pública do perfil): o que já tem
+	// ficha e o que falta, com busca, filtro e seleção. "Atualizar lista" lê o
+	// perfil de novo; importar não duplica (ver S.importOwned).
+	async steamLibraryPicker(ctx) {
+		const { U, S } = ctx;
+		if (!S.getConfig().configured) return this.steamConnect(ctx);
+		let cache = await S._readCache("games");
+		if (!cache?.games?.length) {
+			const t = this.toast("Lendo a biblioteca do seu perfil Steam…", { sticky: true, icon: "refresh" });
+			const r = await S.fetchOwnedGames().catch(() => ({ ok: false, code: "network" }));
+			t.close(0);
+			if (!r.ok) return this.toast(S.message(r.code), { tone: "warn" });
+			cache = { fetchedAt: new Date().toISOString(), games: r.games };
+			await S._writeCache("games", cache);
+		}
+		const P = ctx.SP;
+		const rows = cache.games.map(x => ({ ...x, local: P?.localFor ? P.localFor(ctx, x.appId, x.name) : null })).sort((a, b) => (b.hours || 0) - (a.hours || 0) || String(a.name).localeCompare(String(b.name)));
+		const nIn = rows.filter(x => x.local).length;
+		const body = document.createElement("div");
+		body.className = "sv-steampick";
+		body.innerHTML = `<div class="sv-steampick-bar">
+				<label class="sv-steampick-search">${U.icon("search")}<input type="search" placeholder="Buscar jogo" aria-label="Buscar jogo"></label>
+				<div class="sv-segmented" role="radiogroup" aria-label="Mostrar">${[["out", `Fora do vault · ${rows.length - nIn}`], ["in", `No vault · ${nIn}`], ["all", `Todos · ${rows.length}`]].map(([v, l], i) => `<button type="button" role="radio" data-pick-filter="${v}" class="${i ? "" : "is-active"}" aria-checked="${!i}">${U.esc(l)}</button>`).join("")}</div>
+			</div>
+			<p class="sv-steampick-note">Lista pública do seu perfil, lida ${U.esc(U.relDate(String(cache.fetchedAt || "").slice(0, 10)))}. Jogos já no vault não são duplicados: a ficha existente só é ligada à Steam.</p>
+			<div class="sv-steampick-list">${rows.map((x, i) => `<label class="sv-steampick-row${x.local ? " is-in" : ""}" data-pick-i="${i}" data-pick-name="${U.attr(ctx.C.normalizeKey(x.name))}">
+				<input type="checkbox" data-pick="${i}"${x.local ? " disabled" : ""}>
+				<img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${U.attr(x.appId)}/capsule_184x69.jpg" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+				<span class="sv-steampick-text"><b>${U.esc(x.name)}</b><small>${x.hours > 0 ? `${U.esc(U.fmtHours(x.hours))} na Steam` : "Nunca jogado"}${x.lastPlayed ? ` · ${U.esc(U.relDate(x.lastPlayed))}` : ""}</small></span>
+				${x.local ? `<span class="sv-steampick-tag">${U.icon("check")}No vault</span>` : ""}
+			</label>`).join("")}</div>`;
+		const m = this.modal({ title: "Importar da biblioteca Steam", sub: `${U.plural(rows.length, "jogo", "jogos")} no seu perfil`, body, size: "lg", cls: "sv-steampick-modal",
+			actions: `${U.btn("Atualizar lista", { icon: "refresh", kind: "ghost", attrs: "data-pick-reload" })}${U.btn("Selecionar visíveis", { kind: "ghost", attrs: "data-pick-all" })}${U.btn("Importar selecionados", { icon: "download", kind: "primary", attrs: "data-pick-go disabled" })}` });
+		const el = m.el;
+		let filter = "out";
+		const apply = () => {
+			const q = ctx.C.normalizeKey(el.querySelector(".sv-steampick-search input").value);
+			el.querySelectorAll(".sv-steampick-row").forEach(r => {
+				const x = rows[Number(r.dataset.pickI)];
+				r.hidden = (filter === "out" && x.local) || (filter === "in" && !x.local) || (!!q && !r.dataset.pickName.includes(q));
+			});
+		};
+		const count = () => {
+			const n = el.querySelectorAll("[data-pick]:checked").length;
+			const go = el.querySelector("[data-pick-go]");
+			go.disabled = !n;
+			go.querySelector("span").textContent = n ? `Importar ${U.plural(n, "jogo", "jogos")}` : "Importar selecionados";
+		};
+		apply();
+		el.querySelector(".sv-steampick-search input").addEventListener("input", apply);
+		el.querySelectorAll("[data-pick-filter]").forEach(b => b.addEventListener("click", () => {
+			filter = b.dataset.pickFilter;
+			el.querySelectorAll("[data-pick-filter]").forEach(x => { const on = x === b; x.classList.toggle("is-active", on); x.setAttribute("aria-checked", String(on)); });
+			apply();
+		}));
+		el.addEventListener("change", e => { if (e.target.matches("[data-pick]")) count(); });
+		el.querySelector("[data-pick-all]").addEventListener("click", () => {
+			const vis = [...el.querySelectorAll(".sv-steampick-row:not([hidden]) [data-pick]:not(:disabled)")];
+			const on = vis.some(c => !c.checked);
+			vis.forEach(c => { c.checked = on; });
+			count();
+		});
+		el.querySelector("[data-pick-reload]").addEventListener("click", async () => {
+			const r = await S.fetchOwnedGames().catch(() => ({ ok: false, code: "network" }));
+			if (!r.ok) return this.toast(S.message(r.code), { tone: "warn" });
+			await S._writeCache("games", { fetchedAt: new Date().toISOString(), games: r.games });
+			m.close(); this.steamLibraryPicker(ctx);
+		});
+		el.querySelector("[data-pick-go]").addEventListener("click", async e => {
+			const picked = [...el.querySelectorAll("[data-pick]:checked")].map(c => rows[Number(c.dataset.pick)]).map(({ local, ...x }) => x);
+			if (!picked.length) return;
+			m.close();
+			await this.steamImport(ctx, null, null, picked);
+		});
 	}
 
 	// capa, fundo e logo da loja Steam para um jogo (ou todos os que faltam)
@@ -3165,35 +3248,20 @@ class SteamVault {
 		const f = app.vault.getAbstractFileByPath(path);
 		if (!f || !L?._steamFetchText) return this.toast("Ficha não encontrada", { tone: "error" });
 		const t = this.toast("Buscando os dados na loja Steam…", { sticky: true, icon: "refresh" });
-		let d = null;
-		try {
-			const text = await L._steamFetchText(`https://store.steampowered.com/api/appdetails?appids=${encodeURIComponent(g.steamAppId)}&cc=br&l=portuguese`, { "Accept": "application/json,text/plain,*/*" });
-			const node = JSON.parse(text)?.[String(g.steamAppId)];
-			d = node?.success && node.data ? node.data : null;
-		} catch (_) { d = null; }
+		// 1.9.0: a leitura da loja mora no módulo Steam (a importação usa a mesma)
+		const d = await this.mods().S?.storeDetails?.(g.steamAppId).catch(() => null);
 		t.close(0);
 		if (!d) return this.toast("A loja Steam não respondeu ou não tem dados deste jogo", { tone: "warn" });
 		const fm = app.metadataCache?.getFileCache?.(f)?.frontmatter || ctx.dv?.page?.(path) || {};
 		const str = v => (v === undefined || v === null ? "" : String(v)).trim();
 		const arr = v => (Array.isArray(v) ? v : v ? [v] : []).map(x => str(x)).filter(Boolean);
-		const clean = s => (L._htmlDecode ? L._htmlDecode(String(s || "").replace(/<[^>]+>/g, " ")) : String(s || "")).replace(/\s+/g, " ").trim();
-		const year = (String(d.release_date?.date || "").match(/(?:19|20)\d{2}/) || [])[0];
-		// data completa ("24 mar. 2023", "24 de mar. de 2023", "Mar 24, 2023");
-		// "Em breve" ou só o trimestre não viram data
-		const relIso = (() => {
-			const mo = { jan: 1, fev: 2, feb: 2, mar: 3, abr: 4, apr: 4, mai: 5, may: 5, jun: 6, jul: 7, ago: 8, aug: 8, set: 9, sep: 9, out: 10, oct: 10, nov: 11, dez: 12, dec: 12 };
-			const raw = String(d.release_date?.date || "").toLowerCase();
-			let m = raw.match(/(\d{1,2})\s*(?:de\s*)?([a-z]{3})[a-zç]*\.?\s*(?:de\s*)?((?:19|20)\d{2})/);
-			if (!m) { const n = raw.match(/([a-z]{3})[a-z]*\.?\s*(\d{1,2}),?\s*((?:19|20)\d{2})/); if (n) m = [n[0], n[2], n[1], n[3]]; }
-			return m && mo[m[2]] ? `${m[3]}-${String(mo[m[2]]).padStart(2, "0")}-${String(m[1]).padStart(2, "0")}` : "";
-		})();
 		const rows = [
-			{ k: "genre", label: "Gêneros", cur: arr(fm.genre), val: [...new Set((d.genres || []).map(x => clean(x.description)).filter(Boolean))] },
-			{ k: "developer", label: "Desenvolvedora", cur: str(fm.developer), val: (d.developers || []).map(clean).filter(Boolean).join(", ") },
-			{ k: "publisher", label: "Publicadora", cur: str(fm.publisher), val: (d.publishers || []).map(clean).filter(Boolean).join(", ") },
-			{ k: "releaseYear", label: "Ano de lançamento", cur: str(fm.releaseYear), val: year ? Number(year) : "" },
-			{ k: "releaseDate", label: "Data de lançamento", cur: C.iso(fm.releaseDate) || "", val: relIso },
-			{ k: "summary", label: "Sinopse", cur: str(fm.summary), val: clean(d.short_description) }
+			{ k: "genre", label: "Gêneros", cur: arr(fm.genre), val: d.genre },
+			{ k: "developer", label: "Desenvolvedora", cur: str(fm.developer), val: d.developer },
+			{ k: "publisher", label: "Publicadora", cur: str(fm.publisher), val: d.publisher },
+			{ k: "releaseYear", label: "Ano de lançamento", cur: str(fm.releaseYear), val: d.releaseYear },
+			{ k: "releaseDate", label: "Data de lançamento", cur: C.iso(fm.releaseDate) || "", val: d.releaseDate },
+			{ k: "summary", label: "Sinopse", cur: str(fm.summary), val: d.summary }
 		].filter(r => Array.isArray(r.val) ? r.val.length : str(r.val));
 		return this._detailsReview(ctx, { g, f, rows, title: "Completar dados pela Steam", same: "Os dados da ficha já batem com a Steam", none: "A loja Steam não tem esses dados para este jogo", done: n => `${U.plural(n, "campo atualizado", "campos atualizados")} com os dados da Steam`, log: "Steam" });
 	}
@@ -3388,6 +3456,18 @@ class SteamVault {
 		this.refresh();
 	}
 
+	// 1.9.0: ficha › ⋯ › usar as horas da Steam ou as suas (playtimeSource)
+	async steamHoursSource(ctx, path) {
+		const f = app.vault.getAbstractFileByPath(path);
+		const g = ctx.model.gamesByPath.get(path);
+		if (!f || !g) return;
+		const manual = g.playtimeSource !== "manual";
+		await app.fileManager.processFrontMatter(f, x => { if (manual) x.playtimeSource = "manual"; else delete x.playtimeSource; });
+		ctx.C.invalidate();
+		this.toast(manual ? "A ficha passa a usar as suas horas" : "A ficha passa a usar as horas da Steam", { tone: "ok", icon: "clock" });
+		setTimeout(() => this.refresh(), 250);
+	}
+
 	async steamSyncGame(ctx, path) {
 		const { S } = ctx;
 		if (!S.getConfig().configured) return this.steamConnect(ctx);
@@ -3395,8 +3475,9 @@ class SteamVault {
 		if (!file) return;
 		const t = this.toast(`Sincronizando ${file.basename}…`, { sticky: true, icon: "refresh" });
 		try {
-			const r = await S.syncGame(file, { force: true });
-			t.update(r.ok ? `${file.basename}: ${S.message("ok")}${r.created ? `, ${customJS.SteamVaultUI.plural(r.created, "conquista nova", "conquistas novas")}` : ""}` : `${file.basename}: ${S.message(r.code)}`, { tone: r.ok ? "ok" : "warn" });
+			// 1.9.0: identifica o AppID sozinho (perfil, depois loja) e usa a lista em cache
+			const r = await S.syncOne(file);
+			t.update(r.ok ? `${file.basename}: ${S.message("ok")}${r.identified ? " (AppID identificado)" : ""}${r.created ? `, ${customJS.SteamVaultUI.plural(r.created, "conquista nova", "conquistas novas")}` : ""}` : `${file.basename}: ${S.message(r.code)}`, { tone: r.ok ? "ok" : "warn" });
 		} catch (err) { t.update(`${S.message("network")}: ${err.message}`, { tone: "error" }); }
 		t.close(5000);
 		this.refresh();

@@ -201,6 +201,19 @@ class SteamVaultCore {
 		return done.length >= 3 ? { hours: med(done), n: done.length, genre: "" } : null;
 	}
 
+	// 1.9.0: chave para casar o nome de uma ficha com o da Steam. A primeira
+	// ignora maiúsculas, acentos, ™/® e pontuação ("Rise of the Tomb Raider™"
+	// = "Rise of the Tomb Raider"); a segunda também ignora o nome da edição
+	// (GOTY, Definitive, 20 Year Celebration…). "Remastered" continua contando:
+	// é outro jogo na loja.
+	steamTitleKeys(s) {
+		const k1 = this.normalizeKey(s);
+		const k2 = (" " + k1 + " ")
+			.replace(/ (game of the year|goty|definitive|complete|deluxe|digital deluxe|ultimate|enhanced|anniversary|gold|standard|director s cut|directors cut|\d+ year celebration|edition|bundle)(?= )/g, " ")
+			.replace(/\s+/g, " ").trim();
+		return [k1, k2 || k1];
+	}
+
 	daysBetween(a, b) {
 		if (!a || !b) return null;
 		return Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000);
@@ -530,12 +543,15 @@ class SteamVaultCore {
 			dateAdded: this.iso(p.dateAdded), startDate: this.iso(p.startDate), completionDate: this.iso(p.completionDate),
 			lastPlayedField: this.iso(p.lastPlayed),
 			hoursLocal: this.num(p.hoursPlayed) || 0, estimatedHours: this.num(p.estimatedHours),
+			// 1.9.0: "manual" mantém as suas horas mesmo com o tempo da Steam sincronizado
+			playtimeSource: this.str(p.playtimeSource).toLowerCase(),
 			steamAppId: this.str(p.steamAppId),
 			steam: {
 				lastSync: this.isoDateTime(steam.lastSync), lastAttempt: this.isoDateTime(steam.lastAttempt), status: this.str(steam.syncStatus), error: this.str(steam.syncError),
 				playtimeHours: this.num(steam.playtimeHours), playtime2Weeks: this.num(steam.playtime2Weeks),
 				lastPlayed: this.iso(steam.lastPlayed),
-				achTotal: this.num(steam.achievements?.total), achUnlocked: this.num(steam.achievements?.unlocked)
+				achTotal: this.num(steam.achievements?.total), achUnlocked: this.num(steam.achievements?.unlocked),
+				hoursVia: this.str(steam.hoursVia), hoursNote: this.str(steam.hoursNote), appIdFrom: this.str(steam.appIdFrom)
 			},
 			raGameId: this.str(p.raGameId),
 			// caches das integrações (SteamVaultPlatforms) — escritos pelo app
@@ -792,7 +808,7 @@ class SteamVaultCore {
 	playtime(g) {
 		// campos do cache Steam só são gravados a partir de uma leitura pública
 		// bem-sucedida; uma falha posterior não os apaga
-		if (g.steam.playtimeHours !== null) return { hours: g.steam.playtimeHours, origin: "steam" };
+		if (g.steam.playtimeHours !== null && g.playtimeSource !== "manual") return { hours: g.steam.playtimeHours, origin: "steam" };
 		if (g.gog.playtimeHours !== null && g.gog.playtimeHours >= g.hoursLocal) return { hours: g.gog.playtimeHours, origin: "gog" };
 		return { hours: g.hoursLocal, origin: "vault" };
 	}

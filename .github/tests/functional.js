@@ -361,6 +361,58 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		await p.waitForTimeout(400);
 	}
 
+	// ---- Steam (1.9.0): AppID pelo nome, horas sem somar nem zerar, importação sem duplicar
+	{
+		const r = await p.evaluate(async () => {
+			const S = customJS.SteamVaultSteam, oldGap = S.minIntervalMs; S.minIntervalMs = 0;
+			const sp = __PAGES.find(x => x.path === "Dashboard/Steam.md"); const oldProfile = sp.fm.steamProfile;
+			sp.fm.steamProfile = { steamId64: "76561190000000002", privacy: "public" };
+			const keep = ["Games/PC/Dying Light.md", "Games/PC/Resident Evil 4.md", "Games/PC/Celeste.md", "Games/PC/Resident Evil 2.md"].map(x => [x, JSON.parse(JSON.stringify(__PAGES.find(y => y.path === x).fm))]);
+			await app.vault.create("Games/PC/Rise of the Tomb Raider.md", `---\ntitle: "Rise of the Tomb Raider"\ntype: game\nplatform: PC\nachievementProvider: steam\nachievementSync: automatic\nsteamAppId: ""\nstatus: Playing\nhoursPlayed: 3\n---\n`);
+			__PAGES.find(x => x.path === "Games/PC/Dying Light.md").fm.steam = { playtimeHours: 34.2 };
+			__PAGES.find(x => x.path === "Games/PC/Resident Evil 4.md").fm.achievementSync = "manual";
+			let mode = "ok";
+			const xml = `<?xml version="1.0"?><gamesList><games><game><appID>391220</appID><name><![CDATA[Rise of the Tomb Raider™]]></name><hoursLast2Weeks>0.7</hoursLast2Weeks><hoursOnRecord>12.5</hoursOnRecord></game><game><appID>2050650</appID><name><![CDATA[Resident Evil 4]]></name><hoursOnRecord>80.1</hoursOnRecord></game><game><appID>239140</appID><name><![CDATA[Dying Light]]></name></game><game><appID>203140</appID><name><![CDATA[Hitman: Absolution™]]></name><hoursOnRecord>0.2</hoursOnRecord></game></games></gamesList>`;
+			window.__mockReq = u => {
+				const ok = text => ({ status: 200, headers: {}, text });
+				if (/\/games\/\?tab=all&xml=1/.test(u)) return ok(mode === "private" ? `<?xml version="1.0"?><gamesList><error>This profile is private.</error></gamesList>` : xml);
+				if (/\/games\/\?tab=all/.test(u)) return ok("<html>This profile is private.</html>");
+				if (/\/profiles\/\d+\/\?xml=1/.test(u)) return ok(`<?xml version="1.0"?><profile><steamID64>76561190000000002</steamID64><steamID>T</steamID><privacyState>public</privacyState></profile>`);
+				if (/\/stats\/\d+\/achievements\/\?xml=1/.test(u)) return ok(`<?xml version="1.0"?><playerstats><error>Requested app has no stats</error></playerstats>`);
+				if (/api\/appdetails\?appids=203140/.test(u)) return ok(JSON.stringify({ "203140": { success: true, data: { name: "Hitman: Absolution™", genres: [{ description: "Ação" }], developers: ["IO Interactive A/S"], publishers: ["Square Enix"], release_date: { date: "19 nov. 2012" } } } }));
+				return null;
+			};
+			const fm = x => __PAGES.find(y => y.path === x)?.fm || {};
+			const out = {};
+			await S.syncAll({ force: true });
+			out.rottr = { id: fm("Games/PC/Rise of the Tomb Raider.md").steamAppId, h: fm("Games/PC/Rise of the Tomb Raider.md").steam?.playtimeHours, h2: fm("Games/PC/Rise of the Tomb Raider.md").steam?.playtime2Weeks };
+			out.re4 = fm("Games/PC/Resident Evil 4.md").steam?.playtimeHours;
+			out.dl = fm("Games/PC/Dying Light.md").steam?.playtimeHours;
+			out.bully = fm("Games/PS2/Bully.md").steamAppId || "";
+			await S.syncAll({ force: true });
+			out.again = fm("Games/PC/Rise of the Tomb Raider.md").steam?.playtimeHours;
+			out.imp = await S.importOwned([{ appId: "391220", name: "Rise of the Tomb Raider™", hours: 12.5 }, { appId: "203140", name: "Hitman: Absolution™", hours: 0.2 }]);
+			const hit = __PAGES.find(y => y.fm?.type === "game" && y.fm.steamAppId === "203140");
+			out.hitman = hit ? { path: hit.path, genre: (hit.fm.genre || []).join(), dev: hit.fm.developer, h: hit.fm.steam?.playtimeHours } : null;
+			mode = "private";
+			await S.syncAll({ force: true });
+			out.priv = { h: fm("Games/PC/Rise of the Tomb Raider.md").steam?.playtimeHours, st: fm("Games/PC/Celeste.md").steam?.syncStatus };
+			// limpeza
+			window.__mockReq = null; S.minIntervalMs = oldGap; sp.fm.steamProfile = oldProfile;
+			for (const x of [...__PAGES]) if (x.path === "Games/PC/Rise of the Tomb Raider.md" || x.fm?.steamAppId === "203140" || (x.fm?.type === "achievement" && /Tomb Raider|Hitman/.test(x.path))) await app.fileManager.trashFile({ path: x.path });
+			for (const [x, f] of keep) { const pg = __PAGES.find(y => y.path === x); for (const k of Object.keys(pg.fm)) delete pg.fm[k]; Object.assign(pg.fm, f); }
+			await S._writeCache("games", null); await S._writeCache("profile", null);
+			customJS.SteamVaultCore.invalidate();
+			return out;
+		});
+		check("Steam: ficha sem AppID ganha o AppID pelo nome no perfil (™ ignorado) com horas e 2 semanas", r.rottr.id === "391220" && r.rottr.h === 12.5 && r.rottr.h2 === 0.7, JSON.stringify(r.rottr));
+		check("Steam: horas vêm também para origem Steam Manual; zero não apaga; outro jogo intocado", r.re4 === 80.1 && r.dl === 34.2 && r.bully === "", JSON.stringify(r));
+		check("Steam: sincronizar de novo não soma horas", r.again === 12.5);
+		check("Steam: importar não duplica e o novo jogo vem com metadados e horas, sem ™ no nome", r.imp.skipped === 1 && r.imp.done === 1 && r.hitman?.path === "Games/PC/Hitman Absolution.md" && r.hitman.genre === "Ação" && r.hitman.dev === "IO Interactive A/S" && r.hitman.h === 0.2, JSON.stringify({ imp: r.imp, hitman: r.hitman }));
+		check("Steam: perfil privado mantém as horas e diz o motivo", r.priv.h === 12.5 && r.priv.st === "private_game_details", JSON.stringify(r.priv));
+		await p.waitForTimeout(500);
+	}
+
 	// ---- busca avançada da Biblioteca (3.64.0)
 	await go("Dashboard/Biblioteca.md");
 	const libCount = async () => visible(".sv-library .sv-grid > .sv-card");

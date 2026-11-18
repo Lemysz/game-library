@@ -76,7 +76,7 @@ A lista completa está em `SteamVaultCore.gameSchema()`; formulários, importaç
 | `targetPrice`, `currentPrice`, `regularPrice`, `discountPercent`, `lowestSeenPrice`, `priceStore`, `priceUrl`, `priceCheckedAt` | Lista de desejos: preço-alvo (seu) e preços lidos das lojas (escritos pelo app). |
 | `priceHistory` | Histórico de preços escrito pelo app: um ponto por dia (`d` data, `p` preço, `s` loja), até 90 pontos. Alimenta o gráfico e o menor preço já visto. |
 | `wishlistAdded`, `purchaseDate` | Data em que o jogo entrou na lista de desejos e data da compra (preenchida por *Comprei*). |
-| `hoursPlayed`, `sessions` | Tempo registrado no vault. Com sync, o tempo da Steam tem prioridade. |
+| `hoursPlayed`, `sessions` | Tempo registrado no vault. Com sync, o tempo da Steam tem prioridade, exceto com `playtimeSource: manual`. |
 | `dateAdded`, `startDate`, `completionDate`, `lastPlayed` | `lastPlayed` nasce vazio e só é preenchido por uma sessão real ou pela Steam. |
 | `favorite`, `rating`, `tier`, `franchise`, `genre`, `subgenre` | Organização. |
 | `steam:` / `ra:` | Caches dos syncs, escritos pelo app — não edite. |
@@ -326,6 +326,14 @@ Não usa Steam Web API, `api.steampowered.com`, chave de desenvolvedor, login, s
 - Sync automático é opcional e roda no máximo uma vez por sessão do Obsidian.
 - Uma leitura bem-sucedida grava as conquistas reais nas notas (`unlockSource: steam`), cria as que faltarem e atualiza tempo e contadores. Uma falha registra o motivo e **não apaga** nada.
 - Todo número nas telas Steam diz de onde veio: selo **Steam** (lido do perfil) ou **Vault** (calculado das notas).
+
+**AppID automático:** uma ficha de PC/Steam sem `steamAppId` ganha o AppID sozinha na sincronização, pelo nome, na lista de jogos do **seu** perfil. O nome é comparado sem maiúsculas, acentos, ™/® e pontuação ("Rise of the Tomb Raider" = "Rise of the Tomb Raider™"); se não bater, sem o nome da edição (GOTY, Definitive, 20 Year Celebration…). "Remastered" continua contando, porque é outro jogo na loja. Com dois candidatos, nada é escolhido. *⋯ › Sincronizar com a Steam* numa ficha tenta também a busca da loja. Ainda dá para corrigir à mão em *Editar detalhes* (`steamAppId`).
+
+**Tempo de jogo:** vem para todo jogo com AppID, inclusive com as conquistas em modo Manual: total, últimas duas semanas e última vez jogado. O total da Steam é a referência: nada é somado entre sincronizações, e um zero ou uma resposta vazia nunca apaga horas que já vieram. Se a lista de jogos estiver privada, as horas dos *Jogados recentemente* do perfil são usadas. As suas horas (`hoursPlayed`) continuam na ficha; para usá-las no lugar das da Steam, *⋯ › Usar as minhas horas* (grava `playtimeSource: manual`).
+
+**Importar:** em *Biblioteca Steam › Importar da biblioteca Steam*, a lista inteira do perfil, com busca e os filtros *Fora do vault*, *No vault* e *Todos*: selecione alguns ou todos. Nos *Jogados recentemente* do perfil, cada jogo fora do vault tem **Adicionar**. A ficha nova vem com AppID, gêneros, desenvolvedora, publicadora, ano, sinopse, horas, conquistas e artes. Um jogo que já tem ficha não é duplicado: pelo AppID ele é pulado; pelo nome, a ficha existente recebe o AppID e é sincronizada.
+
+**Precisam de atenção:** a *Biblioteca Steam* lista os jogos que a sincronização não completou (sem AppID, perfil ou detalhes privados, jogo fora do perfil, falha de rede), com o motivo e um botão para sincronizar de novo.
 
 ## RetroAchievements (seção complementar)
 
