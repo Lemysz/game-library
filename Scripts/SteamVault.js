@@ -766,7 +766,7 @@ class SteamVault {
 			"ra-connect", "ra-sync", "ra-sync-force", "ra-sync-game", "ra-import-game", "ra-import-all", "ra-disconnect", "obs", "search-open", "search-close", "live-toggle", "live-stop", "live-pause", "queue-toggle", "queue-manage",
 			"steam-import", "steam-art", "steam-art-all", "steam-details", "wikidata-details", "ach-target", "goals-edit", "stories", "picker", "wishlist-prices", "wishlist-import", "wish-target", "wish-bought", "onboard-hide", "onboard-show", "show-more", "backup-now", "backup-snooze", "csv-import", "library-health", "csv-export", "undo-last", "month-dismiss", "smart-collection",
 			"ach-config", "ach-unlock", "ach-migrate", "ach-icons-local", "skip-content", "ach-manage", "ach-manage-pick", "hub-open", "ach-bulk",
-			"plat-connect", "plat-sync", "plat-sync-game", "plat-disconnect", "plat-import", "plat-import-list", "xbox-tracker-import", "secrets-wipe", "share-card", "feature-toggle"].includes(a);
+			"plat-connect", "plat-sync", "plat-sync-game", "plat-disconnect", "plat-import", "plat-import-list", "secrets-wipe", "share-card", "feature-toggle"].includes(a);
 	}
 
 	open(path, ctx, newTab = false) {
@@ -905,7 +905,6 @@ class SteamVault {
 			case "plat-disconnect": return ctx.PP?.disconnect(ctx, el.dataset.platform);
 			case "plat-import": return ctx.PP?.importGames(ctx, el.dataset.platform, el.dataset.id || null);
 			case "plat-import-list": return ctx.PP?.openImportList(ctx, el.dataset.platform);
-			case "xbox-tracker-import": return ctx.PP?.openTrackerImport(ctx);
 			case "secrets-wipe": {
 				const ok = await this.confirm({ title: "Apagar tudo deste dispositivo?", text: "Remove a Web API Key do RetroAchievements guardada neste aparelho. As fichas e o que já foi sincronizado continuam; para usar de novo, conecte outra vez.", confirm: "Apagar", danger: true });
 				if (!ok || !ctx.PL) return;

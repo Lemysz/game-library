@@ -333,8 +333,6 @@ Não usa Steam Web API, `api.steampowered.com`, chave de desenvolvedor, login, s
 
 **Importar:** em *Biblioteca Steam › Importar da biblioteca Steam*, a lista inteira do perfil, com busca e os filtros *Fora do vault*, *No vault* e *Todos*: selecione alguns ou todos. Nos *Jogados recentemente* do perfil, cada jogo fora do vault tem **Adicionar**. A ficha nova vem com AppID, gêneros, desenvolvedora, publicadora, ano, sinopse, horas, conquistas e artes. Um jogo que já tem ficha não é duplicado: pelo AppID ele é pulado; pelo nome, a ficha existente recebe o AppID e é sincronizada.
 
-**Xbox por texto colado:** o Xbox não tem perfil público legível, e o TrueAchievements e o Exophase bloqueiam leitura automática (verificação anti-robôs). No *Perfil Xbox › Colar do TrueAchievements/Exophase*, cole o texto da página do seu perfil num desses sites (copiado no navegador): a Game Library reconhece cada jogo e os números dele (conquistas como "85 / 119", Gamerscore, horas como "42h 15m", datas como "12 Nov 2026"), mostra uma prévia e, ao importar, atualiza a ficha de Xbox que já existe (pelo nome, sem ™ nem edição) ou cria uma nova com origem Xbox. Os números ficam em `xbox` (`achTotal`, `achUnlocked`, `gsTotal`, `gsEarned`, `playtimeHours`, `lastPlayed`, `source`); nada que não veio no texto é apagado, e as suas notas de conquista continuam suas.
-
 **Precisam de atenção:** a *Biblioteca Steam* lista os jogos que a sincronização não completou (sem AppID, perfil ou detalhes privados, jogo fora do perfil, falha de rede), com o motivo e um botão para sincronizar de novo.
 
 ## RetroAchievements (seção complementar)

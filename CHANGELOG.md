@@ -9,7 +9,9 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Removido
+- **Xbox: colar do TrueAchievements ou do Exophase** (da 1.10.0), a pedido: o Perfil Xbox volta a ser
+  como na 1.9.0 (importar a lista de títulos e registrar as conquistas no gerenciador da ficha).
 
 ## [1.10.0] · 2026-11-18
 

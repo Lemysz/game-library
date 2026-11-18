@@ -559,7 +559,7 @@ class SteamVaultCore {
 			xbox: (() => { const x = (p.xbox && typeof p.xbox === "object") ? p.xbox : {}; return {
 				lastSync: this.isoDateTime(x.lastSync), status: this.str(x.syncStatus), error: this.str(x.syncError),
 				achTotal: this.num(x.achTotal), achUnlocked: this.num(x.achUnlocked), gsTotal: this.num(x.gsTotal), gsEarned: this.num(x.gsEarned),
-				lastPlayed: this.iso(x.lastPlayed), playtimeHours: this.num(x.playtimeHours), source: this.str(x.source) }; })(),
+				lastPlayed: this.iso(x.lastPlayed) }; })(),
 			gog: (() => { const x = (p.gog && typeof p.gog === "object") ? p.gog : {}; return {
 				lastSync: this.isoDateTime(x.lastSync), status: this.str(x.syncStatus),
 				playtimeHours: this.num(x.playtimeHours), achPct: this.num(x.achPct), lastPlayed: this.iso(x.lastSession), url: this.str(x.url) }; })(),
@@ -779,8 +779,6 @@ class SteamVaultCore {
 			// a Steam conhece mais conquistas do que existem como nota:
 			// o total oficial vence, o destravado continua vindo das notas
 			if (g.steam.achTotal !== null && g.steam.achTotal > total) { total = g.steam.achTotal; unlocked = Math.max(unlocked, g.steam.achUnlocked ?? 0); origin = "steam"; }
-			// 1.10.0: números colados do TrueAchievements/Exophase valem como a contagem oficial
-			if (g.xbox.source && g.xbox.achTotal !== null && g.xbox.achTotal >= total) { total = g.xbox.achTotal; unlocked = Math.max(unlocked, g.xbox.achUnlocked ?? 0); origin = "xbox"; }
 			// 3.70.0: com notas, o Xbox é manual — a contagem antiga da API (fm.xbox)
 			// não passa mais por cima do que você marca; só vale sem nenhuma nota
 		} else if (g.steam.achTotal !== null) {
@@ -789,7 +787,7 @@ class SteamVaultCore {
 			total = g.steam.achTotal; unlocked = g.steam.achUnlocked ?? 0; origin = "steam";
 		} else if (g.xbox.achTotal !== null && g.xbox.achTotal > 0) {
 			// contagem que ficou da antiga sincronização do Xbox (somente leitura)
-			total = g.xbox.achTotal; unlocked = g.xbox.achUnlocked ?? 0; origin = g.xbox.source ? "xbox" : "legacy";
+			total = g.xbox.achTotal; unlocked = g.xbox.achUnlocked ?? 0; origin = "legacy";
 		} else if (g.ra.achTotal !== null && g.ra.achTotal > 0) {
 			total = g.ra.achTotal; unlocked = g.ra.achUnlocked ?? 0; origin = "retroachievements";
 		} else if (g.legacyAch.total > 0) {
@@ -812,7 +810,6 @@ class SteamVaultCore {
 		// bem-sucedida; uma falha posterior não os apaga
 		if (g.steam.playtimeHours !== null && g.playtimeSource !== "manual") return { hours: g.steam.playtimeHours, origin: "steam" };
 		if (g.gog.playtimeHours !== null && g.gog.playtimeHours >= g.hoursLocal) return { hours: g.gog.playtimeHours, origin: "gog" };
-		if (g.xbox.playtimeHours !== null && g.xbox.playtimeHours >= g.hoursLocal && g.playtimeSource !== "manual") return { hours: g.xbox.playtimeHours, origin: "xbox" };
 		return { hours: g.hoursLocal, origin: "vault" };
 	}
 
