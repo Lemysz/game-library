@@ -11,6 +11,21 @@ versões menores.
 
 Nada ainda.
 
+## [1.7.0] · 2026-11-18
+
+Tempo para zerar pelo seu histórico, navegação por controle e telas mais rápidas. Sem mudança no formato das notas.
+
+### Adicionado
+- **Tempo para zerar pelo seu histórico**: sem horas estimadas na ficha, a Previsão calcula sozinha
+  quanto falta, pela mediana dos jogos que você zerou do mesmo gênero (ou de todos), e diz no seu
+  ritmo quantas semanas faltam.
+- **Navegação por controle** no computador: direcional move o foco, A abre, B volta, LB/RB trocam
+  de aba e Start abre a busca. Desligável em *Configurações › Efeitos e toque*.
+
+### Melhorado
+- **Desempenho**: a normalização de nomes (usada em filtros, gêneros e buscas) guarda o resultado;
+  as faixas de abas e os mapas de atividade medem tudo de uma vez, sem leituras de layout repetidas.
+
 ## [1.6.0] · 2026-11-15
 
 Configurações organizadas por categoria. Sem mudança no formato das notas.
@@ -260,7 +275,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.6.0...HEAD
+[Não lançado]: ../../compare/v1.7.0...HEAD
+[1.7.0]: ../../releases/tag/v1.7.0
 [1.6.0]: ../../releases/tag/v1.6.0
 [1.5.0]: ../../releases/tag/v1.5.0
 [1.4.0]: ../../releases/tag/v1.4.0

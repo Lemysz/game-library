@@ -2044,6 +2044,14 @@ class SteamVaultPages {
 			pace = d.sessions.reduce((t, s) => t + s.hours, 0) / (span / 7);
 		}
 		const weeks = n => n <= 1.2 ? "cerca de 1 semana" : n < 8 ? `cerca de ${Math.round(n)} semanas` : `cerca de ${Math.round(n / 4.3)} meses`;
+		// 1.7.0: sem estimativa na ficha, usa o seu histórico (jogos parecidos que você zerou)
+		const hist = !g.estimatedHours && ["Playing", "Paused", "Backlog"].includes(g.status) ? C.historyEstimate(ctx.model, g) : null;
+		if (hist) {
+			const left = hist.hours - g.playtime.hours;
+			const basis = hist.genre ? `Pela sua média em ${hist.genre} (${U.plural(hist.n, "jogo zerado", "jogos zerados")}): ~${U.fmtHours(hist.hours)}` : `Pela sua média nos ${U.plural(hist.n, "jogo zerado", "jogos zerados")}: ~${U.fmtHours(hist.hours)}`;
+			if (left > 0.5) out.push(`<li>${U.icon("clock")}<div><b>Faltam ~${U.fmtHours(left)} para zerar</b><small>${pace > 0.2 ? `No seu ritmo (${U.fmtHours(pace)}/semana), ${weeks(left / pace)}. ` : ""}${U.esc(basis)}</small></div></li>`);
+			else out.push(`<li>${U.icon("flag")}<div><b>Você já passou da sua média</b><small>${U.esc(basis)}</small></div></li>`);
+		}
 		if (g.estimatedHours && !["Completed", "Dropped", "Wishlist"].includes(g.status)) {
 			const left = g.estimatedHours - g.playtime.hours;
 			if (left > 0.5) out.push(`<li>${U.icon("clock")}<div><b>Faltam ~${U.fmtHours(left)} para zerar</b>${pace > 0.2 ? `<small>No seu ritmo (${U.fmtHours(pace)}/semana), ${weeks(left / pace)}</small>` : `<small>Estimativa de ${U.fmtHours(g.estimatedHours)} no total</small>`}</div></li>`);

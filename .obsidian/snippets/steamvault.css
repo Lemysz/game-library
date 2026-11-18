@@ -9469,3 +9469,11 @@ body.sv-fav--label .sv-card-art:has(.sv-card-plat, .sv-card-price) .sv-card-favm
 .sv-setnav button .sv-i { width: 15px; height: 15px; color: var(--sv-blue); }
 .sv-care .sv-setlist { margin-top: var(--sv-s2); }
 .sv-care .sv-setlist + .sv-care-note { margin: -4px 64px 4px 0; color: var(--sv-muted); }
+
+/* ==========================================================================
+   60. NAVEGAÇÃO POR CONTROLE (1.7.0)
+   Com o controle em uso (body.sv-pad-active), o item focado ganha um anel
+   bem visível, como a seleção de um console. Mouse ou toque tira o anel.
+   ========================================================================== */
+body.sv-pad-active :is(.sv-host, .sv-modal-root) :focus { outline: 3px solid var(--sv-blue); outline-offset: 3px; }
+body.sv-pad-active .sv-card-art:focus { outline-offset: 4px; }

@@ -1677,26 +1677,36 @@ class SteamVault {
 	// Faixas de abas que rolam para o lado: indicam quando há abas escondidas
 	// e trazem a aba ativa para a área visível (ao abrir e ao tocar).
 	_wireTabs(root) {
-		root.querySelectorAll(".sv-tabs").forEach(tabs => {
-			// dica visual de que há mais abas escondidas nas bordas
-			const update = () => {
-				const max = tabs.scrollWidth - tabs.clientWidth;
-				tabs.classList.toggle("has-more-right", max > 2 && tabs.scrollLeft < max - 2);
-				tabs.classList.toggle("has-more-left", max > 2 && tabs.scrollLeft > 2);
-			};
-			tabs.addEventListener("scroll", update, { passive: true });
-			// só ao abrir: se a aba ativa estiver fora da vista, rola o mínimo
-			// para mostrá-la (sem centralizar e sem mexer ao tocar nas abas)
-			requestAnimationFrame(() => {
+		const all = [...root.querySelectorAll(".sv-tabs")];
+		if (!all.length) return;
+		// dica visual de que há mais abas escondidas nas bordas
+		const measure = tabs => { const max = tabs.scrollWidth - tabs.clientWidth; return [max > 2 && tabs.scrollLeft < max - 2, max > 2 && tabs.scrollLeft > 2]; };
+		const apply = (tabs, [right, left]) => { tabs.classList.toggle("has-more-right", right); tabs.classList.toggle("has-more-left", left); };
+		all.forEach(tabs => tabs.addEventListener("scroll", () => apply(tabs, measure(tabs)), { passive: true }));
+		// só ao abrir: se a aba ativa estiver fora da vista, rola o mínimo para
+		// mostrá-la (sem centralizar e sem mexer ao tocar nas abas).
+		// 1.7.0: medido num ResizeObserver, que roda logo depois do layout do
+		// próprio quadro (antes, um requestAnimationFrame lia as medidas com a
+		// página ainda por montar e forçava layouts extras ao abrir a ficha);
+		// todas as faixas são lidas primeiro e escritas depois
+		const first = new WeakSet();
+		const run = list => {
+			const shifts = list.map(tabs => {
+				if (first.has(tabs)) return 0;
+				first.add(tabs);
 				const t = tabs.querySelector(".sv-tab.is-active");
-				if (t) {
-					const tr = tabs.getBoundingClientRect(), r = t.getBoundingClientRect();
-					if (r.right > tr.right) tabs.scrollLeft += r.right - tr.right + 16;
-					else if (r.left < tr.left) tabs.scrollLeft -= tr.left - r.left + 16;
-				}
-				update();
+				if (!t || !tabs.getClientRects().length) return 0;
+				const tr = tabs.getBoundingClientRect(), r = t.getBoundingClientRect();
+				return r.right > tr.right ? r.right - tr.right + 16 : r.left < tr.left ? -(tr.left - r.left + 16) : 0;
 			});
-		});
+			list.forEach((tabs, i) => { if (shifts[i]) tabs.scrollLeft += shifts[i]; });
+			const states = list.map(measure);
+			list.forEach((tabs, i) => apply(tabs, states[i]));
+		};
+		if (typeof ResizeObserver === "function") {
+			const ro = new ResizeObserver(entries => run(entries.map(e => e.target).filter(t => t.isConnected)));
+			all.forEach(tabs => ro.observe(tabs));
+		} else requestAnimationFrame(() => run(all));
 	}
 
 	// 3.26.2: zonas de arrasto (barras de energia, controles deslizantes). O
@@ -1779,8 +1789,20 @@ class SteamVault {
 	// deixa o fallback (tipográfico/gradiente) que já está por baixo
 	// mapa de calor: abre mostrando os dias mais recentes (a direita), não o
 	// começo do ano; no celular a faixa rola na horizontal
+	// 1.7.0: as chamadas do mesmo quadro viram uma só, e todas as leituras vêm antes
+	// das escritas (antes, ler-escrever-ler forçava um layout por mapa; na ficha
+	// eram 3 layouts seguidos ao abrir). Mapas em aba escondida ficam de fora.
 	_heatmapsToEnd(root) {
-		requestAnimationFrame(() => root?.querySelectorAll?.(".sv-heatmap-wrap").forEach(w => { if (w.scrollWidth > w.clientWidth + 2 && w.getClientRects().length) w.scrollLeft = w.scrollWidth; }));
+		if (!root?.querySelector?.(".sv-heatmap-wrap")) return;
+		const q = this.__heatQ || (this.__heatQ = new Set());
+		q.add(root);
+		if (q.size > 1) return;
+		requestAnimationFrame(() => {
+			const wraps = [...q].flatMap(r => r.isConnected ? [...r.querySelectorAll(".sv-heatmap-wrap")] : []).filter(w => !w.closest("[hidden]"));
+			q.clear();
+			const todo = wraps.filter(w => w.getClientRects().length && w.scrollWidth > w.clientWidth + 2);
+			todo.forEach(w => { w.scrollLeft = w.scrollWidth; });
+		});
 	}
 
 	_imgFail(img) {
@@ -2284,9 +2306,109 @@ class SteamVault {
 	}
 
 	// "/" ou Ctrl/Cmd+K focam a busca da tela ativa — um listener só
+	// 1.7.0: navegação por controle (Gamepad API, computador). Só roda enquanto há
+	// um controle conectado. Direcional ou analógico esquerdo: foco vai para o
+	// item mais próximo naquela direção. A abre, B volta (ou fecha a janela/menu),
+	// LB/RB trocam de aba, Start abre a busca. Configurações › Navegação por controle.
+	_bindGamepad() {
+		if (window.__svPadBound || typeof navigator.getGamepads !== "function") return;
+		window.__svPadBound = true;
+		let raf = 0, announced = false;
+		const prev = {}, held = {};
+		const on = () => this.mods().U._store("gamepad") !== "0";
+		const scope = () => document.querySelector(".sv-modal-root") || document.querySelector(".workspace-leaf.mod-active .sv-layer") || document.querySelector(".sv-layer");
+		// um card conta como um item só (a capa); título e favoritar ficam de fora
+		const items = root => [...root.querySelectorAll('a[href], a[data-open], button, [tabindex]:not([tabindex="-1"]), input:not([type="hidden"]), select, textarea')]
+			.filter(el => !el.disabled && !el.classList.contains("sv-skip") && !(el.closest(".sv-card") && !el.matches(".sv-card-art")) && el.getClientRects().length && getComputedStyle(el).visibility !== "hidden");
+		const focus = el => {
+			document.body.classList.add("sv-pad-active");
+			try { el.focus({ preventScroll: true, focusVisible: true }); } catch (_) { el.focus(); }
+			el.scrollIntoView?.({ block: "nearest", inline: "nearest", behavior: this._motionOn() ? "smooth" : "auto" });
+		};
+		const move = (dx, dy) => {
+			const root = scope(); if (!root) return;
+			const list = items(root); if (!list.length) return;
+			const cur = list.includes(document.activeElement) ? document.activeElement : null;
+			// primeiro toque: o primeiro card (ou item) do conteúdo, não a barra lateral
+			if (!cur) return focus(list.find(el => el.matches(".sv-card-art")) || list.find(el => el.closest(".sv-content")) || list[0]);
+			const a = cur.getBoundingClientRect(), ax = a.left + a.width / 2, ay = a.top + a.height / 2;
+			const pick = cands => {
+				let best = null, bestScore = Infinity;
+				for (const el of cands) {
+					if (el === cur || el.contains(cur) || cur.contains(el)) continue;
+					const r = el.getBoundingClientRect(), ddx = r.left + r.width / 2 - ax, ddy = r.top + r.height / 2 - ay;
+					const along = dx ? ddx * dx : ddy * dy;
+					if (along <= 4) continue;
+					const score = along + (dx ? Math.abs(ddy) : Math.abs(ddx)) * 2.5;
+					if (score < bestScore) { bestScore = score; best = el; }
+				}
+				return best;
+			};
+			// primeiro dentro da mesma área (conteúdo, barra lateral, barras); só depois fora dela
+			const area = el => el.closest(".sv-content, .sv-sidebar, .sv-bottomnav, .sv-topbar, .sv-modal");
+			const here = area(cur);
+			// para cima/baixo no fim do conteúdo, o foco fica onde está (não pula para a barra lateral)
+			const best = (here && pick(list.filter(el => area(el) === here))) || (dx || !here || here.matches(".sv-topbar") ? pick(list) : null);
+			if (best) focus(best);
+		};
+		const key = (k, target = document) => target.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
+		const tabs = dir => {
+			const root = scope(); if (!root) return;
+			const list = [...root.querySelectorAll('.sv-tabs [role="tab"], .sv-tabs .sv-tab')].filter(el => el.getClientRects().length);
+			if (list.length < 2) return;
+			const i = Math.max(0, list.findIndex(el => el.classList.contains("is-active") || el.getAttribute("aria-selected") === "true"));
+			const next = list[(i + dir + list.length) % list.length];
+			next.click(); focus(next);
+		};
+		const fire = k => {
+			if (k === "up") return move(0, -1);
+			if (k === "down") return move(0, 1);
+			if (k === "left") return move(-1, 0);
+			if (k === "right") return move(1, 0);
+			if (k === "a") { const el = document.activeElement; if (el && el !== document.body && scope()?.contains(el)) el.click(); else move(0, 1); return; }
+			if (k === "b") {
+				if (document.querySelector(".sv-modal-root")) return key("Escape");
+				const open = document.querySelector(".sv-app .sv-menu:not([hidden]), .sv-app.is-search-open, .sv-drawer.is-open");
+				if (open) return key("Escape", document.activeElement || document);
+				return this._obsidian("back");
+			}
+			if (k === "lb") return tabs(-1);
+			if (k === "rb") return tabs(1);
+			if (k === "start") return key("/");
+		};
+		const tick = () => {
+			raf = 0;
+			const pads = [...(navigator.getGamepads() || [])].filter(Boolean);
+			if (!pads.length) return;
+			raf = requestAnimationFrame(tick);
+			if (!on() || document.hidden) return;
+			const gp = pads[0], now = performance.now();
+			const btn = i => !!gp.buttons[i]?.pressed;
+			const ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
+			const dirs = { up: btn(12) || ay < -0.5, down: btn(13) || ay > 0.5, left: btn(14) || ax < -0.5, right: btn(15) || ax > 0.5 };
+			for (const [k, v] of Object.entries(dirs)) {
+				if (!v) { delete held[k]; continue; }
+				if (!held[k]) { held[k] = now + 380; fire(k); }
+				else if (now >= held[k]) { held[k] = now + 120; fire(k); }
+			}
+			for (const [i, k] of [[0, "a"], [1, "b"], [4, "lb"], [5, "rb"], [9, "start"]]) {
+				const v = btn(i);
+				if (v && !prev[k]) fire(k);
+				prev[k] = v;
+			}
+		};
+		window.addEventListener("gamepadconnected", () => {
+			if (!raf) raf = requestAnimationFrame(tick);
+			if (on() && !announced) { announced = true; this.toast("Controle conectado: o direcional move, A abre e B volta", { icon: "gamepad" }); }
+		});
+		// mouse ou toque de novo: some o destaque de foco do controle
+		document.addEventListener("pointerdown", () => document.body.classList.remove("sv-pad-active"), { passive: true, capture: true });
+	}
+
 	_bindGlobalKeys() {
 		if (window.__svKeysBound) return;
 		window.__svKeysBound = true;
+		this._bindGamepad();
 		const reapply = () => {
 			for (const h of [...(window.__svHosts || [])]) {
 				if (!h.isConnected) { window.__svHosts.delete(h); continue; }
