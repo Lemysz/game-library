@@ -397,6 +397,8 @@ Na aba principal, a Game Library é desenhada numa camada própria sobre a área
 
 **Navegação por controle (computador):** com um controle conectado (Xbox, PlayStation ou genérico), o direcional ou o analógico esquerdo move o foco para o item mais próximo naquela direção, **A** abre, **B** volta (ou fecha a janela/menu), **LB/RB** trocam de aba e **Start** abre a busca. Cada card conta como um item só. Desligável em *Configurações → Efeitos e toque → Navegação por controle*.
 
+**Listas de escolha (celular):** os campos de seleção dos formulários abrem uma janela no visual do app, que sobe da borda, com a opção atual marcada e uma busca quando há mais de 10 opções. No computador fica a lista do sistema (que aceita teclado).
+
 **Barra de rolagem:** *Style Settings → Game Library → Obsidian mobile → Ocultar barra de rolagem* (ligado por padrão) esconde o indicador cinza de rolagem vertical nas telas da Game Library e nas áreas internas (menu, janelas, busca, listas). A rolagem por toque, roda do mouse e teclado continua igual.
 
 **Style Settings → Botões do topo:** *Ocultar botão de pesquisa* e *Ocultar ícone de perfil*, independentes (valem no celular e no desktop). Com a pesquisa oculta, os atalhos `/` e `Ctrl+K` ficam desativados.

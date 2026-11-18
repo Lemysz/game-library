@@ -345,6 +345,22 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		await p.waitForTimeout(100);
 	}
 
+	// ---- janela de escolha no lugar da lista nativa do <select> (1.8.0, celular)
+	{
+		await go("Dashboard/Biblioteca.md");
+		await p.evaluate(() => document.body.classList.add("is-mobile"));
+		await p.evaluate(() => document.querySelector('[data-action="add-game"]')?.click()); await p.waitForTimeout(900);
+		const before = await p.evaluate(() => document.querySelector("#svl-f-platform")?.value);
+		await p.evaluate(() => document.querySelector("#svl-f-platform")?.click()); await p.waitForTimeout(350);
+		const opened = await count(".sv-selsheet.is-open .sv-selsheet-opt");
+		await p.evaluate(() => { window.__selChg = 0; document.querySelector("#svl-f-platform").addEventListener("change", () => window.__selChg++); [...document.querySelectorAll(".sv-selsheet-opt")].find(b => !b.classList.contains("is-selected"))?.click(); });
+		await p.waitForTimeout(350);
+		const r = await p.evaluate(() => ({ v: document.querySelector("#svl-f-platform")?.value, chg: window.__selChg, gone: !document.querySelector(".sv-selsheet"), form: !!document.querySelector(".sv-modal-root") }));
+		check("celular: o seletor abre a janela do app e grava a escolha no formulário", opened > 3 && r.v !== before && r.chg === 1 && r.gone && r.form, JSON.stringify({ opened, before, ...r }));
+		await p.evaluate(() => { document.body.classList.remove("is-mobile"); document.querySelectorAll(".sv-modal-root [data-close]")[0]?.click(); });
+		await p.waitForTimeout(400);
+	}
+
 	// ---- busca avançada da Biblioteca (3.64.0)
 	await go("Dashboard/Biblioteca.md");
 	const libCount = async () => visible(".sv-library .sv-grid > .sv-card");
