@@ -11,6 +11,14 @@ versões menores.
 
 Nada ainda.
 
+## [1.10.1] · 2026-11-18
+
+O Perfil Xbox volta a ser como na 1.9.0. Sem mudança no formato das notas.
+
+### Removido
+- **Xbox: colar do TrueAchievements ou do Exophase** (da 1.10.0), a pedido: o Perfil Xbox volta a ser
+  como na 1.9.0 (importar a lista de títulos e registrar as conquistas no gerenciador da ficha).
+
 ## [1.10.0] · 2026-11-18
 
 Xbox: importar conquistas, Gamerscore e horas colando o perfil do TrueAchievements ou do Exophase. Sem mudança obrigatória no formato das notas (campos novos opcionais em `xbox`).
@@ -322,7 +330,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.10.0...HEAD
+[Não lançado]: ../../compare/v1.10.1...HEAD
+[1.10.1]: ../../releases/tag/v1.10.1
 [1.10.0]: ../../releases/tag/v1.10.0
 [1.9.0]: ../../releases/tag/v1.9.0
 [1.8.0]: ../../releases/tag/v1.8.0
