@@ -11,6 +11,17 @@ versões menores.
 
 Nada ainda.
 
+## [1.10.0] · 2026-11-18
+
+Xbox: importar conquistas, Gamerscore e horas colando o perfil do TrueAchievements ou do Exophase. Sem mudança obrigatória no formato das notas (campos novos opcionais em `xbox`).
+
+### Adicionado
+- **Xbox: colar do TrueAchievements ou do Exophase** (Perfil Xbox › *Colar do
+  TrueAchievements/Exophase*): copie a página do seu perfil num desses sites e cole. A prévia mostra
+  cada jogo reconhecido, com conquistas, Gamerscore, horas e última vez jogado; importar atualiza as
+  fichas que já existem e cria as que faltam, sem duplicar. Os dois sites bloqueiam leitura automática,
+  então não há sincronização sozinha nem login; repita a colagem para atualizar.
+
 ## [1.9.0] · 2026-11-18
 
 Integração com a Steam mais completa: AppID automático, horas confiáveis e importação da biblioteca. Sem mudança obrigatória no formato das notas (campo novo opcional `playtimeSource`).
@@ -311,7 +322,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.9.0...HEAD
+[Não lançado]: ../../compare/v1.10.0...HEAD
+[1.10.0]: ../../releases/tag/v1.10.0
 [1.9.0]: ../../releases/tag/v1.9.0
 [1.8.0]: ../../releases/tag/v1.8.0
 [1.7.0]: ../../releases/tag/v1.7.0
