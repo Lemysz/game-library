@@ -781,6 +781,25 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	check("Steam sem login: lista de jogos que pede login vira aviso claro, não erro de formato", r.owned === "login_required", JSON.stringify(r));
 	check("Steam sem login: conquistas ocultas não viram \"0 de N\"; visíveis são lidas", r.hidden === "ach_hidden" && r.shown === "1/2", JSON.stringify(r));
 	check("Steam: jogados recentemente leem \"46 / 50\" conquistas e as horas", r.rec === "216h 46/50 Oct 26", JSON.stringify(r));
+	// ---- Steam 1.10.2: horas pela página de insígnias quando a lista pede login
+	r = await p.evaluate(async () => {
+		const S = customJS.SteamVaultSteam; S.minIntervalMs = 0;
+		const steamPage = __PAGES.find(x => x.path === "Dashboard/Steam.md"); const oldProfile = steamPage.fm.steamProfile;
+		steamPage.fm.steamProfile = { steamId64: "76561190000000003", privacy: "public" };
+		await S._writeCache("badges", {});
+		const row = (id, name, hrs) => `<div class="badge_row is_link"><a class="badge_row_overlay" href="https://steamcommunity.com/profiles/76561190000000003/gamecards/${id}/"></a><div class="badge_title_stats_playtime">${hrs}</div><div class="badge_title">${name}&nbsp;<span class="badge_view_details">View details</span></div></div>`;
+		const badges = `<html><body>${row(910001, "Jogo das Cartas", "&nbsp; 1,234.5 hrs on record")}${row(910002, "Evento de Verão", "")}</body></html>`;
+		const login = `<html><head><title>Steam Community :: Sign In</title></head></html>`;
+		window.__mockReq = u => /\/badges\//.test(u) ? { status: 200, headers: {}, text: badges } : /\/games\//.test(u) ? { status: 200, headers: {}, text: login } : null;
+		const list = await S.fetchBadgeGames();
+		const f = await app.vault.create("Games/PC/Jogo das Cartas.md", `---\ntitle: "Jogo das Cartas"\ntype: game\nplatform: PC\nsteamAppId: "910001"\nachievementProvider: steam\nachievementSync: manual\nstatus: Playing\nhoursPlayed: 3\n---\n`);
+		const res = await S.syncGame(f, { force: true, achievements: false });
+		const st = __PAGES.find(x => x.path === "Games/PC/Jogo das Cartas.md").fm.steam || {};
+		window.__mockReq = null; steamPage.fm.steamProfile = oldProfile; S.minIntervalMs = 1600;
+		await S._writeCache("badges", {});
+		return { n: list.games?.length, first: list.games?.[0] && `${list.games[0].appId} ${list.games[0].name} ${list.games[0].hours}`, ok: res.ok, hours: st.playtimeHours, via: st.hoursVia };
+	});
+	check("Steam sem login: horas lidas da página de insígnias (insígnia de evento fica de fora)", r.n === 1 && r.first === "910001 Jogo das Cartas 1234.5" && r.ok && r.hours === 1234.5 && r.via === "insígnias", JSON.stringify(r));
 	// ---- hubs de categoria (3.57.0): linguagem neutra, arte dos jogos, busca intacta
 	await go("Dashboard/Gêneros.md");
 	r = await p.evaluate(() => {
