@@ -9,6 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.9.0] · 2026-11-18
+
+Integração com a Steam mais completa: AppID automático, horas confiáveis e importação da biblioteca. Sem mudança obrigatória no formato das notas (campo novo opcional `playtimeSource`).
+
 ### Adicionado
 - **Importar da biblioteca Steam**: a lista inteira do perfil, com busca, filtros (fora do vault, no
   vault, todos) e seleção de alguns ou de todos. As fichas novas vêm com gêneros, desenvolvedora,
@@ -305,7 +311,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.8.0...HEAD
+[Não lançado]: ../../compare/v1.9.0...HEAD
+[1.9.0]: ../../releases/tag/v1.9.0
 [1.8.0]: ../../releases/tag/v1.8.0
 [1.7.0]: ../../releases/tag/v1.7.0
 [1.6.0]: ../../releases/tag/v1.6.0
