@@ -9,7 +9,10 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Corrigido
+- **Coleções automáticas alinhadas com as suas coleções**: a faixa de capas tinha altura menor e
+  cortava as capas no topo; agora tem o mesmo tamanho, o título usa até 3 linhas (sem "...") e cada
+  uma mostra a sua descrição curta.
 
 ## [1.8.0] · 2026-11-18
 

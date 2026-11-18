@@ -8851,10 +8851,9 @@ body.theme-light .sv-plathero dt { color: var(--sv-text-2); }
 /* coleções automáticas: o card é um botão (zera o estilo de botão) */
 .sv-gtile--smart, .sv-host button.sv-gtile--smart { width: 100%; height: auto; min-height: 0; padding: 0; border: 0; font: inherit; text-align: left; white-space: normal; align-items: stretch; justify-content: flex-start; background: var(--sv-surface); color: var(--sv-text); box-shadow: inset 0 0 0 1px var(--sv-line); cursor: pointer; }
 .sv-host button.sv-gtile--smart:hover { background: var(--sv-surface-2); box-shadow: inset 0 0 0 1px var(--sv-line-strong); }
-.sv-gtile--smart strong { white-space: normal; }
-.sv-gtile--smart .sv-gtile-art { height: 76px; }
-.sv-app.sv-bp-sm .sv-gtile--smart .sv-gtile-art { height: 70px; }
-.sv-gtile--smart .sv-gtile-covers .sv-cover { width: 40px; margin-right: -12px; }
+.sv-gtile--smart strong { white-space: normal; -webkit-line-clamp: 3; }
+/* 1.8.1: a faixa de capas tem a mesma altura e as mesmas capas das coleções
+   comuns (antes era mais baixa e cortava as capas no topo) */
 /* página da coleção: capa vazia neutra (o ícone leva a cor), como os ícones dos gêneros */
 .sv-plart.is-empty { background: var(--sv-surface-2); box-shadow: inset 0 0 0 1px var(--sv-line), 0 14px 28px -16px rgba(0, 0, 0, 0.8); }
 .sv-plart.is-empty .sv-plart-icon { color: color-mix(in oklab, var(--sv-id) 72%, var(--sv-text)); opacity: 1; }
