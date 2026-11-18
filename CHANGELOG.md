@@ -9,6 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.10.0] · 2026-11-18
+
+Xbox: importar conquistas, Gamerscore e horas colando o perfil do TrueAchievements ou do Exophase. Sem mudança obrigatória no formato das notas (campos novos opcionais em `xbox`).
+
 ### Adicionado
 - **Xbox: colar do TrueAchievements ou do Exophase** (Perfil Xbox › *Colar do
   TrueAchievements/Exophase*): copie a página do seu perfil num desses sites e cole. A prévia mostra
@@ -316,7 +322,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.9.0...HEAD
+[Não lançado]: ../../compare/v1.10.0...HEAD
+[1.10.0]: ../../releases/tag/v1.10.0
 [1.9.0]: ../../releases/tag/v1.9.0
 [1.8.0]: ../../releases/tag/v1.8.0
 [1.7.0]: ../../releases/tag/v1.7.0
