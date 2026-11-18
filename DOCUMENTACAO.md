@@ -81,7 +81,7 @@ A lista completa está em `SteamVaultCore.gameSchema()`; formulários, importaç
 | `favorite`, `rating`, `tier`, `franchise`, `genre`, `subgenre` | Organização. |
 | `steam:` / `ra:` | Caches dos syncs, escritos pelo app — não edite. |
 | `review`, `pros`, `cons`, `recommend` | Minha análise (Visão geral): opinião, prós e contras (listas) e o selo `true` (Recomendo) / `false` (Não recomendo). Editável no botão da própria Visão geral; aparece no cartão de compartilhar. |
-| `estimatedHours` | Tempo estimado para zerar. Usado na previsão “faltam ~X h”. |
+| `estimatedHours` | Tempo estimado para zerar. Usado na previsão “faltam ~X h”. Sem ele, a previsão usa o seu histórico: a mediana das horas dos jogos que você zerou, do mesmo gênero (3 ou mais) ou de todos (3 ou mais). |
 | `notes` com `pinned: true` | A nota fica fixada no topo da Visão geral (escolha em *Fixar uma nota*). |
 
 Coleções: `games: ["[[Jogo]]", ...]` e `pendingGames: ["Título ainda sem ficha", ...]`.
@@ -394,6 +394,8 @@ Na aba principal, a Game Library é desenhada numa camada própria sobre a área
 **Áreas seguras (Android/iOS):** em qualquer modo, a Game Library mede quanto da tela fica por baixo da barra de status e da barra de gestos (valores do sistema, do Obsidian ou, no Android edge-to-edge sem informação, uma estimativa) e reserva só esse espaço: nada fica atrás da barra de status, e a barra da Game Library, os menus, as janelas e os avisos ficam acima da barra de gestos. Em paisagem, a barra lateral de ícones rola quando não cabe.
 
 **Topo no celular:** não há barra superior. Pesquisa e perfil ficam como dois botões redondos flutuantes no canto superior direito (vidro sobre a arte, com um degradê suave atrás deles depois de rolar). A lupa abre o campo de busca por cima do topo; o avatar abre o **menu de conta** (Steam e RetroAchievements conectados, último sync, sincronizar, Configurações) — sem repetir a aba *Perfil* da barra inferior. O botão ☰ só aparece quando a barra inferior não está visível. No desktop, a barra superior continua completa.
+
+**Navegação por controle (computador):** com um controle conectado (Xbox, PlayStation ou genérico), o direcional ou o analógico esquerdo move o foco para o item mais próximo naquela direção, **A** abre, **B** volta (ou fecha a janela/menu), **LB/RB** trocam de aba e **Start** abre a busca. Cada card conta como um item só. Desligável em *Configurações → Efeitos e toque → Navegação por controle*.
 
 **Barra de rolagem:** *Style Settings → Game Library → Obsidian mobile → Ocultar barra de rolagem* (ligado por padrão) esconde o indicador cinza de rolagem vertical nas telas da Game Library e nas áreas internas (menu, janelas, busca, listas). A rolagem por toque, roda do mouse e teclado continua igual.
 

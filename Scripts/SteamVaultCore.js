@@ -16,7 +16,7 @@ class SteamVaultCore {
 		// estável: estágio vazio = versão estável (tag vX.Y.Z, sem sufixo). Um
 		// estágio ("Beta", "Prototype"…) aparece em Configurações e vira sufixo da
 		// tag (vX.Y.Z-beta) e pré-lançamento no GitHub.
-		this.VERSION = "1.6.0";
+		this.VERSION = "1.7.0";
 		this.STAGE = "";
 
 		this.folders = {
@@ -187,14 +187,36 @@ class SteamVaultCore {
 		return dates.filter(Boolean).sort().pop() || "";
 	}
 
+	// 1.7.0: quanto um jogo deve levar para zerar, pelo seu próprio histórico:
+	// mediana das horas dos jogos que você zerou, de preferência do mesmo gênero
+	// (3 ou mais); senão, de todos os zerados (3 ou mais). Sem histórico, null.
+	historyEstimate(model, g) {
+		const done = model.games.filter(x => x !== g && x.status === "Completed" && x.playtime.hours > 0);
+		const med = list => { const h = list.map(x => x.playtime.hours).sort((a, b) => a - b); const m = Math.floor(h.length / 2); return h.length % 2 ? h[m] : (h[m - 1] + h[m]) / 2; };
+		for (const genre of g.genres || []) {
+			const k = this.normalizeKey(genre);
+			const same = done.filter(x => (x.genres || []).some(y => this.normalizeKey(y) === k));
+			if (same.length >= 3) return { hours: med(same), n: same.length, genre };
+		}
+		return done.length >= 3 ? { hours: med(done), n: done.length, genre: "" } : null;
+	}
+
 	daysBetween(a, b) {
 		if (!a || !b) return null;
 		return Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000);
 	}
 
+	// 1.7.0: com memória. É chamada milhares de vezes por tela com os mesmos
+	// nomes (gêneros, plataformas, títulos); o resultado só depende do texto.
 	normalizeKey(s) {
-		return String(s ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-			.replace(/[^a-z0-9]+/g, " ").trim();
+		const str = String(s ?? "");
+		const memo = this._nkMemo || (this._nkMemo = new Map());
+		let v = memo.get(str);
+		if (v !== undefined) return v;
+		v = str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+		if (memo.size > 20000) memo.clear();
+		memo.set(str, v);
+		return v;
 	}
 
 	slug(s) { return this.normalizeKey(s).replace(/ /g, "-"); }

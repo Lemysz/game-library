@@ -968,6 +968,7 @@ class SteamVaultInsights {
 					<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-shine ${U._store("shine") === "0" ? "" : "checked"}><span></span><b>Brilho nas capas (estilo Big Picture)</b><small>Uma faixa de luz atravessa a capa ao tocar ou passar o mouse.</small></label>
 					<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-celebrate ${U._store("celebrate") === "0" ? "" : "checked"}><span></span><b>Comemoração na ficha ao zerar ou chegar a 100%</b><small>A capa acende no topo da ficha logo depois da mudança.</small></label>
 					<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-tilt ${U._store("tilt") === "0" ? "" : "checked"}><span></span><b>Inclinação 3D das capas</b><small>Só no computador.</small></label>
+					<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-gamepad ${U._store("gamepad") === "0" ? "" : "checked"}><span></span><b>Navegação por controle</b><small>No computador, com um controle conectado: o direcional move, A abre, B volta, LB/RB trocam de aba e Start abre a busca.</small></label>
 					</div>
 				</section>
 				<section class="sv-surface">
@@ -1138,6 +1139,7 @@ class SteamVaultInsights {
 					document.body.classList.toggle("sv-no-shine", !e.target.checked);
 				});
 				root.querySelector("[data-ui-celebrate]")?.addEventListener("change", e => U._store("celebrate", e.target.checked ? "1" : "0"));
+				root.querySelector("[data-ui-gamepad]")?.addEventListener("change", e => U._store("gamepad", e.target.checked ? "1" : "0"));
 				root.querySelector("[data-ui-tilt]")?.addEventListener("change", e => {
 					U._store("tilt", e.target.checked ? "1" : "0");
 					document.body.classList.toggle("sv-no-tilt", !e.target.checked);
