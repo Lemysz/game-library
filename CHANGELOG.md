@@ -9,6 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.8.0] · 2026-11-18
+
+Listas de escolha no visual do app, no celular. Sem mudança no formato das notas.
+
 ### Alterado
 - **Listas de escolha no visual do app (celular)**: tocar num campo de seleção (plataforma, status,
   origem das conquistas e os demais dos formulários) abre uma janela da Game Library que sobe da
@@ -279,7 +285,8 @@ Funciona e é testado, mas pode mudar sem aviso:
 
 Ver [README › Limitações conhecidas](README.md#%EF%B8%8F-limitações-conhecidas).
 
-[Não lançado]: ../../compare/v1.7.0...HEAD
+[Não lançado]: ../../compare/v1.8.0...HEAD
+[1.8.0]: ../../releases/tag/v1.8.0
 [1.7.0]: ../../releases/tag/v1.7.0
 [1.6.0]: ../../releases/tag/v1.6.0
 [1.5.0]: ../../releases/tag/v1.5.0
