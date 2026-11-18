@@ -9,7 +9,12 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Adicionado
+- **Xbox: colar do TrueAchievements ou do Exophase** (Perfil Xbox › *Colar do
+  TrueAchievements/Exophase*): copie a página do seu perfil num desses sites e cole. A prévia mostra
+  cada jogo reconhecido, com conquistas, Gamerscore, horas e última vez jogado; importar atualiza as
+  fichas que já existem e cria as que faltam, sem duplicar. Os dois sites bloqueiam leitura automática,
+  então não há sincronização sozinha nem login; repita a colagem para atualizar.
 
 ## [1.9.0] · 2026-11-18
 

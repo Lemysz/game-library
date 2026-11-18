@@ -413,6 +413,30 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		await p.waitForTimeout(500);
 	}
 
+	// ---- Xbox (1.10.0): texto colado do TrueAchievements/Exophase
+	{
+		const r = await p.evaluate(async () => {
+			const PL = customJS.SteamVaultPlatforms;
+			const ta = PL.parseTrackerText("Game\tTA\tGamerscore\tAchievements\tCompletion\nHalo 3\t1,412 / 1,412\t1,000 / 1,000\t49 / 49\t100%\nForza Horizon 5™\t2,340 / 9,870\t480 / 5,000\t54 / 361\t15%");
+			await app.vault.create("Games/Xbox Series X/Halo Infinite.md", `---\ntitle: "Halo Infinite"\ntype: game\nplatform: Xbox Series X\nachievementProvider: xbox\nachievementSync: manual\nstatus: Playing\nhoursPlayed: 10\n---\n`);
+			customJS.SteamVaultCore.invalidate();
+			const exo = PL.parseTrackerText("My Games\nHalo Infinite\nXbox Series\n42h 15m\nLast played 12 Nov 2026\n85 / 119\n1,040 / 1,600 G\n71%\nStardew Valley\nXbox One\n120 hours\n20 of 40 achievements");
+			const model = customJS.SteamVaultCore.model(mkdv());
+			const imp = await PL.importTrackerRows(exo, "exophase", { model });
+			customJS.SteamVaultCore.invalidate();
+			const again = await PL.importTrackerRows(exo, "exophase", { model: customJS.SteamVaultCore.model(mkdv()) });
+			const halo = __PAGES.find(y => y.path === "Games/Xbox Series X/Halo Infinite.md").fm;
+			const out = { ta, exoTitles: exo.map(x => x.title), imp, again, halo: { x: halo.xbox, h: halo.hoursPlayed }, n: __PAGES.filter(y => y.fm?.title === "Halo Infinite" || y.fm?.title === "Stardew Valley").length };
+			for (const x of [...__PAGES]) if (x.fm?.title === "Halo Infinite" || x.fm?.title === "Stardew Valley") await app.fileManager.trashFile({ path: x.path });
+			customJS.SteamVaultCore.invalidate();
+			return out;
+		});
+		check("Xbox colado: tabela do TrueAchievements separa conquistas, Gamerscore e pontos TA; ™ sai do nome", r.ta.length === 2 && r.ta[0].achTotal === 49 && r.ta[0].gsTotal === 1000 && r.ta[1].title === "Forza Horizon 5" && r.ta[1].gsEarned === 480 && r.ta[1].achUnlocked === 54, JSON.stringify(r.ta));
+		check("Xbox colado: Exophase com horas e data; plataforma não vira jogo", JSON.stringify(r.exoTitles) === JSON.stringify(["Halo Infinite", "Stardew Valley"]) && r.halo.x?.playtimeHours === 42.25 && r.halo.x?.lastPlayed === "2026-11-12" && r.halo.x?.gsEarned === 1040, JSON.stringify(r));
+		check("Xbox colado: atualiza a ficha existente, cria a nova e não duplica ao colar de novo", r.imp.updated === 1 && r.imp.created === 1 && r.again.created === 0 && r.again.updated === 2 && r.n === 2 && r.halo.h === 10, JSON.stringify({ imp: r.imp, again: r.again, n: r.n }));
+		await p.waitForTimeout(400);
+	}
+
 	// ---- busca avançada da Biblioteca (3.64.0)
 	await go("Dashboard/Biblioteca.md");
 	const libCount = async () => visible(".sv-library .sv-grid > .sv-card");
