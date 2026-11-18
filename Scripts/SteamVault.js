@@ -2405,10 +2405,103 @@ class SteamVault {
 		document.addEventListener("pointerdown", () => document.body.classList.remove("sv-pad-active"), { passive: true, capture: true });
 	}
 
+	// 1.8.0: no celular, o <select> abria a lista nativa do Android (cinza, fora do
+	// visual). Agora o toque abre uma janela de escolha da Game Library, que sobe
+	// da borda; o <select> continua no formulário e recebe o valor (com os
+	// eventos input/change de sempre). No computador, fica a lista nativa
+	// (teclado, digitar para achar). data-native="1" num <select> mantém a nativa.
+	_bindSelectSheet() {
+		if (window.__svSelBound) return;
+		window.__svSelBound = true;
+		const touch = () => document.body.classList.contains("is-mobile") || matchMedia("(hover: none)").matches;
+		const ours = sel => sel instanceof HTMLSelectElement && !sel.multiple && !sel.disabled && sel.dataset.native !== "1"
+			&& !!sel.closest(".sv-host, .sv-modal-root, .sv-legacy, .steamvault, .sv-layer");
+		const intercept = e => {
+			const sel = e.target?.closest?.("select");
+			if (!ours(sel) || !touch()) return;
+			e.preventDefault(); e.stopPropagation();
+			if (e.type === "mousedown" || e.type === "pointerdown") return;
+			this._selectSheet(sel);
+		};
+		document.addEventListener("pointerdown", intercept, true);
+		document.addEventListener("mousedown", intercept, true);
+		document.addEventListener("click", intercept, true);
+		document.addEventListener("keydown", e => {
+			if (!["Enter", " ", "ArrowDown"].includes(e.key)) return;
+			const sel = e.target;
+			if (!ours(sel) || !touch()) return;
+			e.preventDefault(); this._selectSheet(sel);
+		}, true);
+	}
+
+	_selectSheet(sel) {
+		if (document.querySelector(".sv-selsheet")) return;
+		const U = this.mods().U, T = this.mods().T;
+		const tr = s => (T?.on && T.t ? T.t(s) : s);
+		const label = (sel.labels?.[0]?.textContent || sel.getAttribute("aria-label") || sel.closest(".svl-field, .sv-mgr-field, .sv-field-block")?.querySelector("label, .sv-label")?.textContent || tr("Escolher")).replace(/\s*\*\s*$/, "").trim();
+		const items = [];
+		for (const node of sel.children) {
+			if (node.tagName === "OPTGROUP") {
+				items.push({ group: node.label });
+				for (const o of node.children) items.push({ o });
+			} else if (node.tagName === "OPTION") items.push({ o: node });
+		}
+		const opts = items.filter(x => x.o && !x.o.hidden);
+		const wrap = document.createElement("div");
+		wrap.className = `sv-selsheet steamvault${document.body.classList.contains("theme-light") ? " is-light" : ""}`;
+		wrap.innerHTML = `<div class="sv-selsheet-backdrop" data-close></div>
+			<div class="sv-selsheet-panel" role="dialog" aria-modal="true" aria-label="${U.attr(label)}">
+				<div class="sv-selsheet-head"><b>${U.esc(label)}</b><button type="button" class="sv-btn sv-btn--ghost sv-btn--icon" data-close aria-label="${U.attr(tr("Fechar"))}">${U.icon("x")}</button></div>
+				${opts.length > 10 ? `<div class="sv-selsheet-search">${U.icon("search")}<input type="search" placeholder="${U.attr(tr("Buscar"))}" aria-label="${U.attr(tr("Buscar"))}"></div>` : ""}
+				<div class="sv-selsheet-list" role="listbox">${items.filter(x => x.group !== undefined || !x.o.hidden).map(x => x.group !== undefined
+					? `<div class="sv-selsheet-group">${U.esc(x.group)}</div>`
+					: `<button type="button" role="option" class="sv-selsheet-opt${x.o.selected ? " is-selected" : ""}" data-i="${x.o.index}" aria-selected="${x.o.selected}"${x.o.disabled ? " disabled" : ""}><span>${U.esc(x.o.textContent.trim() || "—")}</span>${U.icon("check")}</button>`).join("")}
+				<p class="sv-selsheet-none" hidden>${U.esc(tr("Nenhuma opção encontrada"))}</p></div>
+			</div>`;
+		document.body.appendChild(wrap);
+		requestAnimationFrame(() => {
+			wrap.classList.add("is-open");
+			wrap.querySelector(".sv-selsheet-opt.is-selected")?.scrollIntoView({ block: "center" });
+		});
+		let closed = false;
+		const close = () => {
+			if (closed) return; closed = true;
+			wrap.classList.remove("is-open");
+			window.removeEventListener("keydown", onKey, true);
+			setTimeout(() => wrap.remove(), 220);
+			try { sel.focus({ preventScroll: true }); } catch (_) {}
+		};
+		const onKey = e => { if (e.key === "Escape") { e.stopImmediatePropagation(); e.preventDefault(); close(); } };
+		window.addEventListener("keydown", onKey, true);
+		wrap.addEventListener("click", e => {
+			if (e.target.closest("[data-close]")) return close();
+			const b = e.target.closest(".sv-selsheet-opt");
+			if (!b || b.disabled) return;
+			const i = Number(b.dataset.i);
+			if (sel.selectedIndex !== i) {
+				sel.selectedIndex = i;
+				sel.dispatchEvent(new Event("input", { bubbles: true }));
+				sel.dispatchEvent(new Event("change", { bubbles: true }));
+			}
+			this._haptic?.();
+			close();
+		});
+		const q = wrap.querySelector(".sv-selsheet-search input");
+		q?.addEventListener("input", () => {
+			const k = this.mods().C.normalizeKey(q.value);
+			let any = false;
+			wrap.querySelectorAll(".sv-selsheet-opt").forEach(b => { const on = !k || this.mods().C.normalizeKey(b.textContent).includes(k); b.hidden = !on; any ||= on; });
+			wrap.querySelectorAll(".sv-selsheet-group").forEach(g => { let n = g.nextElementSibling, vis = false; while (n && !n.classList.contains("sv-selsheet-group")) { if (n.classList.contains("sv-selsheet-opt") && !n.hidden) vis = true; n = n.nextElementSibling; } g.hidden = !vis; });
+			wrap.querySelector(".sv-selsheet-none").hidden = any;
+		});
+		try { T?.on && T.apply?.(wrap); } catch (_) {}
+	}
+
 	_bindGlobalKeys() {
 		if (window.__svKeysBound) return;
 		window.__svKeysBound = true;
 		this._bindGamepad();
+		this._bindSelectSheet();
 		const reapply = () => {
 			for (const h of [...(window.__svHosts || [])]) {
 				if (!h.isConnected) { window.__svHosts.delete(h); continue; }

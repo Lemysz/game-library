@@ -9477,3 +9477,50 @@ body.sv-fav--label .sv-card-art:has(.sv-card-plat, .sv-card-price) .sv-card-favm
    ========================================================================== */
 body.sv-pad-active :is(.sv-host, .sv-modal-root) :focus { outline: 3px solid var(--sv-blue); outline-offset: 3px; }
 body.sv-pad-active .sv-card-art:focus { outline-offset: 4px; }
+
+/* ==========================================================================
+   61. JANELA DE ESCOLHA (1.8.0)
+   No celular, tocar num <select> abre esta lista no visual do app (sobe da
+   borda de baixo) em vez da lista nativa do Android.
+   ========================================================================== */
+.sv-selsheet { position: fixed; inset: 0; z-index: calc(var(--layer-modal, 50) + 5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--sv-font-ui); font-size: var(--sv-fs-body); line-height: var(--sv-lh); color: var(--sv-text); }
+.sv-selsheet-backdrop { position: absolute; inset: 0; background: var(--sv-overlay); opacity: 0; transition: opacity 200ms var(--sv-ease); }
+.sv-selsheet-panel {
+	position: relative; display: flex; flex-direction: column;
+	width: min(560px, 100%); max-height: min(72vh, 640px);
+	padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+	border-radius: 20px 20px 0 0; background: var(--sv-bg);
+	box-shadow: var(--sv-shadow-lg), inset 0 1px 0 var(--sv-line-strong);
+	transform: translateY(100%); transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sv-selsheet.is-open .sv-selsheet-backdrop { opacity: 1; }
+.sv-selsheet.is-open .sv-selsheet-panel { transform: none; }
+.sv-selsheet-head { flex: none; position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 12px 10px 20px; }
+.sv-selsheet-head::before { content: ""; position: absolute; top: 8px; left: 0; right: 0; margin-inline: auto; width: 38px; height: 4px; border-radius: 4px; background: var(--sv-line-strong); }
+.sv-selsheet button.sv-btn.sv-btn--icon { width: 40px; height: 40px; padding: 0; background: transparent; box-shadow: none; color: var(--sv-text-2); }
+.sv-selsheet-head b { font-family: var(--sv-font-display); font-stretch: var(--sv-stretch-display); font-weight: 800; font-size: calc(1.08rem * var(--sv-ts, 1)); color: var(--sv-text); }
+.sv-selsheet-search { flex: none; display: flex; align-items: center; gap: 8px; margin: 0 16px 8px; padding: 0 12px; height: 42px; border-radius: 12px; background: var(--sv-surface); box-shadow: inset 0 0 0 1px var(--sv-line-strong); color: var(--sv-muted); }
+.sv-selsheet-search .sv-i { width: 17px; height: 17px; flex: none; }
+.sv-selsheet-search input, .sv-selsheet-search input:focus { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; background: transparent; box-shadow: none; outline: none; color: var(--sv-text); font: inherit; }
+.sv-selsheet-list { overflow-y: auto; overscroll-behavior: contain; padding: 4px 10px 6px; }
+.sv-selsheet-group { padding: 12px 10px 6px; font-size: var(--sv-fs-micro); font-weight: 700; color: var(--sv-muted); }
+.sv-selsheet-opt, .sv-selsheet button.sv-selsheet-opt {
+	display: flex; align-items: center; justify-content: space-between; gap: 12px;
+	width: 100%; min-height: 50px; height: auto; padding: 10px 12px; margin: 0;
+	border: 0; border-radius: 12px; background: transparent; box-shadow: none;
+	font: inherit; font-size: var(--sv-fs-body); font-weight: 500; color: var(--sv-text); text-align: left; cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+}
+.sv-selsheet-opt + .sv-selsheet-opt { box-shadow: 0 -1px 0 var(--sv-line); }
+.sv-selsheet-opt > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.sv-selsheet-opt .sv-i { width: 18px; height: 18px; flex: none; opacity: 0; color: var(--sv-blue); }
+.sv-selsheet-opt:active { background: var(--sv-surface-2); }
+.sv-selsheet .sv-selsheet-opt.is-selected { background: var(--sv-blue-soft); color: var(--sv-text); font-weight: 700; box-shadow: none; }
+.sv-selsheet-opt.is-selected + .sv-selsheet-opt { box-shadow: none; }
+.sv-selsheet-opt.is-selected .sv-i { opacity: 1; }
+.sv-selsheet-opt:disabled { opacity: 0.45; cursor: default; }
+.sv-selsheet-none { padding: 18px 12px; color: var(--sv-muted); font-size: var(--sv-fs-small); text-align: center; }
+body:not(.theme-light) .sv-selsheet .sv-selsheet-opt .sv-i:not(#sv-x) { color: var(--sv-blue); }
+@media (min-width: 761px) { .sv-selsheet { align-items: center; } .sv-selsheet-panel { border-radius: 20px; } }
+body.sv-reduced-motion .sv-selsheet * { transition-duration: 0ms !important; }
+@media (prefers-reduced-motion: reduce) { .sv-selsheet * { transition-duration: 0ms !important; } }
