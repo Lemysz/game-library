@@ -310,10 +310,12 @@ Prateleira no final da Home com ofertas da **Steam e da Nuuvem**, no mesmo card 
 A Game Library lê **somente páginas públicas da Steam Community** do perfil que você informar:
 
 - `steamcommunity.com/id/<nome>/?xml=1` ou `/profiles/<SteamID64>/?xml=1` — identidade e privacidade;
-- `/stats/<appid>/achievements/?xml=1` — suas conquistas no jogo (HTML como reserva);
-- página global de conquistas do jogo — porcentagem de jogadores (raridade);
+- `/stats/<appid>/achievements` — suas conquistas no jogo e a porcentagem de jogadores (raridade), lidas dos dados embutidos na página (XML e HTML antigos como reserva);
 - `/games/?tab=all&xml=1` — horas e jogos do perfil;
-- a página do perfil — nível, insígnias, vitrines, jogados recentemente.
+- a página do perfil — nível, insígnias, vitrines, jogados recentemente (com horas totais e conquistas de cada um);
+- `/badges/` — horas dos jogos com cartas colecionáveis, quando a lista de jogos pede login.
+
+**Sem login (conferido em 11/2026):** a Steam passou a mandar visitantes sem login da lista de jogos (`/games/`) para a tela de entrar, mesmo com o perfil público. Sem essa lista, as horas vêm dos **jogados recentemente** do perfil (os últimos jogos, com o total de horas) e da **página de insígnias** (`/badges/`, pública: horas de cada jogo com cartas colecionáveis, lida no máximo a cada 12 h). A importação da biblioteca mostra esses jogos, e o AppID automático pelo nome usa os mesmos jogos; para os outros, use *⋯ › Sincronizar com a Steam* na ficha (busca da loja). As conquistas continuam sendo lidas jogo a jogo. Quando a Steam não mostra as conquistas de um jogo (detalhes privados ou jogo fora da conta), o vault avisa em vez de mostrar "0 de N".
 
 Não usa Steam Web API, `api.steampowered.com`, chave de desenvolvedor, login, senha, cookies ou proxy. Nada privado é acessado.
 
