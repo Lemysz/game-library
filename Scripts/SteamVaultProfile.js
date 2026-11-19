@@ -30,13 +30,17 @@ class SteamVaultProfile {
 		const fm = (f && app.metadataCache.getFileCache(f)?.frontmatter) || {};
 		const p = fm.profile && typeof fm.profile === "object" ? fm.profile : {};
 		const path = v => { const s = C.str(v); return s && s.length <= 300 && /\.md$/i.test(s) && !/^[a-z]+:/i.test(s) ? s : ""; };
+		// 1.11.0: o fundo também pode ser uma imagem do vault (escolhida no aparelho)
+		const img = v => { const s = C.str(v); return s && s.length <= 300 && this.isImage(s) && !/^[a-z]+:/i.test(s) && !/(^|\/)\.\.(\/|$)/.test(s) ? s : ""; };
 		return {
 			name: C.clip(p.name, 40), bio: C.clip(p.bio, 160),
 			avatar: p.avatar === "steam" || p.avatar === "initials" ? p.avatar : path(p.avatar),
-			banner: path(p.banner),
+			banner: path(p.banner) || img(p.banner),
 			favorites: C.arr(p.favorites).map(path).filter(Boolean).slice(0, this.maxFav)
 		};
 	}
+
+	isImage(s) { return /\.(png|jpe?g|webp|gif|bmp|avif|heic|heif|tiff?|svg)$/i.test(String(s || "")); }
 
 	// nome mostrado: o do perfil, senão o da Steam, senão "Jogador"
 	displayName(ctx) {
@@ -119,12 +123,14 @@ class SteamVaultProfile {
 
 	hero(ctx, d, name) {
 		const { U, model, C } = ctx;
-		const bannerGame = (d.banner && model.gamesByPath.get(d.banner)) || (C.featuredGame ? C.featuredGame(model, { auto: true }) : null);
-		const bg = bannerGame ? (bannerGame.images.background || bannerGame.images.featured || bannerGame.images.cover) : "";
+		const own = d.banner && this.isImage(d.banner) ? C.resolveImage(d.banner) : "";
+		const bannerGame = own ? null : (d.banner && model.gamesByPath.get(d.banner)) || (C.featuredGame ? C.featuredGame(model, { auto: true }) : null);
+		const bg = own || (bannerGame ? (bannerGame.images.background || bannerGame.images.featured || bannerGame.images.cover) : "");
 		const src = this.avatarSrc(ctx, model);
 		const since = model.games.map(g => g.dateAdded).filter(Boolean).sort()[0];
 		return `<section class="sv-pf-hero">
-			<div class="sv-pf-banner">${bg ? `<img src="${U.attr(bg)}" alt="" decoding="async">` : ""}<span class="sv-pf-banner-fx"></span></div>
+			<div class="sv-pf-banner">${bg ? `<img src="${U.attr(bg)}" alt="" decoding="async">` : ""}<span class="sv-pf-banner-fx"></span>
+				<button type="button" class="sv-pf-banner-edit" data-pf="banner" aria-label="Trocar fundo" title="Trocar fundo">${U.icon("image")}</button></div>
 			<div class="sv-pf-id">
 				<div class="sv-pf-avatar" style="--sv-pf-h:${C.hashHue(name)}">
 					<span class="sv-pf-pic">${src ? `<img src="${U.attr(src)}" alt="" decoding="async">` : `<b>${U.esc(this.initials(name))}</b>`}</span>
@@ -219,7 +225,7 @@ class SteamVaultProfile {
 		if (!host) return;
 		host.addEventListener("click", e => {
 			const b = e.target.closest("[data-pf]");
-			if (b) { e.preventDefault(); if (b.dataset.pf === "edit") this.openEditor(ctx); }
+			if (b) { e.preventDefault(); if (b.dataset.pf === "edit") this.openEditor(ctx); else if (b.dataset.pf === "banner") this.openEditor(ctx, { focus: "banner" }); }
 		});
 		this.animate(host);
 	}
@@ -245,8 +251,8 @@ class SteamVaultProfile {
 		requestAnimationFrame(step);
 	}
 
-	openEditor(ctx) {
-		const { U, model } = ctx;
+	openEditor(ctx, { focus = "" } = {}) {
+		const { U, model, C } = ctx;
 		const d = this.data();
 		const s = ctx.S?.getConfig?.() || {};
 		const games = [...model.games].filter(g => g.status !== "Wishlist").sort((a, b) => a.title.localeCompare(b.title));
@@ -263,7 +269,11 @@ class SteamVaultProfile {
 				<div><label class="sv-label" for="sv-pf-avatar">Avatar</label>
 				<label class="sv-select"><select id="sv-pf-avatar">${s.avatar ? opt("steam", "Foto da Steam", d.avatar === "steam" || !d.avatar) : ""}${opt("initials", "Iniciais", d.avatar === "initials" || (!d.avatar && !s.avatar))}${games.filter(g => g.images.cover).map(g => opt(g.path, `Capa: ${g.title}`, d.avatar === g.path)).join("")}</select></label></div>
 				<div><label class="sv-label" for="sv-pf-banner">Fundo</label>
-				<label class="sv-select"><select id="sv-pf-banner">${opt("", "Automático (jogo em destaque)", !d.banner)}${games.filter(g => g.images.background || g.images.featured).map(g => opt(g.path, g.title, d.banner === g.path)).join("")}</select></label></div>
+				<label class="sv-select"><select id="sv-pf-banner">${opt("", "Automático (jogo em destaque)", !d.banner)}${this.isImage(d.banner) ? opt(d.banner, "Imagem do aparelho", true) : ""}${games.filter(g => g.images.background || g.images.featured).map(g => opt(g.path, g.title, d.banner === g.path)).join("")}</select></label></div>
+			</div>
+			<div class="sv-pf-bgpick">
+				<span class="sv-pf-bgprev" data-pf-bgprev></span>
+				<label class="sv-btn sv-btn--secondary sv-btn--sm">${U.icon("image")}<span>Escolher imagem do aparelho</span><input type="file" accept="image/*" data-pf-bgfile hidden></label>
 			</div>
 			<div class="sv-pf-favhead"><span class="sv-label">Vitrine</span><small data-pf-favcount></small></div>
 			<input class="sv-input sv-pf-favsearch" type="search" placeholder="Buscar jogo" aria-label="Buscar jogo">
@@ -277,6 +287,30 @@ class SteamVaultProfile {
 		};
 		boxes.forEach(b => b.addEventListener("change", count));
 		count();
+		// fundo: prévia do que está escolhido e imagem nova vinda do aparelho
+		const sel = body.querySelector("#sv-pf-banner"), prev = body.querySelector("[data-pf-bgprev]");
+		const showPrev = () => {
+			const v = sel.value, g = v && model.gamesByPath.get(v);
+			const src = !v ? "" : this.isImage(v) ? C.resolveImage(v) : (g ? g.images.background || g.images.featured || g.images.cover : "");
+			prev.innerHTML = src ? `<img src="${U.attr(src)}" alt="" decoding="async">` : `<small>Automático</small>`;
+		};
+		sel.addEventListener("change", showPrev);
+		showPrev();
+		body.querySelector("[data-pf-bgfile]").addEventListener("change", async e => {
+			const file = e.target.files?.[0];
+			e.target.value = "";
+			if (!file) return;
+			if (!/^image\//.test(file.type || "") && !this.isImage(file.name)) return this.V.toast("Escolha um arquivo de imagem", { tone: "warn" });
+			try {
+				const path = await customJS.SteamVaultLegacy.saveDeviceImage(file, "Assets/Profile", "fundo-do-perfil");
+				let o = [...sel.options].find(x => x.value === path);
+				if (!o) { o = document.createElement("option"); o.value = path; o.textContent = "Imagem do aparelho"; sel.insertBefore(o, sel.options[1] || null); }
+				sel.value = path;
+				showPrev();
+				this.V.toast("Imagem pronta. Toque em Salvar para usar", { icon: "image" });
+			} catch (err) { this.V.toast(`Não foi possível usar a imagem: ${err.message}`, { tone: "error" }); }
+		});
+		if (focus === "banner") setTimeout(() => { body.querySelector(".sv-pf-bgpick")?.scrollIntoView({ block: "center" }); sel.focus({ preventScroll: true }); }, 60);
 		body.querySelector(".sv-pf-favsearch").addEventListener("input", e => {
 			const q = e.target.value.trim().toLowerCase();
 			body.querySelectorAll(".sv-pf-favopt").forEach(l => { l.hidden = !!q && !l.dataset.name.includes(q); });

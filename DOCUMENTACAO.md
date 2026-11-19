@@ -56,7 +56,7 @@ Telas disponíveis: `icons` (galeria de ícones), `home`, `library`, `game`, `wi
 | `SteamVaultI18n.js` | Versão em inglês: o tradutor que troca os textos depois que cada tela é desenhada. O dicionário português → inglês fica em `Assets/i18n/en.json` e só é lido com o inglês ligado |
 | `SteamVaultLook.js` | Personalização da Interface: modelos da Início, das fichas, dos cards e dos banners, combinações salvas e a pré-visualização real (Configurações) |
 | `SteamVaultCare.js` | Preferências entre aparelhos (arquivo `Assets/game-library-preferencias.json`) e backup em .zip na pasta `Backups/` |
-| `SteamVaultProfile.js` | Perfil do jogador: nome, avatar, bio, vitrine, DNA gamer, momentos marcantes e contas (`Dashboard/Perfil.md`) |
+| `SteamVaultProfile.js` | Perfil do jogador: nome, avatar, bio, fundo (arte de um jogo ou imagem do aparelho, guardada em `Assets/Profile/`), vitrine, DNA gamer, momentos marcantes e contas (`Dashboard/Perfil.md`) |
 | `SteamVaultLegacy.js` | Formulários de edição herdados do iiSU, abertos dentro dos modais |
 
 ## Schema do jogo

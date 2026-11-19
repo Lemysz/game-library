@@ -363,6 +363,8 @@ class SteamVaultSteam {
 		if (!rows.length) {
 			// frases específicas — a palavra solta "private" aparece em qualquer página e dava falso "privado"
 			if (/game details (?:are|is) (?:set to )?private|stats? (?:are|is) (?:not public|private)|This user has not made their game details public/i.test(htmlRes.text)) return { ok: false, code: "private_game_details" };
+			// 1.10.3: jogo/app sem conquistas — a Steam redireciona para o perfil
+			if (!/id="valve-ssr-data"/.test(htmlRes.text) && /class="profile_header"/.test(htmlRes.text)) return { ok: false, code: "no_stats" };
 			// guarda a resposta bruta para diagnóstico do novo formato da Steam
 			await this._writeDebug(appId, xmlRes, htmlRes, pageRes);
 			return { ok: false, code: "html_changed" };
