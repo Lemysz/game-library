@@ -11,6 +11,15 @@ versões menores.
 
 Nada ainda.
 
+## [1.10.3] · 2026-11-19
+
+Steam conferida com um perfil real conectado. Sem mudança no formato das notas.
+
+### Corrigido
+- **Jogo ou programa sem conquistas na Steam** (ex.: Lossless Scaling): a Steam redireciona a página de
+  conquistas para o perfil, e a sincronização mostrava "A Steam mudou o formato da página pública".
+  Agora fica como "sem conquistas" e as horas continuam sendo gravadas.
+
 ## [1.10.2] · 2026-11-18
 
 Steam conferida com as páginas públicas reais. Sem mudança no formato das notas.

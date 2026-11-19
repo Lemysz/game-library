@@ -781,6 +781,16 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	check("Steam sem login: lista de jogos que pede login vira aviso claro, não erro de formato", r.owned === "login_required", JSON.stringify(r));
 	check("Steam sem login: conquistas ocultas não viram \"0 de N\"; visíveis são lidas", r.hidden === "ach_hidden" && r.shown === "1/2", JSON.stringify(r));
 	check("Steam: jogados recentemente leem \"46 / 50\" conquistas e as horas", r.rec === "216h 46/50 Oct 26", JSON.stringify(r));
+	// ---- Steam 1.10.3: app sem conquistas redireciona para o perfil → "sem conquistas"
+	r = await p.evaluate(async () => {
+		const S = customJS.SteamVaultSteam; S.minIntervalMs = 0;
+		const cfg = { configured: true, steamId64: "76561190000000004", language: "english" };
+		window.__mockReq = u => /\/stats\/930001\//.test(u) ? { status: 200, headers: {}, text: `<html><head><title>Steam Community :: Perfil</title></head><body><div class="profile_header">Perfil</div></body></html>` } : null;
+		const res = await S.fetchPlayerAchievements("930001", cfg);
+		window.__mockReq = null; S.minIntervalMs = 1600;
+		return { code: res.code };
+	});
+	check("Steam: app sem conquistas (redireciona para o perfil) vira \"sem conquistas\", não erro de formato", r.code === "no_stats", JSON.stringify(r));
 	// ---- Steam 1.10.2: horas pela página de insígnias quando a lista pede login
 	r = await p.evaluate(async () => {
 		const S = customJS.SteamVaultSteam; S.minIntervalMs = 0;
