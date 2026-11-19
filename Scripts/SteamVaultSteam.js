@@ -36,6 +36,8 @@ class SteamVaultSteam {
 			profile_not_found: "Perfil Steam não encontrado",
 			private_profile: "O perfil Steam precisa ser público",
 			private_game_details: "Os detalhes de jogos estão privados na Steam",
+			login_required: "A Steam só mostra a lista completa de jogos com login: as horas vêm dos jogados recentemente e das insígnias",
+			ach_hidden: "As conquistas deste jogo não aparecem no perfil público (detalhes de jogos privados ou jogo fora da conta)",
 			no_stats: "Este jogo não tem conquistas públicas na Steam",
 			not_owned: "Jogo não encontrado no perfil público",
 			no_app_id: "Jogo sem Steam AppID",
@@ -216,6 +218,12 @@ class SteamVaultSteam {
 		return m ? m[1].toLowerCase() : "";
 	}
 
+	// 1.10.2: a Steam passou a mandar visitantes sem login da lista de jogos
+	// para a tela de entrar (a requisição segue o redirecionamento)
+	_isLoginPage(text) {
+		return /"route":"\/login"|<title>[^<]*(?:Sign In|Iniciar sess)/i.test(String(text || ""));
+	}
+
 	_isPrivatePage(text) {
 		return /profile_private_info|This profile is private|perfil é privado/i.test(text);
 	}
@@ -287,7 +295,10 @@ class SteamVaultSteam {
 					});
 				}
 			}
-			return { list, hasUser: !!user?.achievements, rarity: { byHash, byName } };
+			// 1.10.2: sem permissão para ver (detalhes privados ou jogo fora da
+			// conta) a Steam manda "achievements: {}" com schema_hash 0 — não é "0 de N"
+			const hasUser = Object.keys(mine).length > 0 || Number(user?.schema_hash) > 0;
+			return { list, hasUser, rarity: { byHash, byName } };
 		} catch (_) { return null; }
 	}
 
@@ -308,6 +319,8 @@ class SteamVaultSteam {
 				if (!ssr.list.length) return { ok: false, code: "no_stats" };
 				return { ok: true, via: "ssr", list: ssr.list, total: ssr.list.length, unlocked: ssr.list.filter(a => a.unlocked).length, rarity: ssr.rarity };
 			}
+			// as páginas antigas (XML e HTML) hoje redirecionam para esta mesma
+			if (ssr) return { ok: false, code: ssr.list.length ? "ach_hidden" : "no_stats" };
 		}
 
 		const xmlRes = await this._get(`${base}/stats/${encodeURIComponent(appId)}/achievements/?xml=1&l=${lang}`);
@@ -395,6 +408,7 @@ class SteamVaultSteam {
 
 		const xml = await this._get(`${base}/games/?tab=all&xml=1`);
 		if (!xml.ok && xml.code === "rate_limited") return xml;
+		if (xml.ok && this._isLoginPage(xml.text)) return { ok: false, code: "login_required" };
 		if (xml.ok) {
 			const doc = this._xml(xml.text);
 			const games = [...(doc?.querySelectorAll("gamesList > games > game") || [])].map(el => ({
@@ -408,6 +422,7 @@ class SteamVaultSteam {
 
 		const res = await this._get(`${base}/games/?tab=all&l=english`);
 		if (!res.ok) return res;
+		if (this._isLoginPage(res.text)) return { ok: false, code: "login_required" };
 		if (this._isPrivatePage(res.text)) return { ok: false, code: "private_profile" };
 		let raw = null;
 		const attr = /data-profile-gameslist="([^"]+)"/.exec(res.text);
@@ -434,6 +449,44 @@ class SteamVaultSteam {
 			};
 		});
 		return { ok: true, via: "html", games };
+	}
+
+	// 1.10.2: sem login a lista de jogos não abre; a página pública de
+	// insígnias ainda mostra as horas de cada jogo com cartas colecionáveis
+	// (parte da biblioteca, não ela toda)
+	async fetchBadgeGames(cfg = this.getConfig()) {
+		if (!cfg.configured) return { ok: false, code: "not_configured" };
+		const base = this.profileBaseUrl(cfg);
+		const games = new Map();
+		for (let n = 1; n <= 10; n++) {
+			const res = await this._get(`${base}/badges/?l=english&p=${n}`);
+			if (!res.ok) { if (n === 1) return res; break; }
+			if (this._isLoginPage(res.text)) return n === 1 ? { ok: false, code: "login_required" } : { ok: true, via: "badges", games: [...games.values()] };
+			if (this._isPrivatePage(res.text)) return { ok: false, code: "private_profile" };
+			const doc = this._html(res.text);
+			const before = games.size;
+			for (const row of doc?.querySelectorAll(".badge_row") || []) {
+				const id = (/\/gamecards\/(\d+)/.exec(row.querySelector(".badge_row_overlay")?.getAttribute("href") || "") || [])[1];
+				// sem "hrs on record" é insígnia de evento ou jogo sem tempo: fica de fora
+				const hm = /([\d.,]+)\s*hrs on record/i.exec(this._t(row, ".badge_title_stats_playtime"));
+				const hours = hm ? this._num(hm[1]) : null;
+				if (!id || hours === null || games.has(id)) continue;
+				const name = this._t(row, ".badge_title").replace(/\s*View details\s*$/i, "").replace(/\u00a0/g, " ").trim();
+				games.set(id, { appId: id, name, hours, hours2Weeks: null, lastPlayed: "" });
+			}
+			if (games.size === before || !new RegExp(`[?&]p=${n + 1}\\b`).test(res.text)) break;
+		}
+		return { ok: true, via: "badges", games: [...games.values()] };
+	}
+
+	// lido no máximo a cada 12 h (cache em .steamvault/badges.json)
+	async badgeGames(cfg = this.getConfig()) {
+		const cached = await this._readCache("badges");
+		if (cached?.games && Date.now() - Date.parse(cached.fetchedAt || 0) < this.staleHours * 3600000) return cached.games;
+		const r = await this.fetchBadgeGames(cfg).catch(() => ({ ok: false }));
+		if (!r.ok) return cached?.games || [];
+		await this._writeCache("badges", { fetchedAt: new Date().toISOString(), games: r.games });
+		return r.games;
 	}
 
 	// ================================================ perfil público
@@ -494,11 +547,11 @@ class SteamVaultSteam {
 			const link = el.querySelector(".game_name a")?.getAttribute("href") || "";
 			const details = this._t(el, ".game_info_details");
 			const achText = this._t(el, ".game_info_achievement_summary .ellipsis, .achievement_progress_bar_ctn");
-			const ach = /(\d+)\s*of\s*(\d+)/i.exec(this._t(el, ".game_info_achievement_summary") || achText);
+			const ach = /(\d+)\s*(?:of|\/)\s*(\d+)/i.exec(this._t(el, ".game_info_achievement_summary") || achText);
 			return {
 				name: this._t(el, ".game_name"), appId: (/app\/(\d+)/.exec(link) || [])[1] || "",
 				capsule: el.querySelector(".game_capsule")?.getAttribute("src") || "",
-				hours: this._num((/([\d.,]+)\s*hrs on record/i.exec(details) || [])[1]),
+				hours: (h => h ? this._num(h[1]) : null)(/([\d.,]+)\s*hrs on record/i.exec(details)),
 				lastPlayedText: (/last played on (.+)$/i.exec(details) || [])[1] || (/currently in-game/i.test(details) ? "Jogando agora" : ""),
 				achUnlocked: ach ? Number(ach[1]) : null, achTotal: ach ? Number(ach[2]) : null
 			};
@@ -602,6 +655,11 @@ class SteamVaultSteam {
 		// do perfil também trazem o total de horas de cada jogo
 		const rec = (recent || []).find(x => String(x.appId) === appId);
 		if (patch.playtimeHours === undefined && rec && setHours(rec.hours, "recentes")) patch.owned = true;
+		// 1.10.2: e, sem a lista, as horas da página de insígnias
+		if (patch.playtimeHours === undefined && !ownedRes.ok) {
+			const badge = (await this.badgeGames(cfg).catch(() => [])).find(x => String(x.appId) === appId);
+			if (badge && setHours(badge.hours, "insígnias")) patch.owned = true;
+		}
 
 		const achRes = achievements ? await this.fetchPlayerAchievements(appId, cfg) : { ok: false, code: "skipped" };
 		let written = { updated: 0, created: 0 };
@@ -761,6 +819,16 @@ class SteamVaultSteam {
 		return { code: "no_app_id" };
 	}
 
+	// 1.10.2: o que dá para saber da conta sem login — jogados recentemente +
+	// jogos da página de insígnias, sem repetir
+	async partialGames(cfg = this.getConfig(), recent = null) {
+		const rec = recent || (await this.readProfileCache().catch(() => null))?.recentGames || [];
+		const out = new Map();
+		for (const x of rec) if (x?.appId) out.set(String(x.appId), { appId: String(x.appId), name: x.name || "", hours: x.hours ?? 0, hours2Weeks: null, lastPlayed: "" });
+		for (const x of await this.badgeGames(cfg).catch(() => [])) if (!out.has(String(x.appId))) out.set(String(x.appId), x);
+		return [...out.values()];
+	}
+
 	// sincronizar UM jogo com tudo que o lote usa (lista do perfil em cache,
 	// recentes, AppID automático); conquistas só com origem Steam Automática
 	async syncOne(file) {
@@ -827,7 +895,8 @@ class SteamVaultSteam {
 			const recent = profileRes.profile?.recentGames || [];
 
 			// 1.9.0: fichas sem AppID ganham o AppID pelo nome, na lista do seu perfil
-			const linked = owned.ok ? await this.resolveAppIds(owned) : { resolved: [], ambiguous: [] };
+			const partial = owned.ok ? null : await this.partialGames(cfg, recent);
+			const linked = await this.resolveAppIds(owned.ok ? owned : { ok: partial.length > 0, games: partial });
 			summary.identified = linked.resolved.length;
 			summary.ambiguous = linked.ambiguous.length;
 			const given = new Map(linked.resolved.map(r => [r.path, r.appId]));

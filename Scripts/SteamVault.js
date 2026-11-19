@@ -3165,14 +3165,25 @@ class SteamVault {
 	async steamLibraryPicker(ctx) {
 		const { U, S } = ctx;
 		if (!S.getConfig().configured) return this.steamConnect(ctx);
+		// 1.10.2: sem login a Steam não mostra a lista completa; ficam os
+		// "Jogados recentemente" do perfil público (só nesta janela: não vão
+		// para o cache da lista, que o sync usa para saber o que é da conta)
+		const recentOnly = async () => {
+			let rec = (await S.readProfileCache().catch(() => null))?.recentGames;
+			if (!rec?.length) rec = (await S.fetchProfile().catch(() => null))?.profile?.recentGames || [];
+			const games = await S.partialGames(S.getConfig(), rec);
+			return games.length ? { fetchedAt: new Date().toISOString(), games, recentOnly: true } : null;
+		};
 		let cache = await S._readCache("games");
 		if (!cache?.games?.length) {
 			const t = this.toast("Lendo a biblioteca do seu perfil Steam…", { sticky: true, icon: "refresh" });
 			const r = await S.fetchOwnedGames().catch(() => ({ ok: false, code: "network" }));
+			if (r.ok) {
+				cache = { fetchedAt: new Date().toISOString(), games: r.games };
+				await S._writeCache("games", cache);
+			} else cache = r.code === "login_required" ? await recentOnly() : null;
 			t.close(0);
-			if (!r.ok) return this.toast(S.message(r.code), { tone: "warn" });
-			cache = { fetchedAt: new Date().toISOString(), games: r.games };
-			await S._writeCache("games", cache);
+			if (!cache) return this.toast(S.message(r.code), { tone: "warn" });
 		}
 		const P = ctx.SP;
 		const rows = cache.games.map(x => ({ ...x, local: P?.localFor ? P.localFor(ctx, x.appId, x.name) : null })).sort((a, b) => (b.hours || 0) - (a.hours || 0) || String(a.name).localeCompare(String(b.name)));
@@ -3183,14 +3194,14 @@ class SteamVault {
 				<label class="sv-steampick-search">${U.icon("search")}<input type="search" placeholder="Buscar jogo" aria-label="Buscar jogo"></label>
 				<div class="sv-segmented" role="radiogroup" aria-label="Mostrar">${[["out", `Fora do vault · ${rows.length - nIn}`], ["in", `No vault · ${nIn}`], ["all", `Todos · ${rows.length}`]].map(([v, l], i) => `<button type="button" role="radio" data-pick-filter="${v}" class="${i ? "" : "is-active"}" aria-checked="${!i}">${U.esc(l)}</button>`).join("")}</div>
 			</div>
-			<p class="sv-steampick-note">Lista pública do seu perfil, lida ${U.esc(U.relDate(String(cache.fetchedAt || "").slice(0, 10)))}. Jogos já no vault não são duplicados: a ficha existente só é ligada à Steam.</p>
+			<p class="sv-steampick-note">${cache.recentOnly ? "A Steam só mostra a lista completa de jogos com login. Aqui estão os jogados recentemente e os jogos com insígnias do seu perfil público; os outros entram pelo formulário de adicionar jogo." : `Lista pública do seu perfil, lida ${U.esc(U.relDate(String(cache.fetchedAt || "").slice(0, 10)))}.`} Jogos já no vault não são duplicados: a ficha existente só é ligada à Steam.</p>
 			<div class="sv-steampick-list">${rows.map((x, i) => `<label class="sv-steampick-row${x.local ? " is-in" : ""}" data-pick-i="${i}" data-pick-name="${U.attr(ctx.C.normalizeKey(x.name))}">
 				<input type="checkbox" data-pick="${i}"${x.local ? " disabled" : ""}>
 				<img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${U.attr(x.appId)}/capsule_184x69.jpg" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
 				<span class="sv-steampick-text"><b>${U.esc(x.name)}</b><small>${x.hours > 0 ? `${U.esc(U.fmtHours(x.hours))} na Steam` : "Nunca jogado"}${x.lastPlayed ? ` · ${U.esc(U.relDate(x.lastPlayed))}` : ""}</small></span>
 				${x.local ? `<span class="sv-steampick-tag">${U.icon("check")}No vault</span>` : ""}
 			</label>`).join("")}</div>`;
-		const m = this.modal({ title: "Importar da biblioteca Steam", sub: `${U.plural(rows.length, "jogo", "jogos")} no seu perfil`, body, size: "lg", cls: "sv-steampick-modal",
+		const m = this.modal({ title: "Importar da biblioteca Steam", sub: cache.recentOnly ? `${U.plural(rows.length, "jogo visível", "jogos visíveis")} sem login` : `${U.plural(rows.length, "jogo", "jogos")} no seu perfil`, body, size: "lg", cls: "sv-steampick-modal",
 			actions: `${U.btn("Atualizar lista", { icon: "refresh", kind: "ghost", attrs: "data-pick-reload" })}${U.btn("Selecionar visíveis", { kind: "ghost", attrs: "data-pick-all" })}${U.btn("Importar selecionados", { icon: "download", kind: "primary", attrs: "data-pick-go disabled" })}` });
 		const el = m.el;
 		let filter = "out";
@@ -3223,8 +3234,8 @@ class SteamVault {
 		});
 		el.querySelector("[data-pick-reload]").addEventListener("click", async () => {
 			const r = await S.fetchOwnedGames().catch(() => ({ ok: false, code: "network" }));
-			if (!r.ok) return this.toast(S.message(r.code), { tone: "warn" });
-			await S._writeCache("games", { fetchedAt: new Date().toISOString(), games: r.games });
+			if (!r.ok && r.code !== "login_required") return this.toast(S.message(r.code), { tone: "warn" });
+			if (r.ok) await S._writeCache("games", { fetchedAt: new Date().toISOString(), games: r.games });
 			m.close(); this.steamLibraryPicker(ctx);
 		});
 		el.querySelector("[data-pick-go]").addEventListener("click", async e => {

@@ -11,6 +11,26 @@ versões menores.
 
 Nada ainda.
 
+## [1.10.2] · 2026-11-18
+
+Steam conferida com as páginas públicas reais. Sem mudança no formato das notas.
+
+### Adicionado
+- **Horas pela página de insígnias:** sem a lista de jogos, a sincronização lê as horas da página
+  pública de insígnias do perfil (jogos com cartas colecionáveis). Esses jogos também entram em
+  *Importar da biblioteca Steam* e no AppID automático pelo nome.
+
+### Corrigido
+- **Lista de jogos que pede login:** a Steam passou a mandar visitantes sem login da lista de jogos do
+  perfil para a tela de entrar. Antes aparecia "A Steam mudou o formato da página pública"; agora o
+  aviso explica que as horas vêm dos jogados recentemente, e *Importar da biblioteca Steam* mostra
+  os jogos visíveis sem login em vez de falhar.
+- **Conquistas ocultas não viram "0 de N":** quando a Steam não mostra as conquistas de um jogo
+  (detalhes de jogos privados ou jogo fora da conta), a sincronização avisa e não marca tudo como
+  bloqueado.
+- **Conquistas dos jogados recentemente:** a Steam trocou "46 of 50" por "46 / 50" e o número não era
+  lido.
+
 ## [1.10.1] · 2026-11-18
 
 O Perfil Xbox volta a ser como na 1.9.0. Sem mudança no formato das notas.
