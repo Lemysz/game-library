@@ -11,6 +11,14 @@ versões menores.
 
 Nada ainda.
 
+## [1.11.1] · 2026-11-19
+
+Sem mudança no formato das notas.
+
+### Alterado
+- **Fundo do perfil:** o botão de imagem em cima do fundo saiu, a pedido. Trocar o fundo (inclusive por
+  uma imagem do aparelho) fica só em *Editar perfil › Fundo*.
+
 ## [1.11.0] · 2026-11-19
 
 Fundo do perfil com imagem própria; Steam conferida com um perfil real. Sem mudança obrigatória no
