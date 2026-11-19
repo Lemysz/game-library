@@ -510,6 +510,14 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	check("editor do perfil abre", await modalOpen());
 	await p.fill("#sv-pf-bio", "bio de teste"); await click("[data-pf-save]"); await p.waitForTimeout(1000);
 	check("salvar o perfil grava na nota", ((await fm("Dashboard/Perfil.md"))?.profile || {}).bio === "bio de teste");
+	// 1.11.0: trocar o fundo por uma imagem do aparelho (atalho no próprio fundo)
+	await go("Dashboard/Perfil.md");
+	await click('[data-pf="banner"]'); await p.waitForTimeout(400);
+	await p.setInputFiles("[data-pf-bgfile]", { name: "fundo.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP4z8DAwMDAxMDAwMDAAAANHQEDsheK7wAAAABJRU5ErkJggg==", "base64") });
+	await p.waitForTimeout(700);
+	const bgSel = await p.evaluate(() => document.querySelector("#sv-pf-banner")?.value || "");
+	await click("[data-pf-save]"); await p.waitForTimeout(1000);
+	check("fundo do perfil: imagem do aparelho salva em Assets/Profile e usada no fundo", /^Assets\/Profile\/.+\.png$/.test(bgSel) && ((await fm("Dashboard/Perfil.md"))?.profile || {}).banner === bgSel && await count(".sv-pf-banner img") === 1, bgSel);
 
 	// ---- "Sua semana": alternar para a semana passada; mapa de calor na ficha
 	await go("Dashboard/Home.md");
@@ -781,6 +789,16 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	check("Steam sem login: lista de jogos que pede login vira aviso claro, não erro de formato", r.owned === "login_required", JSON.stringify(r));
 	check("Steam sem login: conquistas ocultas não viram \"0 de N\"; visíveis são lidas", r.hidden === "ach_hidden" && r.shown === "1/2", JSON.stringify(r));
 	check("Steam: jogados recentemente leem \"46 / 50\" conquistas e as horas", r.rec === "216h 46/50 Oct 26", JSON.stringify(r));
+	// ---- Steam 1.10.3: app sem conquistas redireciona para o perfil → "sem conquistas"
+	r = await p.evaluate(async () => {
+		const S = customJS.SteamVaultSteam; S.minIntervalMs = 0;
+		const cfg = { configured: true, steamId64: "76561190000000004", language: "english" };
+		window.__mockReq = u => /\/stats\/930001\//.test(u) ? { status: 200, headers: {}, text: `<html><head><title>Steam Community :: Perfil</title></head><body><div class="profile_header">Perfil</div></body></html>` } : null;
+		const res = await S.fetchPlayerAchievements("930001", cfg);
+		window.__mockReq = null; S.minIntervalMs = 1600;
+		return { code: res.code };
+	});
+	check("Steam: app sem conquistas (redireciona para o perfil) vira \"sem conquistas\", não erro de formato", r.code === "no_stats", JSON.stringify(r));
 	// ---- Steam 1.10.2: horas pela página de insígnias quando a lista pede login
 	r = await p.evaluate(async () => {
 		const S = customJS.SteamVaultSteam; S.minIntervalMs = 0;

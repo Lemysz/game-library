@@ -7952,6 +7952,16 @@ body.sv-oled:not(.theme-light) .sv-app.sv-bp-sm .sv-search { background: rgba(0,
 .sv-pf-edit-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 .sv-app.sv-bp-xs .sv-pf-edit-row, .sv-pf-modal .sv-pf-edit-row { grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 560px) { .sv-pf-modal .sv-pf-edit-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+/* 1.11.0: trocar o fundo do perfil (atalho no fundo + imagem do aparelho no editor) */
+.sv-pf-banner-edit { position: absolute; right: var(--sv-pad-x); bottom: 78px; z-index: 2; display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 1px solid color-mix(in srgb, #fff 22%, transparent); border-radius: 50%; background: color-mix(in srgb, #000 45%, transparent); color: #fff; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: background var(--sv-t-fast) var(--sv-ease), transform var(--sv-t-fast) var(--sv-ease); }
+.sv-pf-banner-edit:hover, .sv-pf-banner-edit:focus-visible { background: color-mix(in srgb, #000 65%, transparent); }
+.sv-pf-banner-edit:active { transform: scale(0.94); }
+.sv-pf-banner-edit .sv-i { width: 18px; height: 18px; }
+.sv-app:not(.sv-bp-sm) .sv-pf-banner-edit { top: 16px; bottom: auto; }
+.sv-pf-bgpick { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.sv-pf-bgprev { display: grid; place-items: center; width: 112px; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--sv-radius); background: var(--sv-surface-2); border: 1px solid var(--sv-line); }
+.sv-pf-bgprev img { width: 100%; height: 100%; object-fit: cover; }
+.sv-pf-bgprev small { font-size: var(--sv-fs-micro); color: var(--sv-muted); }
 .sv-pf-favhead { display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px; }
 .sv-pf-favhead small { font-size: var(--sv-fs-micro); color: var(--sv-muted); }
 .sv-pf-favpick { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 6px; max-height: 260px; overflow-y: auto; padding: 2px; }
