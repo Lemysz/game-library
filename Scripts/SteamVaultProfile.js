@@ -129,8 +129,7 @@ class SteamVaultProfile {
 		const src = this.avatarSrc(ctx, model);
 		const since = model.games.map(g => g.dateAdded).filter(Boolean).sort()[0];
 		return `<section class="sv-pf-hero">
-			<div class="sv-pf-banner">${bg ? `<img src="${U.attr(bg)}" alt="" decoding="async">` : ""}<span class="sv-pf-banner-fx"></span>
-				<button type="button" class="sv-pf-banner-edit" data-pf="banner" aria-label="Trocar fundo" title="Trocar fundo">${U.icon("image")}</button></div>
+			<div class="sv-pf-banner">${bg ? `<img src="${U.attr(bg)}" alt="" decoding="async">` : ""}<span class="sv-pf-banner-fx"></span></div>
 			<div class="sv-pf-id">
 				<div class="sv-pf-avatar" style="--sv-pf-h:${C.hashHue(name)}">
 					<span class="sv-pf-pic">${src ? `<img src="${U.attr(src)}" alt="" decoding="async">` : `<b>${U.esc(this.initials(name))}</b>`}</span>
@@ -225,7 +224,7 @@ class SteamVaultProfile {
 		if (!host) return;
 		host.addEventListener("click", e => {
 			const b = e.target.closest("[data-pf]");
-			if (b) { e.preventDefault(); if (b.dataset.pf === "edit") this.openEditor(ctx); else if (b.dataset.pf === "banner") this.openEditor(ctx, { focus: "banner" }); }
+			if (b) { e.preventDefault(); if (b.dataset.pf === "edit") this.openEditor(ctx); }
 		});
 		this.animate(host);
 	}
@@ -251,7 +250,7 @@ class SteamVaultProfile {
 		requestAnimationFrame(step);
 	}
 
-	openEditor(ctx, { focus = "" } = {}) {
+	openEditor(ctx) {
 		const { U, model, C } = ctx;
 		const d = this.data();
 		const s = ctx.S?.getConfig?.() || {};
@@ -310,7 +309,6 @@ class SteamVaultProfile {
 				this.V.toast("Imagem pronta. Toque em Salvar para usar", { icon: "image" });
 			} catch (err) { this.V.toast(`Não foi possível usar a imagem: ${err.message}`, { tone: "error" }); }
 		});
-		if (focus === "banner") setTimeout(() => { body.querySelector(".sv-pf-bgpick")?.scrollIntoView({ block: "center" }); sel.focus({ preventScroll: true }); }, 60);
 		body.querySelector(".sv-pf-favsearch").addEventListener("input", e => {
 			const q = e.target.value.trim().toLowerCase();
 			body.querySelectorAll(".sv-pf-favopt").forEach(l => { l.hidden = !!q && !l.dataset.name.includes(q); });

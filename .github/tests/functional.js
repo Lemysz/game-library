@@ -510,9 +510,9 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	check("editor do perfil abre", await modalOpen());
 	await p.fill("#sv-pf-bio", "bio de teste"); await click("[data-pf-save]"); await p.waitForTimeout(1000);
 	check("salvar o perfil grava na nota", ((await fm("Dashboard/Perfil.md"))?.profile || {}).bio === "bio de teste");
-	// 1.11.0: trocar o fundo por uma imagem do aparelho (atalho no próprio fundo)
+	// 1.11.0: trocar o fundo por uma imagem do aparelho (Editar perfil › Fundo)
 	await go("Dashboard/Perfil.md");
-	await click('[data-pf="banner"]'); await p.waitForTimeout(400);
+	await click('[data-pf="edit"]'); await p.waitForTimeout(400);
 	await p.setInputFiles("[data-pf-bgfile]", { name: "fundo.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP4z8DAwMDAxMDAwMDAAAANHQEDsheK7wAAAABJRU5ErkJggg==", "base64") });
 	await p.waitForTimeout(700);
 	const bgSel = await p.evaluate(() => document.querySelector("#sv-pf-banner")?.value || "");
