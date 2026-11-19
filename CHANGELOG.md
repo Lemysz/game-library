@@ -11,9 +11,15 @@ versões menores.
 
 Nada ainda.
 
-## [1.10.3] · 2026-11-19
+## [1.11.0] · 2026-11-19
 
-Steam conferida com um perfil real conectado. Sem mudança no formato das notas.
+Fundo do perfil com imagem própria; Steam conferida com um perfil real. Sem mudança obrigatória no
+formato das notas (`profile.banner` passa a aceitar também o caminho de uma imagem).
+
+### Adicionado
+- **Trocar o fundo do perfil:** botão de imagem em cima do fundo (ou *Editar perfil › Fundo*). Além do
+  automático e das artes dos seus jogos, dá para *Escolher imagem do aparelho*: a imagem é guardada em
+  `Assets/Profile/` (comprimida, como as outras fotos do aparelho), com prévia antes de salvar.
 
 ### Corrigido
 - **Jogo ou programa sem conquistas na Steam** (ex.: Lossless Scaling): a Steam redireciona a página de

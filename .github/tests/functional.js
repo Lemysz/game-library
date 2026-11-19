@@ -510,6 +510,14 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	check("editor do perfil abre", await modalOpen());
 	await p.fill("#sv-pf-bio", "bio de teste"); await click("[data-pf-save]"); await p.waitForTimeout(1000);
 	check("salvar o perfil grava na nota", ((await fm("Dashboard/Perfil.md"))?.profile || {}).bio === "bio de teste");
+	// 1.11.0: trocar o fundo por uma imagem do aparelho (atalho no próprio fundo)
+	await go("Dashboard/Perfil.md");
+	await click('[data-pf="banner"]'); await p.waitForTimeout(400);
+	await p.setInputFiles("[data-pf-bgfile]", { name: "fundo.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP4z8DAwMDAxMDAwMDAAAANHQEDsheK7wAAAABJRU5ErkJggg==", "base64") });
+	await p.waitForTimeout(700);
+	const bgSel = await p.evaluate(() => document.querySelector("#sv-pf-banner")?.value || "");
+	await click("[data-pf-save]"); await p.waitForTimeout(1000);
+	check("fundo do perfil: imagem do aparelho salva em Assets/Profile e usada no fundo", /^Assets\/Profile\/.+\.png$/.test(bgSel) && ((await fm("Dashboard/Perfil.md"))?.profile || {}).banner === bgSel && await count(".sv-pf-banner img") === 1, bgSel);
 
 	// ---- "Sua semana": alternar para a semana passada; mapa de calor na ficha
 	await go("Dashboard/Home.md");

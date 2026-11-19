@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 1.10.3" src="https://img.shields.io/badge/vers%C3%A3o-1.10.3-1a9fff?style=for-the-badge&labelColor=0d1420">
+  <img alt="Versão 1.11.0" src="https://img.shields.io/badge/vers%C3%A3o-1.11.0-1a9fff?style=for-the-badge&labelColor=0d1420">
   <img alt="Obsidian para Android e computador" src="https://img.shields.io/badge/Obsidian-Android%20%C2%B7%20desktop-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white&labelColor=0d1420">
   <img alt="Sem senha, sem cookies" src="https://img.shields.io/badge/sem%20senha-sem%20cookies-6cc24a?style=for-the-badge&labelColor=0d1420">
   <img alt="Português e inglês" src="https://img.shields.io/badge/idioma-PT%20%C2%B7%20EN-e9bd52?style=for-the-badge&labelColor=0d1420">
