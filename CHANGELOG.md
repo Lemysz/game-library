@@ -11,6 +11,27 @@ versões menores.
 
 Nada ainda.
 
+## [1.14.0] · 2026-11-20
+
+RetroAchievements reformulado e integrações com cor mais contida. Sem mudança no formato das notas
+(o cache `.steamvault/ra.json` ganha as capas consultadas).
+
+### Adicionado
+- **Jogos RA em grade de capas**, como a biblioteca da Steam: a capa vem da ficha do vault; para os
+  jogos que estão só no seu perfil, a capa oficial (box art) é buscada sob demanda, só para os cards
+  que aparecem na tela, uma por vez e no máximo 48 por sessão, e fica guardada no cache (inclusive
+  "sem capa", para não perguntar de novo). Sem capa, um quadro neutro com o ícone e o nome.
+- **Busca, filtros e ordenação** na biblioteca RA: progresso (em andamento, zerados, 100%, sem
+  progresso), console, no vault ou fora, e ordem por recentes, progresso, nome ou console.
+- **Ficha de jogo RA:** pontos em cada conquista, marca discreta *HC* nas desbloqueadas em hardcore e
+  o resumo de pontos ganhos × possíveis.
+
+### Alterado
+- **Cores do RetroAchievements:** topo neutro (sem o fundo marrom-dourado), progresso no azul do Vault
+  e o dourado só para 100% e masterizado (selo em contorno, não preenchido).
+- **Demais integrações** (GOG, Xbox, PlayStation, Epic, Nintendo, Google Play): botão principal com
+  tinta leve e contorno na cor da plataforma, sem brilho, e topo com o tom da marca mais discreto.
+
 ## [1.13.0] · 2026-11-20
 
 Vitrine Steam redesenhada. Sem mudança no formato das notas.

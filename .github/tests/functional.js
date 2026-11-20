@@ -1240,6 +1240,57 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 			return !hit;
 		}));
 	}
+	// ---- 1.14.0: biblioteca RetroAchievements em capas, ficha com pontos e box art sob demanda
+	{
+		const ra = await p.evaluate(async () => {
+			const R = customJS.SteamVaultRetro, page = __PAGES.find(x => x.path === "Dashboard/RetroAchievements.md");
+			const oldProfile = page.fm.raProfile; page.fm.raProfile = { user: "TesteRA" };
+			const oldKey = R._apiKey(); R.setKey("b".repeat(32)); const oldGap = R.GAP_MS; R.GAP_MS = 0;
+			const completion = [
+				{ gameId: "3057", title: "Bully", console: "PlayStation 2", icon: "", total: 14, unlocked: 9, hardcore: 6, lastUnlock: "2026-10-18T10:00:00Z", award: "beaten-hardcore" },
+				{ gameId: "910", title: "Jogo Retro Completo", console: "Genesis/Mega Drive", icon: "", total: 10, unlocked: 10, hardcore: 10, lastUnlock: "2026-09-01T10:00:00Z", award: "mastered" },
+				{ gameId: "911", title: "Aventura Retro", console: "SNES/Super Famicom", icon: "", total: 40, unlocked: 4, hardcore: 0, lastUnlock: "2026-08-01T10:00:00Z", award: "" }
+			];
+			await R._writeCache({ profile: { user: "TesteRA", points: 10 }, completion, recent: [], boxArts: {} });
+			customJS.SteamVaultCore.invalidate();
+			await go("Dashboard/RetroAchievements Jogos.md");
+			const cards = [...document.querySelectorAll(".sv-ralib > .sv-racard")];
+			const bully = cards.find(c => /Bully/.test(c.textContent));
+			const out = {
+				n: cards.length, bullyCover: !!bully?.querySelector("img.sv-racard-img"), bullyLink: !!bully?.querySelector("a.sv-racard-art[data-open]"),
+				phOut: cards.filter(c => c.dataset.state === "out").every(c => c.querySelector(".sv-racard-ph") && c.querySelector("[data-action='ra-import-game']")),
+				mastered: !!cards.find(c => c.classList.contains("is-mastered"))?.querySelector(".sv-racard-award")
+			};
+			document.querySelector('[data-ra-f="mastered"]').click();
+			out.filtro = [...document.querySelectorAll(".sv-racard")].filter(c => !c.hidden).map(c => c.dataset.title).join(",");
+			document.querySelector('[data-ra-f="all"]').click();
+			const s = document.querySelector("[data-ra-sort]"); s.value = "name"; s.dispatchEvent(new Event("change"));
+			out.ordem = [...document.querySelectorAll(".sv-racard")].map(c => c.dataset.title).join(",");
+			const q = document.querySelector("[data-ra-q]"); q.value = "snes"; q.dispatchEvent(new Event("input"));
+			out.busca = [...document.querySelectorAll(".sv-racard")].filter(c => !c.hidden).map(c => c.dataset.title).join(",");
+			// box art: uma consulta por jogo, depois só o cache (inclusive "sem capa")
+			window.__reqs = [];
+			window.__mockReq = u => /API_GetGame\.php/.test(u) ? { status: 200, headers: {}, text: JSON.stringify(/i=911/.test(u) ? { ID: 911, ImageBoxArt: "/Images/012345.png" } : { ID: 910, ImageBoxArt: "" }) } : null;
+			const a1 = await R.boxArtFor(["911", "910"]);
+			const n1 = window.__reqs.filter(u => /API_GetGame/.test(u)).length;
+			const a2 = await R.boxArtFor(["911", "910"]);
+			const n2 = window.__reqs.filter(u => /API_GetGame/.test(u)).length;
+			out.art = { url: a1["911"], vazio: a1["910"] === "", consultas1: n1, consultas2: n2, cache: a2["911"] };
+			window.__mockReq = null;
+			// ficha: pontos por conquista e resumo de pontos
+			const G = "Games/PS2/Bully.md";
+			for (let i = 0; i < 3; i++) await app.vault.create(`Achievements/Bully/RA teste ${i}.md`, `---\ntype: achievement\nname: "RA ${i}"\npoints: ${[5, 10, 25][i]}\ngame: "[[Bully]]"\ngamePath: "${G}"\nunlocked: ${i < 2}\nraHardcore: ${i === 0}\nunlockSource: retroachievements\n---\n`);
+			customJS.SteamVaultCore.invalidate(); await go(G);
+			document.querySelector('.sv-tabs--game [data-tab="achievements"]')?.click(); await new Promise(r => setTimeout(r, 300));
+			out.ficha = { resumo: document.querySelector(".sv-cabinet-gs--ra")?.textContent.replace(/\s+/g, " ").trim() || "", pts: document.querySelectorAll(".sv-ach-pts--ra").length, hc: document.querySelectorAll(".sv-ach-hc").length };
+			page.fm.raProfile = oldProfile; if (oldKey) R.setKey(oldKey); else R.removeKey(); R.GAP_MS = oldGap;
+			return out;
+		});
+		check("RA: biblioteca em capas (ficha do vault com capa e link; fora do vault com ícone e “Adicionar”)", ra.n === 4 && ra.bullyCover && ra.bullyLink && ra.phOut && ra.mastered, JSON.stringify(ra));
+		check("RA: filtro de progresso, ordenação por nome e busca", ra.filtro === "jogo retro completo" && ra.ordem === "aventura retro,bully,god of war chains of olympus,jogo retro completo" && ra.busca === "aventura retro", JSON.stringify(ra));
+		check("RA: capa (box art) consultada uma vez por jogo e guardada no cache", ra.art.url === "https://media.retroachievements.org/Images/012345.png" && ra.art.vazio && ra.art.consultas1 === 2 && ra.art.consultas2 === 2 && ra.art.cache === ra.art.url, JSON.stringify(ra.art));
+		check("RA: ficha mostra pontos por conquista, HC e o total de pontos", /^15\s*\/\s*40 pts/.test(ra.ficha.resumo) && ra.ficha.pts === 3 && ra.ficha.hc === 1, JSON.stringify(ra.ficha));
+	}
 	// ---- 1.13.0: Vitrine Steam — "Recent Activity" não é vitrine; blocos novos
 	{
 		const parsed = await p.evaluate(() => customJS.SteamVaultSteam._parseProfileHtml(`<div class="profile_customization"><div class="profile_customization_header">Recent Activity</div><div class="recent_games"><div class="recent_game"></div></div></div><div class="profile_customization"><div class="profile_customization_header"> Achievement Showcase </div><div class="showcase_content_bg"><img src="https://shared.fastly.steamstatic.com/a.jpg"></div></div>`).showcases.map(s => s.title));

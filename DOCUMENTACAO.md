@@ -131,6 +131,10 @@ Exemplos: Steam/Automática, RetroAchievements/Automática, Native/Manual, Custo
 
 ## Integrações de plataformas
 
+### Biblioteca RetroAchievements (1.14.0)
+
+*Jogos RA* mostra os jogos em grade de capas, como a biblioteca da Steam. A capa vem da ficha do vault (o sync de um jogo já grava a box art oficial em `cover` quando ela está vazia). Para os jogos que estão só no seu perfil, a box art é consultada no `API_GetGame` sob demanda, só para os cards visíveis, uma por vez e no máximo 48 por sessão, e fica guardada em `.steamvault/ra.json` (`boxArts`, inclusive "sem capa"). Sem capa, aparece um quadro neutro com o ícone e o nome. Há busca, filtro de progresso (em andamento, zerados, 100%, sem progresso), console, no vault ou fora, e ordenação (recentes, progresso, nome, console). Na ficha de um jogo RA, cada conquista mostra os pontos e a marca *HC* quando foi desbloqueada em hardcore, e o topo da aba Conquistas mostra os pontos ganhos × possíveis.
+
 Além da Steam e do RetroAchievements (que continuam exatamente como eram), a Game Library conecta outras plataformas quando existe uma forma legítima e segura. Cada uma tem o próprio perfil (menu *Integrações*), aba no hub e card na tela *Integrações*. As automáticas têm **Conectar, Sincronizar, Ativar/Desativar, Sincronizar ao abrir e Desconectar**; as manuais não usam rede.
 
 | Plataforma | Como conecta | O que sincroniza | O que não dá |

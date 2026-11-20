@@ -701,7 +701,8 @@ class SteamVaultUI {
 				${gl}
 			</div>
 			<div class="sv-ach-side">
-				${unit && Number(a.points) > 0 ? `<span class="sv-ach-pts" title="${this.attr(`${a.points} ${unit === "G" ? "de Gamerscore" : unit}`)}">${this.fmtNum(a.points)}<i>${this.esc(unit)}</i></span>` : ""}
+				${unit === "pts" && a.unlocked && a.hardcore ? `<span class="sv-ach-hc" title="Desbloqueada em modo hardcore">HC</span>` : ""}
+				${unit && Number(a.points) > 0 ? `<span class="sv-ach-pts${unit === "pts" ? " sv-ach-pts--ra" : ""}" title="${this.attr(`${a.points} ${unit === "G" ? "de Gamerscore" : unit}`)}">${this.fmtNum(a.points)}<i>${this.esc(unit)}</i></span>` : ""}
 				${a.unlocked && a.unlockedDate ? `<time>${this.esc(this.fmtDate(a.unlockedDate))}</time>` : ""}
 				${toggle && a.path ? `<button type="button" class="sv-ach-check${a.unlocked ? " is-on" : ""}" data-action="ach-unlock" data-path="${this.attr(a.path)}" aria-pressed="${a.unlocked}" title="${a.unlocked ? "Marcar como bloqueada" : "Marcar como desbloqueada"}">${this.icon("check")}</button>` : ""}
 			</div>

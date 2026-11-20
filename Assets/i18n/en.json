@@ -3680,5 +3680,20 @@
 	"Insígnia em destaque": "Featured badge",
 	"Análise em destaque": "Featured review",
 	"Guia em destaque": "Featured guide",
-	"Guias": "Guides"
+	"Guias": "Guides",
+	"Buscar jogo ou console": "Search game or console",
+	"Sem progresso": "No progress",
+	"Todos os consoles": "All consoles",
+	"No vault e fora": "In and out of the vault",
+	"Só no vault": "Only in the vault",
+	"Só fora do vault": "Only outside the vault",
+	"Console": "Console",
+	"{0} jogo do seu perfil ainda não está no vault. Adicionar cria a ficha e já sincroniza as conquistas.": "{0} game from your profile isn't in the vault yet. Adding creates its page and syncs the achievements.",
+	"{0} jogos do seu perfil ainda não estão no vault. Adicionar cria a ficha e já sincroniza as conquistas.": "{0} games from your profile aren't in the vault yet. Adding creates their pages and syncs the achievements.",
+	"Adicionar ao vault": "Add to vault",
+	"Desbloqueada em modo hardcore": "Unlocked in hardcore mode",
+	"{0} conquista em hardcore": "{0} achievement in hardcore",
+	"{0} conquistas em hardcore": "{0} achievements in hardcore",
+	"pontos RetroAchievements": "RetroAchievements points",
+	"Buscar jogos": "Search games"
 }

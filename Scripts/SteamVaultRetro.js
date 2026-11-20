@@ -44,7 +44,9 @@ class SteamVaultRetro {
 			completion: "API_GetUserCompletionProgress.php",
 			game: "API_GetGameInfoAndUserProgress.php",
 			awards: "API_GetUserAwards.php",
-			between: "API_GetAchievementsEarnedBetween.php"
+			between: "API_GetAchievementsEarnedBetween.php",
+			// 1.14.0: capa (box art) de um jogo, para a biblioteca
+			gameInfo: "API_GetGame.php"
 		};
 		// console do RA → nome de plataforma usado no vault
 		this.CONSOLES = {
@@ -371,6 +373,30 @@ class SteamVaultRetro {
 				achievements: list
 			}
 		};
+	}
+
+	// ============================================================ capas
+	// 1.14.0: a lista de progresso do perfil não traz a capa; ela vem do
+	// API_GetGame, um jogo por vez, só para os cards que aparecem na tela.
+	// O resultado fica no cache (inclusive "sem capa", para não perguntar de
+	// novo) e a fila de requisições respeita o intervalo da API.
+	async boxArtFor(ids, { max = 12 } = {}) {
+		const cache = (await this.readCache()) || {};
+		const known = cache.boxArts && typeof cache.boxArts === "object" ? cache.boxArts : {};
+		const want = [...new Set(ids.map(String))].filter(id => /^\d+$/.test(id) && !(id in known)).slice(0, max);
+		const got = {};
+		for (const id of want) {
+			const r = await this._get("gameInfo", { i: id });
+			if (!r.ok) {
+				// limite, chave ou rede: para aqui e tenta outro dia; "não achou" vira "sem capa"
+				if (r.code === "not_found") { got[id] = ""; continue; }
+				break;
+			}
+			got[id] = this.image(r.data?.ImageBoxArt) || "";
+		}
+		if (!Object.keys(got).length) return known;
+		const next = await this._writeCache({ boxArts: { ...known, ...got } });
+		return next.boxArts || { ...known, ...got };
 	}
 
 	// ============================================================ cache
