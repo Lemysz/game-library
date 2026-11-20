@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 1.11.2" src="https://img.shields.io/badge/vers%C3%A3o-1.11.2-1a9fff?style=for-the-badge&labelColor=0d1420">
+  <img alt="Versão 1.12.0" src="https://img.shields.io/badge/vers%C3%A3o-1.12.0-1a9fff?style=for-the-badge&labelColor=0d1420">
   <img alt="Obsidian para Android e computador" src="https://img.shields.io/badge/Obsidian-Android%20%C2%B7%20desktop-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white&labelColor=0d1420">
   <img alt="Sem senha, sem cookies" src="https://img.shields.io/badge/sem%20senha-sem%20cookies-6cc24a?style=for-the-badge&labelColor=0d1420">
   <img alt="Português e inglês" src="https://img.shields.io/badge/idioma-PT%20%C2%B7%20EN-e9bd52?style=for-the-badge&labelColor=0d1420">
@@ -72,7 +72,7 @@
     <td width="33%" valign="top">🏠 <b>Início</b><br><sub>Jogando agora, sua semana, metas, memórias, "O que jogar agora?" e primeiros passos para um vault vazio.</sub></td>
   </tr>
   <tr>
-    <td valign="top">🗂️ <b>Coleções e categorias</b><br><sub>Coleções manuais e automáticas; plataformas, gêneros, subgêneros e franquias com página, cor e ícone próprios.</sub></td>
+    <td valign="top">🗂️ <b>Coleções e categorias</b><br><sub>Coleções manuais e automáticas; plataformas, gêneros, subgêneros e franquias com página, cor e ícone próprios; franquias com total de jogos informado por você e progresso real.</sub></td>
     <td valign="top">🏆 <b>Conquistas</b><br><sub>Hub por origem, raridade, caçador de conquistas e cadastro manual (inclusive lote e planilha CSV/Excel).</sub></td>
     <td valign="top">📊 <b>Estatísticas</b><br><sub>Por período: tempo, gosto, conquistas e dinheiro, Tier List, metas e retrospectiva do ano.</sub></td>
   </tr>

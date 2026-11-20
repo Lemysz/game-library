@@ -777,7 +777,7 @@ class SteamVault {
 	_handles(a) {
 		return ["favorite", "menu", "manage", "steam-sync-game", "steam-hours-source", "steam-library-picker", "steam-sync", "steam-sync-force", "steam-connect", "steam-clear",
 			"add-game", "random-game", "legacy", "toggle-sidebar", "open-drawer", "close-drawer", "shelf-prev", "shelf-next",
-			"repair-names", "collection-games", "open-category", "identity-edit", "smart-back",
+			"repair-names", "collection-games", "open-category", "identity-edit", "franchise-edit", "smart-back",
 			"ra-connect", "ra-sync", "ra-sync-force", "ra-sync-game", "ra-import-game", "ra-import-all", "ra-disconnect", "obs", "search-open", "search-close", "live-toggle", "live-stop", "live-pause", "queue-toggle", "queue-manage",
 			"steam-import", "steam-art", "steam-art-all", "steam-details", "wikidata-details", "ach-target", "goals-edit", "stories", "picker", "wishlist-prices", "wishlist-import", "wish-target", "wish-bought", "onboard-hide", "onboard-show", "show-more", "backup-now", "backup-snooze", "csv-import", "library-health", "csv-export", "undo-last", "month-dismiss", "smart-collection",
 			"ach-config", "ach-unlock", "ach-migrate", "ach-icons-local", "skip-content", "ach-manage", "ach-manage-pick", "hub-open", "ach-bulk",
@@ -906,6 +906,7 @@ class SteamVault {
 			case "smart-collection": window.__svSmartView = el.dataset.id || null; return this._rerender("collections");
 			case "smart-back": window.__svSmartView = null; return this._rerender("collections");
 			case "identity-edit": return ctx.B.editIdentity(ctx, el.dataset.kind, el.dataset.name || "", el.dataset.path || "");
+			case "franchise-edit": return ctx.B.editFranchise(ctx, el.dataset.new ? "" : (el.dataset.name || ""), el.dataset.new ? "" : (el.dataset.path || ""));
 			case "ach-config": this._closeMenus(root); return ctx.A?.openConfig(ctx, path);
 			case "ach-unlock": return ctx.A?.toggleUnlock(el);
 			// 3.74.0: jogos de Xbox usam o gerenciador manual (lote, planilha, ícones)

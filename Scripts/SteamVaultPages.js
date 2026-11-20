@@ -1810,7 +1810,7 @@ class SteamVaultPages {
 		const dates = [["Adicionado", g.dateAdded], ["Começou", g.startDate], ["Zerou", g.completionDate], ["Última vez", g.lastPlayed.date]].filter(([, v]) => v);
 
 		const collections = model.collectionsByGame.get(g.path) || [];
-		const franchise = g.franchise ? model.games.filter(x => x !== g && x.franchise === g.franchise).sort((x, y) => (x.franchiseOrder ?? 99) - (y.franchiseOrder ?? 99)) : [];
+		const franchise = g.franchise ? model.games.filter(x => x !== g && C.normalizeKey(x.franchise) === C.normalizeKey(g.franchise)).sort((x, y) => (x.franchiseOrder ?? 99) - (y.franchiseOrder ?? 99)) : [];
 		const genreSet = new Set([...g.genres, ...g.subgenres].map(x => C.normalizeKey(x)));
 		const inFranchise = new Set(franchise);
 		const similar = model.games.filter(x => x !== g && !inFranchise.has(x) && [...x.genres, ...x.subgenres].some(y => genreSet.has(C.normalizeKey(y)))).slice(0, 10);

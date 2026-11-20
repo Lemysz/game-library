@@ -483,3 +483,17 @@ Cada nota em `Platforms/`, `Genres/` e `Franchises/` aceita estes campos opciona
 | `maker`, `year`, `generation` | Só plataformas: fabricante, ano de lançamento e geração. |
 
 Franquias passam a ter nota própria (`type: franchise`), criada automaticamente na primeira vez que a página é aberta. A ordem da história vem do campo `franchiseOrder` de cada jogo.
+
+### Gerenciar franquias (1.12.0)
+
+- **No jogo:** *Adicionar jogo* e *Editar detalhes* perguntam **Possui franquia?**. *Não* deixa o campo `franchise` vazio (o jogo fica fora da aba Franquias). *Sim* mostra o campo Franquia, com as suas franquias como sugestão; um nome novo cria a franquia ao salvar. Grafias diferentes do mesmo nome ("resident evil", "Resident Evil™") vão para a franquia que já existe.
+- **Na aba Franquias:** *Nova franquia* (botão +) e o lápis de cada card abrem o editor: nome, **total de jogos da franquia**, cor, ícone, imagem, descrição e arte. Renomear leva junto os jogos da franquia (só o campo `franchise` deles muda). Não é possível criar duas franquias com o mesmo nome.
+- **Total de jogos** (`totalGames` na nota da franquia): informado por você, nunca deduzido dos jogos cadastrados. Vazio = **Total não informado**: sem porcentagem e sem "saga concluída".
+- **Números:** total da franquia, cadastrados (jogos do vault com esta franquia, inclusive na lista de desejos), zerados (status Zerado), não zerados (cadastrados − zerados), não cadastrados (total − cadastrados) e restantes (total − zerados).
+- **Progresso** = zerados ÷ total × 100, arredondado para baixo. Ex.: 3 zerados de 15 = 20%; 1 zerado de 15 = 6%, nunca 100%. Se houver mais jogos cadastrados que o total, a ficha avisa.
+- **Na ficha da franquia:** a seção *Gerenciar franquia* mostra todos os números e o botão *Editar franquia*. Editar uma franquia nunca muda o status dos jogos.
+
+| Campo | O que faz |
+|---|---|
+| `title` | Nome da franquia (o que aparece nas telas). |
+| `totalGames` | Quantos jogos a franquia tem. Inteiro a partir de 1; vazio = não informado. |
