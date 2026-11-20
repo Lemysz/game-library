@@ -1213,7 +1213,7 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		const G = "Games/PC/Dying Light.md";
 		await p.evaluate(async G => { for (let i = 0; i < 4; i++) await app.vault.create(`Achievements/Dying Light/Destaque ${i}.md`, `---\ntype: achievement\nname: "Destaque ${i}"\ngame: "[[Dying Light]]"\ngamePath: "${G}"\nunlocked: true\nunlockedDate: "2026-01-0${i + 1}"\nsteamGlobalPercent: ${3 + i}\n---\n`); customJS.SteamVaultCore.invalidate(); }, G);
 		const opened = [];
-		for (const part of ["b", "em", "> div"]) {
+		for (const part of ["b", "em", ":scope > div"]) {
 			await go(G);
 			await click('.sv-tabs--game [data-tab="achievements"]'); await p.waitForTimeout(300);
 			opened.push(await p.evaluate(async sel => {
@@ -1227,7 +1227,17 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 			}, part));
 		}
 		check("conquistas em destaque: nome, porcentagem e ícone abrem a mesma conquista", opened.every(x => x === "Achievements/Dying Light/Destaque 1"), JSON.stringify(opened));
-		check("conquistas em destaque: tocar não dá fundo ao bloco (só o ícone reage)", await p.evaluate(() => ![...document.styleSheets].some(s => { try { return [...s.cssRules].some(r => /(^|[\s,(])\.sv-medallion\)?:active/.test(r.selectorText || "") && /background/.test(r.cssText)); } catch (_) { return false; } })));
+		check("conquistas em destaque: tocar não dá fundo ao bloco (só o ícone reage)", await p.evaluate(() => {
+			// regras de toque (:active) com fundo que valeriam para a medalha da ficha, no celular
+			const med = document.querySelector(".sv-showcase .sv-medallion"), app_ = med?.closest(".sv-app");
+			if (!med) return false;
+			const had = app_.classList.contains("is-touch"); app_.classList.add("is-touch");
+			const hit = [...document.styleSheets].flatMap(s => { try { return [...s.cssRules]; } catch (_) { return []; } })
+				.filter(r => /:active/.test(r.selectorText || "") && /background/.test(r.style?.cssText || ""))
+				.some(r => r.selectorText.split(",").some(sel => { try { return /:active\s*$/.test(sel.trim()) && med.matches(sel.replace(/:active\s*$/, "")); } catch (_) { return false; } }));
+			if (!had) app_.classList.remove("is-touch");
+			return !hit;
+		}));
 	}
 	check("nenhum erro de script durante os testes", errors.length === 0, errors.slice(0, 3).join(" | "));
 
