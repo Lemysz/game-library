@@ -1,0 +1,48 @@
+name: Reapontar tags (temporário)
+
+# Uso único: depois da troca do e-mail dos commits (histórico reescrito), cada tag
+# de versão passa a apontar para o commit equivalente reescrito. Apagar depois.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tags:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reapontar as tags
+        run: |
+          set -e
+          while read -r tag sha; do
+            git cat-file -e "$sha^{commit}"
+            git merge-base --is-ancestor "$sha" HEAD
+            git tag -f "$tag" "$sha"
+          done <<'EOF'
+          v1.0.0-prototype 0da3b638167ab420ab0497e6d509e7360ec5b79b
+          v1.0.1-prototype 9a7993e3c8c0197671a1174af0048143c47a8f7f
+          v1.0.2-prototype 770f958d44955f510f8dcb75185179e26f033752
+          v1.1.0 77ee340dba4ec8dc0fce61040c16ececa1ab4320
+          v1.10.0 d8b69b1c307d4582b9a84508dd1346a762c8b5c5
+          v1.10.1 81921a2a3391f7bc811717fc646e5d8bce9d39b6
+          v1.10.2 56e24bfc6b5b98fb97ed3eb88459c9b3be1a9be7
+          v1.11.0 439e3b93d54f8079a0f0d8af46da41239cc0db08
+          v1.11.1 f50c2a935435aba769f7c8ee5c9199719e71330c
+          v1.12.0 7632b00386300735a34c328568efda394fafdd04
+          v1.2.0 d9ddafedaf97b55b38f5d9f3dd251298f51bfb73
+          v1.2.1 6df55969b7db20814474cbde24457144f5aa0225
+          v1.3.0 fa5adf0cdf15af6f3dd9b99f184e84634c9ef195
+          v1.3.1 33b3d39bf24fed30b1543e94b350d125f040169e
+          v1.4.0 b1e04f14c18e5dcee4ca4886148cae397eb3ac3a
+          v1.5.0 bc179ce517f2e571f4cd2ea035e5384bc57af904
+          v1.6.0 99dec08f335d6239fbfa2333834765d0fc95ac31
+          v1.7.0 c4b57b19afeca2e69630a5024fac00b2f583296f
+          v1.8.0 e8dc2e351d3b63fa9be371e44673558407f3b7c6
+          v1.9.0 16bac760472a6eb509ba97d4574a94dff997876f
+          EOF
+          git push --force origin 'refs/tags/*:refs/tags/*'
