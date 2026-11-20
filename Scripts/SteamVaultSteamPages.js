@@ -278,29 +278,102 @@ class SteamVaultSteamPages {
 		return `<a class="sv-link" ${U.openAttrs("Dashboard/Biblioteca")} data-lib-filter="${U.attr(JSON.stringify(filter))}">Ver todos</a>`;
 	}
 
+	// 1.13.0: nomes das vitrines da Steam (a página é lida em inglês)
+	caseTitle(t) {
+		const s = String(t || "").replace(/\s+/g, " ").trim();
+		const map = { "achievement showcase": "Vitrine de conquistas", "rarest achievement showcase": "Conquistas mais raras", "screenshot showcase": "Capturas de tela",
+			"artwork showcase": "Artes", "favorite game": "Jogo favorito", "game collector": "Colecionador", "awards showcase": "Prêmios", "item showcase": "Itens",
+			"items for trade": "Itens para troca", "trade showcase": "Itens para troca", "workshop showcase": "Oficina", "my workshop": "Oficina", "favorite group": "Grupo favorito",
+			"badge collector": "Colecionador de insígnias", "featured badge": "Insígnia em destaque", "review showcase": "Análise em destaque", "guide showcase": "Guia em destaque",
+			"my guides": "Guias", "completionist showcase": "Jogos 100%" };
+		return map[s.toLowerCase()] || s || "Vitrine";
+	}
+
+	// 1.13.0: a Vitrine segue as vitrines do perfil da Steam — jogo em destaque,
+	// vitrine de conquistas (com os números) e colecionador — montadas com o
+	// que já está no vault; as vitrines públicas do perfil vêm depois
 	async showcase(ctx) {
 		const { U, S, C, model } = ctx;
 		const cfg = S.getConfig();
 		const profile = await S.readProfileCache();
-		const steamGames = model.games.filter(g => g.provider === "steam");
+		const steamGames = model.games.filter(g => C.isSteamGame(g));
+		const known = steamGames.filter(g => g.ach.state === "known" && g.ach.total > 0);
 		const perfect = steamGames.filter(g => C.isPerfect(g));
-		const rare = steamGames.flatMap(g => g.achievements.filter(a => a.unlocked && a.rarity !== null).map(a => ({ a, g }))).sort((x, y) => x.a.rarity - y.a.rarity).slice(0, 8);
+		const rare = steamGames.flatMap(g => g.achievements.filter(a => a.unlocked && a.rarity !== null).map(a => ({ a, g }))).sort((x, y) => x.a.rarity - y.a.rarity).slice(0, 6);
 		const favs = steamGames.filter(g => g.favorite);
-		const showcases = profile?.showcases || [];
+		const showcases = (profile?.showcases || []).filter(s => s.title || s.images?.length || s.stats?.length || s.text);
+		const pct = g => g.ach.total ? Math.floor((g.ach.unlocked / g.ach.total) * 100) : 0;
+
+		// jogo em destaque: o favorito mais jogado; sem favorito, o mais jogado
+		const byHours = (a, b) => b.playtime.hours - a.playtime.hours;
+		const feat = [...favs].sort(byHours)[0] || [...steamGames].filter(g => g.playtime.hours > 0).sort(byHours)[0] || null;
+		const featArt = feat ? (feat.images.background || feat.images.featured || "") : "";
+		const featHtml = feat ? `<section class="sv-block">
+			<a class="sv-svfeat${featArt ? "" : " is-noart"}" ${U.openAttrs(feat.path)}>
+				${featArt ? `<img class="sv-svfeat-art" src="${U.attr(featArt)}" alt="" loading="lazy" data-sv-img>` : ""}
+				<span class="sv-svfeat-body">
+					<span class="sv-svfeat-cover">${U.cover(feat)}</span>
+					<span class="sv-svfeat-text">
+						<span class="sv-svfeat-kicker">${U.icon(feat.favorite ? "heart" : "clock")}${feat.favorite ? "Jogo favorito" : "Mais jogado"}</span>
+						<strong>${U.esc(feat.title)}</strong>
+						<span class="sv-svfeat-nums">
+							<span><b class="sv-num">${U.esc(U.fmtHours(feat.playtime.hours))}</b><small>jogadas</small></span>
+							${feat.ach.state === "known" && feat.ach.total ? `<span><b class="sv-num">${feat.ach.unlocked}<i>/${feat.ach.total}</i></b><small>conquistas</small></span>` : ""}
+							${feat.lastPlayed?.date ? `<span><b>${U.esc(U.relDate(feat.lastPlayed.date))}</b><small>última vez</small></span>` : ""}
+						</span>
+						${feat.ach.state === "known" && feat.ach.total ? `<span class="sv-svfeat-bar"><span style="width:${pct(feat)}%"></span></span>` : ""}
+					</span>
+				</span>
+			</a>
+		</section>` : "";
+
+		// vitrine de conquistas: números + as mais raras
+		const unlocked = known.reduce((n, g) => n + g.ach.unlocked, 0);
+		const started = known.filter(g => g.ach.unlocked > 0);
+		const avg = started.length ? Math.round(started.reduce((n, g) => n + g.ach.unlocked / g.ach.total, 0) / started.length * 100) : null;
+		const achHtml = known.length ? `<section class="sv-block sv-svach">
+			${U.sectionHead("Vitrine de conquistas", { sub: rare.length ? "As mais raras que você desbloqueou" : "Seus números nas conquistas da Steam", action: this.origin("vault") })}
+			<div class="sv-svach-card">
+				${rare.length ? `<div class="sv-rarewall sv-rarewall--compact">${rare.map(({ a, g }) => `<a class="sv-medallion sv-rarity-${U.rarityTier(a.rarity)}" ${U.openAttrs(a.path || g.path)} title="${U.attr(`${a.name} · ${g.title}`)}"><div>${a.iconSrc ? `<img src="${U.attr(a.iconSrc)}" alt="">` : U.icon("trophy")}</div><span><b>${U.esc(a.name)}</b><em>${U.fmtPct(a.rarity)}</em></span></a>`).join("")}</div>` : ""}
+				<div class="sv-svach-stats">
+					<span><b class="sv-num">${U.fmtNum(unlocked)}</b><small>conquistas</small></span>
+					<span class="${perfect.length ? "is-gold" : ""}"><b class="sv-num">${U.fmtNum(perfect.length)}</b><small>jogos 100%</small></span>
+					<span><b class="sv-num">${avg === null ? "—" : `${avg}%`}</b><small>média de conclusão</small></span>
+				</div>
+			</div>
+		</section>` : "";
+
+		// colecionador: os mais perto dos 100% (sem os já completos)
+		const near = known.filter(g => !C.isPerfect(g) && g.ach.unlocked > 0).sort((a, b) => pct(b) - pct(a) || (a.ach.total - a.ach.unlocked) - (b.ach.total - b.ach.unlocked)).slice(0, 5);
+		const nearHtml = near.length ? `<section class="sv-block">
+			${U.sectionHead("Rumo aos 100%", { sub: "Os jogos Steam mais perto de completar", action: this.origin("vault") })}
+			<div class="sv-svnear">${near.map(g => `<a class="sv-svnear-row" ${U.openAttrs(g.path)}>
+				${U.cover(g, { cls: "sv-cover--xs" })}
+				<span class="sv-svnear-text"><b>${U.esc(g.title)}</b><small>${g.ach.unlocked} de ${g.ach.total} · ${g.ach.total - g.ach.unlocked === 1 ? "falta 1" : `faltam ${g.ach.total - g.ach.unlocked}`}</small>
+					<span class="sv-svnear-bar"><span style="width:${pct(g)}%"></span></span></span>
+				<b class="sv-svnear-pct sv-num">${pct(g)}%</b>
+			</a>`).join("")}</div>
+		</section>` : "";
+
+		// vitrines públicas do perfil Steam
+		const casesHtml = showcases.length ? `<section class="sv-block">${U.sectionHead("Vitrines do perfil", { sub: "Como aparecem publicamente na Steam", action: this.origin("steam") })}
+			<div class="sv-steamcases">${showcases.map(s => `<article class="sv-steamcase"><h3>${U.icon("layers")}${U.esc(this.caseTitle(s.title))}</h3>
+				${s.stats?.length ? U.figures(s.stats.slice(0, 4).map(x => ({ label: x.label, value: x.value }))) : ""}
+				${s.images.length ? `<div class="sv-steamcase-imgs">${s.images.map(src => `<img src="${U.attr(src)}" alt="" loading="lazy">`).join("")}</div>` : ""}
+				${s.text ? `<p>${U.esc(s.text)}</p>` : ""}</article>`).join("")}</div></section>` : "";
+
+		const empty = !featHtml && !achHtml && !nearHtml && !casesHtml && !perfect.length && !favs.length;
 		const html = `<div class="sv-page">
 			${this.profileHero(ctx, cfg, profile)}
 			<div class="sv-pad">
 				${this.subnav(ctx, "steam-showcase")}
-				${showcases.length ? `<section class="sv-block">${U.sectionHead("Vitrines do perfil", { sub: "Como aparecem publicamente na Steam", action: this.origin("steam") })}
-					<div class="sv-steamcases">${showcases.map(s => `<article class="sv-steamcase"><h3>${U.esc(s.title || "Vitrine")}</h3>
-						${s.stats?.length ? U.figures(s.stats.slice(0, 4).map(x => ({ label: x.label, value: x.value }))) : ""}
-						${s.images.length ? `<div class="sv-steamcase-imgs">${s.images.map(src => `<img src="${U.attr(src)}" alt="" loading="lazy">`).join("")}</div>` : ""}
-						${s.text ? `<p>${U.esc(s.text)}</p>` : ""}</article>`).join("")}</div></section>`
-					: cfg.configured ? `<div class="sv-callout">${U.icon("info")}<div><strong>Nenhuma vitrine pública encontrada</strong><p>Vitrines configuradas no perfil Steam aparecem aqui depois do próximo sync.</p></div></div>` : this.connectionState(ctx, cfg, null)}
-				${rare.length ? `<section class="sv-block">${U.sectionHead("Conquistas mais raras", { sub: "Desbloqueadas por você, ordenadas pela porcentagem global", action: this.origin("vault") })}
-					<div class="sv-rarewall">${rare.map(({ a, g }) => `<a class="sv-medallion sv-rarity-${U.rarityTier(a.rarity)}" ${U.openAttrs(a.path || g.path)}><div>${a.iconSrc ? `<img src="${U.attr(a.iconSrc)}" alt="">` : U.icon("trophy")}</div><span><b>${U.esc(a.name)}</b><small>${U.esc(g.title)}</small><em>${U.fmtPct(a.rarity)}</em></span></a>`).join("")}</div></section>` : ""}
+				${!cfg.configured ? this.connectionState(ctx, cfg, null) : ""}
+				${featHtml}${achHtml}${nearHtml}
 				${U.shelf("Jogos 100%", perfect.slice(0, 24).map(g => U.gameCard(g, C)), { count: perfect.length, action: perfect.length > 24 ? this.seeAll(ctx, { progress: "perfect", ach: "p:steam" }) : "" })}
+				${casesHtml}
 				${U.shelf("Favoritos Steam", favs.slice(0, 24).map(g => U.gameCard(g, C)), { count: favs.length, action: favs.length > 24 ? this.seeAll(ctx, { fav: true, ach: "p:steam" }) : "" })}
+				${cfg.configured && empty ? `<div class="sv-callout">${U.icon("info")}<div><strong>A vitrine ainda está vazia</strong><p>Sincronize os jogos Steam e marque favoritos para preencher esta tela.</p></div></div>` : ""}
+				${cfg.configured && !showcases.length && !empty ? `<p class="sv-muted sv-svhint">${U.icon("info")}As vitrines configuradas no seu perfil Steam (conquistas, capturas, colecionador…) aparecem aqui depois do próximo sync.</p>` : ""}
 			</div>
 		</div>`;
 		return { active: "steam-showcase", html };

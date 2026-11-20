@@ -317,6 +317,8 @@ A Game Library lê **somente páginas públicas da Steam Community** do perfil q
 
 **Sem login (conferido em 11/2026):** a Steam passou a mandar visitantes sem login da lista de jogos (`/games/`) para a tela de entrar, mesmo com o perfil público. Sem essa lista, as horas vêm dos **jogados recentemente** do perfil (os últimos jogos, com o total de horas) e da **página de insígnias** (`/badges/`, pública: horas de cada jogo com cartas colecionáveis, lida no máximo a cada 12 h). A importação da biblioteca mostra esses jogos, e o AppID automático pelo nome usa os mesmos jogos; para os outros, use *⋯ › Sincronizar com a Steam* na ficha (busca da loja). As conquistas continuam sendo lidas jogo a jogo. Quando a Steam não mostra as conquistas de um jogo (detalhes privados ou jogo fora da conta), o vault avisa em vez de mostrar "0 de N".
 
+**Vitrine (Perfil Steam › Vitrine):** jogo em destaque (o favorito mais jogado; sem favorito, o mais jogado), *Vitrine de conquistas* (as 6 mais raras desbloqueadas, total de conquistas, jogos 100% e média de conclusão dos jogos começados), *Rumo aos 100%* (os 5 jogos Steam mais perto de completar), *Jogos 100%*, as vitrines públicas do seu perfil Steam (com nome em português) e *Favoritos Steam*. Tudo é calculado com os dados do vault; seções sem dados não aparecem.
+
 Não usa Steam Web API, `api.steampowered.com`, chave de desenvolvedor, login, senha, cookies ou proxy. Nada privado é acessado.
 
 **Conectar:** *Perfil Steam → Conectar perfil* (ou *Configurações*) e cole a URL. Na Steam, deixe *Meu perfil* e *Detalhes de jogos* como **Público**.

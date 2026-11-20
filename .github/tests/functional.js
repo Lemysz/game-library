@@ -1240,6 +1240,16 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 			return !hit;
 		}));
 	}
+	// ---- 1.13.0: Vitrine Steam — "Recent Activity" não é vitrine; blocos novos
+	{
+		const parsed = await p.evaluate(() => customJS.SteamVaultSteam._parseProfileHtml(`<div class="profile_customization"><div class="profile_customization_header">Recent Activity</div><div class="recent_games"><div class="recent_game"></div></div></div><div class="profile_customization"><div class="profile_customization_header"> Achievement Showcase </div><div class="showcase_content_bg"><img src="https://shared.fastly.steamstatic.com/a.jpg"></div></div>`).showcases.map(s => s.title));
+		check("Vitrine Steam: “Recent Activity” fica de fora; vitrine real é lida", parsed.length === 1 && /Achievement Showcase/.test(parsed[0]), JSON.stringify(parsed));
+		const G = "Games/PC/Resident Evil 4.md";
+		await p.evaluate(async G => { for (let i = 0; i < 4; i++) await app.vault.create(`Achievements/Resident Evil 4/Vitrine ${i}.md`, `---\ntype: achievement\nname: "Vitrine ${i}"\ngame: "[[Resident Evil 4]]"\ngamePath: "${G}"\nunlocked: ${i < 3}\nsteamGlobalPercent: ${2 + i}\n---\n`); customJS.SteamVaultCore.invalidate(); }, G);
+		await go("Dashboard/Steam Vitrine.md"); await p.waitForTimeout(400);
+		const v = await p.evaluate(() => ({ feat: !!document.querySelector(".sv-svfeat[data-open]"), stats: document.querySelector(".sv-svach-stats")?.innerText.replace(/\s+/g, " ") || "", near: [...document.querySelectorAll(".sv-svnear-row")].map(r => r.innerText.replace(/\s+/g, " ")) }));
+		check("Vitrine Steam: jogo em destaque, números das conquistas e “Rumo aos 100%”", v.feat && /conquistas/.test(v.stats) && /média de conclusão/.test(v.stats) && v.near.some(t => /Resident Evil 4/.test(t) && /faltam? \d/.test(t)), JSON.stringify(v));
+	}
 	// ---- 1.12.0: franquias com total informado à mão (os 11 cenários pedidos)
 	{
 		const frNote = title => p.evaluate(t => { const x = __PAGES.find(y => y.fm?.type === "franchise" && y.fm.title === t); return x ? { path: x.path, ...x.fm } : null; }, title);

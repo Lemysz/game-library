@@ -558,7 +558,8 @@ class SteamVaultSteam {
 				achUnlocked: ach ? Number(ach[1]) : null, achTotal: ach ? Number(ach[2]) : null
 			};
 		});
-		out.showcases = [...doc.querySelectorAll(".profile_customization")].slice(0, 6).map(el => ({
+		// 1.13.0: "Recent Activity" usa a mesma classe das vitrines, mas não é vitrine
+		out.showcases = [...doc.querySelectorAll(".profile_customization")].filter(el => !el.querySelector(".recent_games, .profile_recentgame_header")).slice(0, 6).map(el => ({
 			title: this._t(el, ".profile_customization_header"),
 			images: [...el.querySelectorAll("img")].map(i => i.getAttribute("src")).filter(s => s && /^https:/.test(s) && !/avatar|emoticon/i.test(s)).slice(0, 8),
 			text: this._t(el, ".showcase_notes, .profile_customization_block .showcase_content_bg").slice(0, 280),

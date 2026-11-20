@@ -11,6 +11,21 @@ versões menores.
 
 Nada ainda.
 
+## [1.13.0] · 2026-11-20
+
+Vitrine Steam redesenhada. Sem mudança no formato das notas.
+
+### Adicionado
+- **Vitrine Steam no estilo das vitrines do perfil da Steam:** jogo em destaque (o favorito mais
+  jogado, ou o mais jogado) com arte, capa, horas, conquistas e barra de progresso; **Vitrine de
+  conquistas** com as mais raras e os números (conquistas, jogos 100% e média de conclusão); e **Rumo
+  aos 100%**, com os jogos Steam mais perto de completar. As vitrines públicas do perfil ganham nome em
+  português e o mesmo visual.
+
+### Corrigido
+- **"Recent Activity" aparecia como vitrine:** o bloco de atividade recente do perfil Steam usa a
+  mesma marcação das vitrines e virava um cartão vazio em inglês. Agora fica de fora.
+
 ## [1.12.0] · 2026-11-20
 
 Franquias com gerenciamento manual. Sem mudança obrigatória no formato das notas: as notas de
