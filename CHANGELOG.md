@@ -19,6 +19,10 @@ Sem mudança no formato das notas.
 - **Ficha no celular:** ao rolar, a fileira *Registrar sessão* passava por baixo dos botões flutuantes
   de busca e perfil (os ícones ficavam em cima do ♥ e do ⋯). Agora os botões somem enquanto a fileira
   passa e voltam na linha das abas quando elas grudam no topo.
+- **Conquistas em destaque da ficha** (as três mais raras, na aba Conquistas): eram um bloco sem link —
+  tocar no nome ou na porcentagem não fazia nada, e o toque desenhava um quadro de fundo atrás da
+  medalha (o efeito de "cartão" das listas). Agora a medalha inteira abre a conquista; ao tocar, só o
+  ícone afunda, e o foco do teclado contorna o ícone.
 
 ## [1.11.1] · 2026-11-19
 

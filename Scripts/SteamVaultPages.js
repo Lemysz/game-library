@@ -2309,7 +2309,12 @@ class SteamVaultPages {
 					${origin}
 					<div class="sv-cabinet-actions">${sync}${manage}${xbBtns}</div>
 				</div>
-				${showcase.length ? `<div class="sv-showcase" aria-label="Mais raras desbloqueadas">${showcase.map(x => `<figure class="sv-medallion sv-rarity-${U.rarityTier(x.rarity)}"><div>${x.iconSrc ? `<img src="${U.attr(x.iconSrc)}" alt="">` : U.icon("trophy")}</div><figcaption><b>${U.esc(x.name)}</b><span>${U.fmtPct(x.rarity)} dos jogadores</span></figcaption></figure>`).join("")}</div>` : ""}
+				${showcase.length ? `<div class="sv-showcase" aria-label="Mais raras desbloqueadas">${showcase.map(x => {
+					// 1.11.3: a medalha inteira abre a conquista (antes era um <figure> sem link)
+					const inner = `<div>${x.iconSrc ? `<img src="${U.attr(x.iconSrc)}" alt="">` : U.icon("trophy")}</div><span><b>${U.esc(x.name)}</b><em>${U.fmtPct(x.rarity)} dos jogadores</em></span>`;
+					const cls = `sv-medallion sv-rarity-${U.rarityTier(x.rarity)}`;
+					return x.path ? `<a class="${cls}" ${U.openAttrs(x.path)}>${inner}</a>` : `<div class="${cls}">${inner}</div>`;
+				}).join("")}</div>` : ""}
 			</header>
 			${cards}
 			${ctx.X ? ctx.X.hunterBlock(ctx, g) : ""}

@@ -2601,6 +2601,11 @@ a.sv-recent-row:hover { background: var(--sv-surface); }
 .sv-medallion em, .sv-medallion figcaption span { font-style: normal; font-size: calc(0.68rem * var(--sv-ts, 1)); font-weight: 600; color: var(--sv-rarity); }
 .sv-rarewall .sv-medallion { width: 120px; padding: 14px 8px; border-radius: var(--sv-radius-lg); background: var(--sv-surface); box-shadow: inset 0 0 0 1px var(--sv-line); }
 .sv-rarewall .sv-medallion:hover { background: var(--sv-surface-2); }
+/* 1.11.3: medalhas soltas (sem cartão): o toque age só no ícone — nada de
+   fundo, borda ou contorno no bloco; o foco do teclado segue a moldura do ícone */
+a.sv-medallion { color: inherit; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; outline: none; }
+.sv-showcase a.sv-medallion:active > div { transform: scale(0.94); transition-duration: 60ms; }
+a.sv-medallion:focus-visible > div { box-shadow: 0 0 0 2px var(--sv-rarity), 0 0 0 4px color-mix(in srgb, var(--sv-text) 70%, transparent); }
 
 /* página de conquistas / RA */
 .sv-trophyhero {
@@ -4699,7 +4704,7 @@ body.sv-reduced-motion .sv-motion .sv-reveal, body.sv-reduced-motion .sv-motion 
 /* itens com cara de "cartão" também afundam */
 .sv-app.is-touch :is(.sv-ach):active,
 .sv-app.is-touch :is(.sv-chiplink):active,
-.sv-app.is-touch :is(.sv-medallion):active,
+.sv-app.is-touch :is(.sv-rarewall .sv-medallion):active,
 .sv-app.is-touch :is(.sv-ra-strip-inner):active { background: var(--sv-surface-2); transform: scale(0.985); transition-duration: 60ms; }
 .sv-app.is-touch .sv-card .sv-card-art:active, .sv-app.is-touch .sv-award .sv-cover:active { transform: scale(0.97); transition-duration: 90ms; }
 .sv-app.is-touch :is(.sv-wide-art:not(sv-nunca)):active,

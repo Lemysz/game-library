@@ -1208,6 +1208,27 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		check("troca de aba: o segundo desenho da mesma tela não corta a animação de entrada", first && !swapped && !refresh && await m.evaluate(() => document.querySelector(".sv-layer .sv-app").classList.contains("sv-motion")), JSON.stringify({ swapped, refresh }));
 		await mctx.close();
 	}
+	// 1.11.3: as três conquistas em destaque da ficha abrem a conquista tocando em qualquer parte
+	{
+		const G = "Games/PC/Dying Light.md";
+		await p.evaluate(async G => { for (let i = 0; i < 4; i++) await app.vault.create(`Achievements/Dying Light/Destaque ${i}.md`, `---\ntype: achievement\nname: "Destaque ${i}"\ngame: "[[Dying Light]]"\ngamePath: "${G}"\nunlocked: true\nunlockedDate: "2026-01-0${i + 1}"\nsteamGlobalPercent: ${3 + i}\n---\n`); customJS.SteamVaultCore.invalidate(); }, G);
+		const opened = [];
+		for (const part of ["b", "em", "> div"]) {
+			await go(G);
+			await click('.sv-tabs--game [data-tab="achievements"]'); await p.waitForTimeout(300);
+			opened.push(await p.evaluate(async sel => {
+				const meds = [...document.querySelectorAll(".sv-showcase .sv-medallion")];
+				if (meds.length !== 3 || meds.some(m => m.tagName !== "A" || !m.dataset.open)) return "medalhas sem link";
+				const o = app.workspace.openLinkText; let got = "";
+				app.workspace.openLinkText = l => { got = l; };
+				meds[1].querySelector(sel).click();
+				app.workspace.openLinkText = o;
+				return got;
+			}, part));
+		}
+		check("conquistas em destaque: nome, porcentagem e ícone abrem a mesma conquista", opened.every(x => x === "Achievements/Dying Light/Destaque 1"), JSON.stringify(opened));
+		check("conquistas em destaque: tocar não dá fundo ao bloco (só o ícone reage)", await p.evaluate(() => ![...document.styleSheets].some(s => { try { return [...s.cssRules].some(r => /(^|[\s,(])\.sv-medallion\)?:active/.test(r.selectorText || "") && /background/.test(r.cssText)); } catch (_) { return false; } })));
+	}
 	check("nenhum erro de script durante os testes", errors.length === 0, errors.slice(0, 3).join(" | "));
 
 	await browser.close(); server.close();
