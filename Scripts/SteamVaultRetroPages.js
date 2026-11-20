@@ -44,7 +44,7 @@ class SteamVaultRetroPages {
 		// sem contagem ainda (nunca sincronizado): diz isso, em vez de "0 de 0 · 0%"
 		if (!(total > 0)) return `<div class="sv-ra-progress is-empty"><small class="sv-meta"><span>Conquistas aparecem depois da sincronização</span></small></div>`;
 		const pct = Math.round((unlocked / total) * 100);
-		return `<div class="sv-ra-progress"><div class="sv-progress sv-progress--thin sv-tone-gold"><span style="width:${pct}%"></span></div>
+		return `<div class="sv-ra-progress"><div class="sv-progress sv-progress--thin"><span style="width:${pct}%"></span></div>
 			<small class="sv-meta"><span>${U.fmtNum(unlocked)} de ${U.fmtNum(total)}</span>${hardcore ? `<span>${U.fmtNum(hardcore)} hardcore</span>` : ""}<span>${pct}%</span></small></div>`;
 	}
 
@@ -227,7 +227,7 @@ class SteamVaultRetroPages {
 			: U.btn("Adicionar", { icon: "plus", kind: "ghost", size: "sm", action: "ra-import-game", attrs: `data-id="${U.attr(x.gameId)}"`, title: "Criar a ficha no vault e sincronizar" });
 		const when = x.lastPlayed || x.lastUnlock;
 		return `<div class="sv-ra-row" data-k="${U.attr(ctx.C.normalizeKey(`${x.title} ${x.console}`))}" data-state="${g ? "vault" : "out"}" data-award="${U.attr(x.award || "")}">
-			${this.thumb(ctx, x.icon, x.title)}
+			${this.thumb(ctx, x.icon || g?.images?.cover || "", x.title)}
 			<div class="sv-ra-row-text">
 				<b>${g ? `<a ${U.openAttrs(g.path)}>${U.esc(x.title)}</a>` : U.esc(x.title)}</b>
 				<small class="sv-meta"><span>${U.esc(x.console)}</span>${when ? `<span>${U.esc(U.relDate(String(when).slice(0, 10)))}</span>` : ""}${g ? "<span>No vault</span>" : ""}</small>
@@ -249,43 +249,86 @@ class SteamVaultRetroPages {
 	}
 
 	// =========================================================== JOGOS RA
+	// 1.14.0: biblioteca em grade de capas (como a biblioteca da Steam), com
+	// busca, filtros de progresso, console e origem, e ordenação. A capa vem
+	// da ficha do vault; para os jogos só do perfil, da box art oficial
+	// (buscada sob demanda e guardada no cache); sem capa, o ícone do jogo.
+	raItem(ctx, x, g, arts) {
+		const pct = x.total > 0 ? Math.round(((x.unlocked || 0) / x.total) * 100) : 0;
+		const pts = g?.ra && g.ra.pointsTotal ? { e: g.ra.pointsEarned ?? 0, t: g.ra.pointsTotal } : null;
+		return {
+			id: String(x.gameId || ""), title: x.title || g?.title || "", console: x.console || g?.ra?.console || g?.platform || "",
+			cover: g?.images?.cover || (x.gameId && arts[String(x.gameId)]) || "", icon: x.icon || g?.ra?.icon || "",
+			total: x.total || 0, unlocked: x.unlocked || 0, hardcore: x.hardcore || 0, pct, pts,
+			award: x.award || g?.ra?.award || "", last: String(x.lastUnlock || x.lastPlayed || g?.ra?.lastPlayed || "").slice(0, 10), path: g?.path || x._path || ""
+		};
+	}
+
+	raCard(ctx, it, { needArt = false } = {}) {
+		const { U, C } = ctx;
+		const mastered = /^(mastered|completed)$/.test(it.award) || (it.total > 0 && it.unlocked >= it.total);
+		const beaten = /beaten/.test(it.award);
+		const state = mastered ? "mastered" : beaten ? "beaten" : it.unlocked > 0 ? "progress" : "none";
+		const art = it.cover
+			? `<img class="sv-racard-img" src="${U.attr(it.cover)}" alt="" loading="lazy" decoding="async">`
+			: `<span class="sv-racard-ph">${it.icon ? `<img src="${U.attr(it.icon)}" alt="" loading="lazy" decoding="async">` : U.icon("b-retro")}<b>${U.esc(it.title)}</b></span>`;
+		const cover = it.path
+			? `<a class="sv-racard-art${it.cover ? "" : " is-noart"}" ${U.openAttrs(it.path)} aria-label="${U.attr(it.title)}">${art}</a>`
+			: `<span class="sv-racard-art${it.cover ? "" : " is-noart"}"${needArt && !it.cover && it.id ? ` data-ra-art="${U.attr(it.id)}"` : ""}>${art}</span>`;
+		const nums = it.total > 0 ? `${U.fmtNum(it.unlocked)}/${U.fmtNum(it.total)}${it.pts ? ` · ${U.fmtNum(it.pts.e)} pts` : ""}` : "Sem progresso";
+		return `<article class="sv-racard is-${state}" data-k="${U.attr(C.normalizeKey(`${it.title} ${it.console}`))}" data-console="${U.attr(it.console)}" data-state="${it.path ? "vault" : "out"}" data-prog="${state}" data-pct="${it.pct}" data-last="${U.attr(it.last)}" data-title="${U.attr(C.normalizeKey(it.title))}">
+			${cover}
+			<div class="sv-racard-body">
+				<b class="sv-racard-title" title="${U.attr(it.title)}">${it.path ? `<a ${U.openAttrs(it.path)}>${U.esc(it.title)}</a>` : U.esc(it.title)}</b>
+				<small class="sv-racard-meta"><span>${U.esc(it.console)}</span>${mastered ? `<span class="sv-racard-award" title="${U.attr(ctx.R.awardLabel(it.award) || "100%")}">${U.icon("gem")}</span>` : beaten ? `<span class="sv-racard-beat" title="${U.attr(ctx.R.awardLabel(it.award))}">${U.icon("flag")}</span>` : ""}</small>
+				${it.total > 0 ? `<span class="sv-racard-bar"><i style="width:${it.pct}%"></i></span>` : ""}
+				<small class="sv-racard-nums"><span>${U.esc(nums)}</span>${it.total > 0 ? `<span>${it.pct}%</span>` : ""}</small>
+			</div>
+			${it.path || !it.id ? "" : `<button type="button" class="sv-racard-add" data-action="ra-import-game" data-id="${U.attr(it.id)}" title="Adicionar ao vault" aria-label="Adicionar ${U.attr(it.title)} ao vault">${U.icon("plus")}</button>`}
+		</article>`;
+	}
+
 	async games(ctx) {
 		const { U, R, C } = ctx;
 		const cfg = R.getConfig();
 		const cache = cfg.configured ? await R.readCache() : null;
+		const arts = cache?.boxArts || {};
 		const byId = this._vaultById(ctx);
 		const list = (cache?.completion || []).slice().sort((a, b) => String(b.lastUnlock).localeCompare(String(a.lastUnlock)));
 		// jogos RA do vault que não aparecem no perfil (sem progresso ainda)
 		const inList = new Set(list.map(x => String(x.gameId)));
 		const extra = this.vaultGames(ctx).filter(g => !g.raGameId || !inList.has(String(g.raGameId))).map(g => ({
-			gameId: g.raGameId || "", title: g.title, console: g.ra.console || g.platform, icon: g.ra.icon || g.images.cover,
+			gameId: g.raGameId || "", title: g.title, console: g.ra.console || g.platform, icon: g.ra.icon || "",
 			total: g.ra.achTotal ?? g.ach.total, unlocked: g.ra.achUnlocked ?? g.ach.unlocked, hardcore: g.ra.achHardcore ?? 0, award: g.ra.award, lastUnlock: g.ra.lastPlayed,
-			_path: g.path
+			_path: g.path, _g: g
 		}));
-		const all = [...list, ...extra];
-		const outCount = list.filter(x => !byId.has(String(x.gameId))).length;
+		const items = [...list.map(x => this.raItem(ctx, x, byId.get(String(x.gameId)), arts)), ...extra.map(x => this.raItem(ctx, x, x._g, arts))];
+		const outCount = items.filter(it => !it.path).length;
 		const withProgressOut = list.filter(x => !byId.has(String(x.gameId)) && x.unlocked > 0).length;
-		const counts = {
-			all: all.length, vault: all.length - outCount, out: outCount,
-			mastered: all.filter(x => x.award === "mastered" || x.award === "completed").length,
-			beaten: all.filter(x => /beaten/.test(x.award || "")).length
-		};
-		const seg = [["all", "Todos"], ["vault", "No vault"], ["out", "Fora do vault"], ["mastered", "Masterizados"], ["beaten", "Zerados"]];
-		// 3.68.0: as 40 primeiras linhas na hora; o resto fica guardado até
-		// "Mostrar mais" ou até a pessoa filtrar (aí todas entram antes de filtrar)
-		const rows = U.moreList(all.map(x => x._path ? this.gameRow(ctx, x, new Map([[String(x.gameId), { path: x._path }], ...byId])) : this.gameRow(ctx, x, byId)), 40);
+		const prog = it => /^(mastered|completed)$/.test(it.award) || (it.total > 0 && it.unlocked >= it.total) ? "mastered" : /beaten/.test(it.award) ? "beaten" : it.unlocked > 0 ? "progress" : "none";
+		const counts = { all: items.length, progress: 0, beaten: 0, mastered: 0, none: 0 };
+		for (const it of items) counts[prog(it)]++;
+		const consoles = [...C.groupBy(items, it => it.console)].filter(([k]) => k).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+		const seg = [["all", "Todos"], ["progress", "Em andamento"], ["beaten", "Zerados"], ["mastered", "100%"], ["none", "Sem progresso"]];
+		// 3.68.0: as 40 primeiras na hora; o resto entra em "Mostrar mais" ou ao filtrar
+		const cards = U.moreList(items.map(it => this.raCard(ctx, it, { needArt: cfg.configured })), 40);
+		const opt = (v, l, n) => `<option value="${U.attr(v)}">${U.esc(l)}${n !== undefined ? ` (${n})` : ""}</option>`;
 		const html = `<div class="sv-page sv-page--retro">
 			${this.hero(ctx, cfg, cache, { compact: true })}
 			<div class="sv-pad">${this.subnav(ctx, "retro-games")}
-				${!cfg.configured ? this.connectCallout(ctx, cfg) : !cache?.completion ? `<div class="sv-callout sv-ra-callout">${U.icon("refresh")}<div><strong>Nenhum jogo do perfil sincronizado ainda</strong><p>A sincronização traz todos os jogos em que você tem progresso no RetroAchievements.</p></div>${U.btn("Sincronizar", { icon: "refresh", kind: "ra", size: "sm", action: "ra-sync" })}</div>` : ""}
-				${!all.length ? U.empty({ icon: "b-retro", title: "Nenhum jogo RetroAchievements ainda", text: "Jogos com origem RetroAchievements nas fichas (ou do seu perfil, depois de conectar) aparecem aqui." }) : `
-				<div class="sv-toolbar">
-					<label class="sv-field sv-field--search">${U.icon("search")}<input type="search" class="sv-input" data-ra-q placeholder="Filtrar por jogo ou console" aria-label="Filtrar jogos"></label>
-					<div class="sv-segmented" role="tablist">${seg.filter(([k], i) => !i || counts[k]).map(([k, l], i) => `<button type="button" class="${i ? "" : "is-active"}" data-ra-f="${k}">${l}<span>${counts[k]}</span></button>`).join("")}</div>
-					<div class="sv-toolbar-end">${withProgressOut ? U.btn(`Adicionar ${withProgressOut} ao vault`, { icon: "download", kind: "ghost", size: "sm", action: "ra-import-all", title: "Cria as fichas dos jogos com progresso que ainda não estão no vault" }) : ""}</div>
+				${!cfg.configured ? this.connectCallout(ctx, cfg) : !cache?.completion ? `<div class="sv-callout sv-ra-callout">${U.icon("refresh")}<div><strong>Nenhum jogo do perfil sincronizado ainda</strong><p>A sincronização traz todos os jogos em que você tem progresso no RetroAchievements.</p></div>${U.btn("Sincronizar agora", { icon: "refresh", kind: "ra", size: "sm", action: "ra-sync" })}</div>` : ""}
+				${!items.length ? U.empty({ icon: "b-retro", title: "Nenhum jogo RetroAchievements ainda", text: "Jogos com origem RetroAchievements nas fichas (ou do seu perfil, depois de conectar) aparecem aqui." }) : `
+				<div class="sv-toolbar sv-ralib-bar">
+					<label class="sv-field sv-field--search">${U.icon("search")}<input type="search" class="sv-input" data-ra-q placeholder="Buscar jogo ou console" aria-label="Buscar jogos"></label>
+					<div class="sv-segmented sv-ralib-seg" role="radiogroup" aria-label="Progresso">${seg.filter(([k], i) => !i || counts[k]).map(([k, l], i) => `<button type="button" role="radio" aria-checked="${!i}" class="${i ? "" : "is-active"}" data-ra-f="${k}">${U.esc(l)}<span>${counts[k]}</span></button>`).join("")}</div>
+					<div class="sv-toolbar-end">
+						${consoles.length > 1 ? `<label class="sv-select"><select data-ra-console aria-label="Console">${opt("", "Todos os consoles")}${consoles.map(([k, l]) => opt(k, k, l.length)).join("")}</select></label>` : ""}
+						${outCount && outCount < items.length ? `<label class="sv-select"><select data-ra-where aria-label="Onde">${opt("", "No vault e fora")}${opt("vault", "Só no vault", items.length - outCount)}${opt("out", "Só fora do vault", outCount)}</select></label>` : ""}
+						<label class="sv-select"><select data-ra-sort aria-label="Ordenar">${opt("recent", "Recentes")}${opt("progress", "Progresso")}${opt("name", "Nome")}${opt("console", "Console")}</select></label>
+					</div>
 				</div>
-				${outCount ? `<p class="sv-fineprint sv-ra-note">Jogos “fora do vault” vêm do seu perfil no RA. Adicionar cria a ficha com schema completo e já sincroniza as conquistas.</p>` : ""}
-				<div class="sv-ra-list" data-ra-list>${rows}</div>
+				${withProgressOut ? `<div class="sv-ra-note"><p class="sv-fineprint">${U.plural(withProgressOut, "jogo do seu perfil ainda não está no vault", "jogos do seu perfil ainda não estão no vault")}. Adicionar cria a ficha e já sincroniza as conquistas.</p>${U.btn(`Adicionar ${withProgressOut} ao vault`, { icon: "download", kind: "ghost", size: "sm", action: "ra-import-all" })}</div>` : ""}
+				<div class="sv-ralib" data-ra-list>${cards}</div>
 				<div class="sv-noresults" hidden>${U.empty({ icon: "search", title: "Nenhum jogo com esse filtro", compact: true })}</div>`}
 			</div>
 		</div>`;
@@ -293,34 +336,82 @@ class SteamVaultRetroPages {
 	}
 
 	_wireGames(root, ctx) {
-		const { C } = ctx;
-		const q = root.querySelector("[data-ra-q]");
+		const { C, R } = ctx;
+		const box = root.querySelector("[data-ra-list]");
+		if (!box) return;
+		const q = root.querySelector("[data-ra-q]"), selC = root.querySelector("[data-ra-console]"), selW = root.querySelector("[data-ra-where]"), selS = root.querySelector("[data-ra-sort]");
 		let f = "all";
 		const expand = () => {
-			const box = root.querySelector("[data-ra-list]"), tpl = box?.querySelector(":scope > template[data-sv-more]");
+			const tpl = box.querySelector(":scope > template[data-sv-more]");
 			if (!tpl) return;
 			box.insertBefore(tpl.content, tpl); tpl.remove();
 			box.querySelector(":scope > .sv-morebtn")?.remove();
 			ctx.V?._wireImages?.(box);
+			watchArt();
 		};
 		const apply = () => {
-			const k = C.normalizeKey(q?.value || "");
-			if (k || f !== "all") expand();
+			const k = C.normalizeKey(q?.value || ""), con = selC?.value || "", where = selW?.value || "", sort = selS?.value || "recent";
+			if (k || f !== "all" || con || where || sort !== "recent") expand();
+			const cards = [...box.querySelectorAll(":scope > .sv-racard")];
+			if (sort !== "recent" || box.dataset.sorted) {
+				const key = { progress: c => -Number(c.dataset.pct), name: c => c.dataset.title, console: c => `${c.dataset.console} ${c.dataset.title}`, recent: c => -(Date.parse(c.dataset.last) || 0) }[sort];
+				cards.sort((a, b) => { const x = key(a), y = key(b); return x < y ? -1 : x > y ? 1 : 0; }).forEach(c => box.appendChild(c));
+				box.dataset.sorted = "1";
+			}
 			let shown = 0;
-			root.querySelectorAll("[data-ra-list] .sv-ra-row").forEach(r => {
-				const okF = f === "all" || (f === "vault" && r.dataset.state === "vault") || (f === "out" && r.dataset.state === "out")
-					|| (f === "mastered" && /^(mastered|completed)$/.test(r.dataset.award)) || (f === "beaten" && /beaten/.test(r.dataset.award));
-				const ok = okF && (!k || r.dataset.k.includes(k));
-				r.hidden = !ok; if (ok) shown++;
-			});
+			for (const c of cards) {
+				const ok = (f === "all" || c.dataset.prog === f) && (!con || c.dataset.console === con) && (!where || c.dataset.state === where) && (!k || c.dataset.k.includes(k));
+				c.hidden = !ok; if (ok) shown++;
+			}
 			const nr = root.querySelector(".sv-noresults"); if (nr) nr.hidden = shown > 0;
 		};
 		q?.addEventListener("input", apply);
+		[selC, selW, selS].forEach(s => s?.addEventListener("change", apply));
 		root.querySelectorAll("[data-ra-f]").forEach(b => b.addEventListener("click", () => {
 			f = b.dataset.raF;
-			root.querySelectorAll("[data-ra-f]").forEach(x => x.classList.toggle("is-active", x === b));
+			root.querySelectorAll("[data-ra-f]").forEach(x => { const on = x === b; x.classList.toggle("is-active", on); x.setAttribute("aria-checked", String(on)); });
 			apply();
 		}));
+		// capa que falha: volta ao ícone, sem imagem quebrada
+		box.addEventListener("error", e => {
+			const img = e.target;
+			if (!(img instanceof HTMLImageElement) || !img.classList.contains("sv-racard-img")) return;
+			const art = img.closest(".sv-racard-art"), title = img.closest(".sv-racard")?.querySelector(".sv-racard-title")?.textContent || "";
+			art.classList.add("is-noart");
+			img.replaceWith(Object.assign(document.createElement("span"), { className: "sv-racard-ph", innerHTML: `${ctx.U.icon("b-retro")}<b>${ctx.U.esc(title)}</b>` }));
+		}, true);
+		// box art sob demanda: só dos cards visíveis, em lotes pequenos, no
+		// máximo 48 por sessão (a API do RA tem limite de consultas)
+		window.__svRaArtBudget ??= 48;
+		let pending = new Set(), timer = 0, io = null;
+		const flush = async () => {
+			timer = 0;
+			const ids = [...pending].slice(0, Math.min(8, window.__svRaArtBudget)); pending = new Set([...pending].slice(ids.length));
+			if (!ids.length || !root.isConnected) return;
+			window.__svRaArtBudget -= ids.length;
+			const arts = await R.boxArtFor(ids, { max: ids.length }).catch(() => ({}));
+			for (const id of ids) {
+				const src = arts[id];
+				root.querySelectorAll(`[data-ra-art="${CSS.escape(id)}"]`).forEach(el => {
+					el.removeAttribute("data-ra-art");
+					if (!src) return;
+					const img = Object.assign(document.createElement("img"), { className: "sv-racard-img", alt: "", decoding: "async", src });
+					img.addEventListener("load", () => { el.classList.remove("is-noart"); el.replaceChildren(img); }, { once: true });
+				});
+			}
+			if (pending.size && window.__svRaArtBudget > 0) timer = setTimeout(flush, 400);
+		};
+		const watchArt = () => {
+			if (!R.getConfig().configured || typeof IntersectionObserver !== "function" || window.__svRaArtBudget <= 0) return;
+			io ??= new IntersectionObserver(es => {
+				for (const e of es) if (e.isIntersecting) { pending.add(e.target.dataset.raArt); io.unobserve(e.target); }
+				if (pending.size && !timer) timer = setTimeout(flush, 250);
+			}, { root: root.closest(".sv-layer") || null, rootMargin: "200px 0px" });
+			box.querySelectorAll("[data-ra-art]").forEach(el => io.observe(el));
+		};
+		watchArt();
+		// "Mostrar mais" (ação geral do app) também traz cards que precisam de capa
+		new MutationObserver(() => { if (box.querySelector("[data-ra-art]")) watchArt(); }).observe(box, { childList: true });
 	}
 
 	// ======================================================= CONQUISTAS RA

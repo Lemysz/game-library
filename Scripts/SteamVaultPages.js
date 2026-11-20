@@ -2256,6 +2256,9 @@ class SteamVaultPages {
 		const xbBtns = xb && ctx.AM ? U.btn("Adicionar em lote", { icon: "list", kind: list.length ? "ghost" : "primary", size: "sm", action: "ach-bulk", attrs: pathAttr }) : "";
 		// Gamerscore: soma dos G das conquistas (desbloqueadas × todas)
 		const gs = xb ? list.reduce((o, x) => { const v = Number(x.points) || 0; o.total += v; if (x.unlocked) o.earned += v; return o; }, { earned: 0, total: 0 }) : null;
+		// 1.14.0: RetroAchievements — pontos ganhos × possíveis e quantas em hardcore
+		const ra = g.provider === "retroachievements";
+		const rp = ra ? list.reduce((o, x) => { const v = Number(x.points) || 0; o.total += v; if (x.unlocked) { o.earned += v; if (x.hardcore) o.hc++; } return o; }, { earned: 0, total: 0, hc: 0 }) : null;
 		// origem e sincronização lado a lado, com atalho para trocar
 		const origin = `<div class="sv-achorigin">${g.provider === "unset"
 			? `<span class="sv-achsrc sv-achsrc--unset"><span class="sv-achsrc-pv">${U.icon("trophy")}Origem não configurada</span></span>`
@@ -2291,7 +2294,7 @@ class SteamVaultPages {
 				<div class="sv-achsetcard-foot">${st.done ? `<span class="sv-achsetcard-done">${U.icon("trophy")}Conjunto completo</span>` : `<span>${U.icon("trophy")}Complete o conjunto</span>`}
 					${st.base ? "" : `<button type="button" class="sv-achsetcard-count" data-set-count="${U.attr(st.name)}" aria-pressed="${!st.excluded}" title="${st.excluded ? "Passar a contar no progresso total" : "Não contar no progresso total (ex.: DLC que você não tem)"}">${st.excluded ? "Fora do total" : "Conta no total"}</button>`}</div>
 			</article>`).join("")}</div>` : "";
-		const tiles = l => l.map(x => U.achievementTile(x, { toggle: editable, unit: xb ? "G" : "" })).join("");
+		const tiles = l => l.map(x => U.achievementTile(x, { toggle: editable, unit: xb ? "G" : ra ? "pts" : "" })).join("");
 		const groups = multi ? sets.map(st => `<section class="sv-achset${st.excluded ? " is-excluded" : ""}" data-set-group="${U.attr(st.name)}" style="--c:${st.color}">
 				<header class="sv-achset-head"><span class="sv-achset-dot"></span><h3>${U.esc(st.name)}</h3>${st.done ? `<span class="sv-achset-badge">${U.icon("trophy")}Completo</span>` : ""}<span class="sv-num">${st.unlocked}/${st.total}</span></header>
 				<div class="sv-achgrid${editable ? " is-editable" : ""}">${tiles(st.list)}</div>
@@ -2304,6 +2307,7 @@ class SteamVaultPages {
 				<div class="sv-cabinet-summary">
 					<h2>${perfect ? "Todas as conquistas desbloqueadas" : `${ov.u} de ${ov.t} conquistas`}</h2>
 					${gs && gs.total ? `<p class="sv-cabinet-gs"><b class="sv-num">${U.fmtNum(gs.earned)}</b><span>/ ${U.fmtNum(gs.total)} G</span><small>Gamerscore</small></p>` : ""}
+					${rp && rp.total ? `<p class="sv-cabinet-gs sv-cabinet-gs--ra"><b class="sv-num">${U.fmtNum(rp.earned)}</b><span>/ ${U.fmtNum(rp.total)} pts</span><small>${rp.hc ? `${U.plural(rp.hc, "conquista", "conquistas")} em hardcore` : "pontos RetroAchievements"}</small></p>` : ""}
 					<p>${a.origin === "steam" ? "Progresso real do seu perfil público da Steam" : xb ? `Progresso marcado por você · ${U.plural(Math.max(0, ov.t - ov.u), "restante", "restantes")}` : a.origin === "retroachievements" ? "Progresso do seu perfil no RetroAchievements" : a.origin === "legacy" ? "Contagem manual" : g.sync === "local" ? "Conquistas que existem só no vault" : "Registrado por você"}${lastUnlock ? `, última em ${U.esc(U.fmtDate(lastUnlock))}` : ""}.</p>
 					${seg}
 					${origin}
