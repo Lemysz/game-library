@@ -1013,9 +1013,30 @@ class SteamVaultBrowse {
 	}
 
 	// ============================================================ FRANQUIAS
+	// 1.12.0: franquias vêm de C.franchiseList (nota + jogos, sem duplicar por
+	// grafia); a ordem é: mais jogos cadastrados primeiro, depois o nome
 	franchiseGroups(ctx) {
 		const { C, model } = ctx;
-		return [...C.groupBy(model.games.filter(g => g.franchise), g => g.franchise)].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+		return C.franchiseList(model).slice().sort((a, b) => b.owned - a.owned || a.name.localeCompare(b.name)).map(f => [f.name, f.games, f]);
+	}
+
+	// "3 de 15 zerados · 20%" ou "Total não informado"
+	franchiseLine(ctx, f) {
+		void ctx;
+		return f.total ? `${f.completed} de ${f.total} zerados · ${f.pct}%` : "Total não informado";
+	}
+
+	franchiseFigures(ctx, f) {
+		const { U } = ctx;
+		const n = v => v === null ? "—" : U.fmtNum(v);
+		return [
+			{ label: "Total da franquia", value: f.total ? U.fmtNum(f.total) : "—", sub: f.total ? "" : "não informado" },
+			{ label: "Cadastrados", value: U.fmtNum(f.owned) },
+			{ label: "Zerados", value: U.fmtNum(f.completed) },
+			{ label: "Não zerados", value: U.fmtNum(f.notCompleted) },
+			{ label: "Não cadastrados", value: n(f.missing) },
+			{ label: "Progresso", value: f.pct === null ? "—" : `${f.pct}%`, sub: f.total ? "" : "informe o total", tone: f.pct === 100 ? "gold" : "" }
+		];
 	}
 
 	sagaOrder(games, mode) {
@@ -1032,35 +1053,37 @@ class SteamVaultBrowse {
 	franchises(ctx) {
 		const { U, C, model } = ctx;
 		const groups = this.franchiseGroups(ctx);
-		const pages = new Map((model.franchises || []).map(p => [C.normalizeKey(p.title), p]));
-		const solo = model.games.filter(g => !g.franchise).length;
-		const card = ([name, games]) => {
-			const page = pages.get(C.normalizeKey(name));
+		const solo = model.games.filter(g => !C.normalizeKey(g.franchise)).length;
+		const card = ([name, games, f]) => {
+			const page = f.page;
 			const id = this.ident(ctx, "franchise", name, page);
 			const s = C.groupStats(games);
 			const art = page?.cover || this.franchiseArt(games);
 			const ordered = this.sagaOrder(games, "release");
 			const years = ordered.map(g => g.releaseYear).filter(Boolean);
 			const span = years.length ? (years[0] === years[years.length - 1] ? `${years[0]}` : `${years[0]}–${years[years.length - 1]}`) : "";
-			return `<a class="sv-fcard${art ? "" : " is-noart"}" ${U.catAttrs("franchise", name, page)} style="${this.identStyle(id.color)}" data-hub-item data-name="${U.attr(name)}" data-key="${U.attr(this.hubKey(`${name} ${games.map(g => g.title).join(" ")}`))}" data-games="${s.count}" data-hours="${s.hours}" data-progress="${s.completionPct}">
+			const num = (v, l) => `<span class="sv-fcard-num"><b class="sv-num">${v === null ? "—" : U.fmtNum(v)}</b><small>${l}</small></span>`;
+			return `<a class="sv-fcard${art ? "" : " is-noart"}${f.total ? "" : " is-nototal"}" ${U.catAttrs("franchise", name, page)} style="${this.identStyle(id.color)}" data-hub-item data-name="${U.attr(name)}" data-key="${U.attr(this.hubKey(`${name} ${games.map(g => g.title).join(" ")}`))}" data-games="${f.owned}" data-hours="${s.hours}" data-progress="${f.pct ?? -1}">
 				${art ? `<img class="sv-fcard-art" src="${U.attr(art)}" alt="" loading="lazy" data-sv-img>` : ""}
+				<button type="button" class="sv-fcard-edit" data-action="franchise-edit" data-name="${U.attr(name)}" data-path="${U.attr(page?.path || "")}" aria-label="Editar franquia ${U.attr(name)}" title="Editar franquia">${U.icon("edit")}</button>
 				<div class="sv-fcard-body">
-					${this.coverFan(ctx, ordered, 4)}
+					${ordered.length ? this.coverFan(ctx, ordered, 4) : ""}
 					<div class="sv-fcard-text">
 						<span class="sv-fcard-kicker">Franquia${span ? ` · ${U.esc(span)}` : ""}</span>
 						<strong>${U.esc(name)}</strong>
-						<span class="sv-fcard-meta"><span>${U.plural(s.count, "jogo", "jogos")}</span><span>${U.fmtHours(s.hours)}</span>${s.perfect ? `<span>${U.plural(s.perfect, "100%", "100%")}</span>` : ""}</span>
-						<div class="sv-fcard-progress"><span class="sv-fcard-bar"><span style="width:${s.completionPct}%"></span></span><small>${s.completed} de ${s.count} zerados</small></div>
+						<span class="sv-fcard-nums">${num(f.total, "total")}${num(f.owned, "cadastrados")}${num(f.completed, "zerados")}${num(f.remaining, "restantes")}</span>
+						<div class="sv-fcard-progress">${f.total ? `<span class="sv-fcard-bar"><span style="width:${f.pct}%"></span></span>` : ""}<small>${U.esc(this.franchiseLine(ctx, f))}</small></div>
 					</div>
 				</div>
 			</a>`;
 		};
+		const newBtn = U.btn("Nova franquia", { icon: "plus", kind: "secondary", size: "sm", action: "franchise-edit", attrs: 'data-new="1"' });
 		const html = `<div class="sv-page sv-pad sv-hubpage sv-hubpage--franchises">
-			${U.pageHead("Franquias", { sub: `${U.plural(groups.length, "franquia", "franquias")}${solo ? `, ${U.plural(solo, "jogo avulso", "jogos avulsos")}` : ""}` })}
+			${U.pageHead("Franquias", { sub: `${U.plural(groups.length, "franquia", "franquias")}${solo ? `, ${U.plural(solo, "jogo avulso", "jogos avulsos")}` : ""}`, actions: newBtn })}
 			${groups.length ? `${groups.length > 3 ? this.hubBar(ctx, { placeholder: "Buscar franquia ou jogo", sorts: [["games", "Jogos"], ["hours", "Horas"], ["progress", "Progresso"], ["name", "Nome"]] }) : ""}
 				<div class="sv-fcards" data-hub-list>${groups.map(card).join("")}</div>
 				<p class="sv-hub-noresult" data-hub-empty hidden>Nenhuma franquia encontrada.</p>`
-				: U.empty({ icon: "film", title: "Nenhuma franquia definida", text: "Preencha o campo Franquia nos detalhes de um jogo para agrupá-lo aqui." })}
+				: U.empty({ icon: "film", title: "Nenhuma franquia definida", text: "Crie uma franquia aqui ou marque “Possui franquia?” ao adicionar ou editar um jogo." })}
 		</div>`;
 		return { active: "franchises", html, wire: root => this.wireHubBar(root) };
 	}
@@ -1072,7 +1095,9 @@ class SteamVaultBrowse {
 		const pages = new Map((model.franchises || []).map(p => [C.normalizeKey(p.title), p]));
 		const page = pages.get(key) || (model.franchises || []).find(p => p.path === current.file.path);
 		const id = this.ident(ctx, "franchise", title, page);
-		const games = model.games.filter(g => C.normalizeKey(g.franchise) === key);
+		// 1.12.0: contadores da franquia (total informado à mão)
+		const f = C.franchiseByName(model, title) || { key, name: title, page, games: [], ...C.franchiseCounts([], page?.totalGames ?? null) };
+		const games = f.games;
 		const s = C.groupStats(games);
 		const hasStory = games.some(g => g.franchiseOrder !== null && g.franchiseOrder !== undefined);
 		const byRelease = this.sagaOrder(games, "release"), byStory = this.sagaOrder(games, "story");
@@ -1088,11 +1113,21 @@ class SteamVaultBrowse {
 			<a class="sv-tl-card" ${U.openAttrs(g.path)}>${U.cover(g)}<b>${U.esc(g.title)}</b><small>${U.esc(C.statusLabel(g.status))}${g.playtime.hours ? ` · ${U.fmtHours(g.playtime.hours)}` : ""}</small></a>
 		</li>`).join("")}</ol>`;
 		const stats = [
-			{ label: "Jogos", value: U.fmtNum(s.count) },
+			{ label: "Total", value: f.total ? U.fmtNum(f.total) : "—", sub: f.total ? "" : "não informado" },
+			{ label: "Cadastrados", value: U.fmtNum(f.owned) },
+			{ label: "Zerados", value: `${f.completed}`, sub: f.pct !== null ? `${f.pct}%` : "" },
 			{ label: "Horas", value: U.fmtHours(s.hours) },
-			{ label: "Zerados", value: `${s.completed}`, sub: s.count ? `${s.completionPct}%` : "" },
 			s.achPct !== null ? { label: "Conquistas", value: U.fmtPct(s.achPct), sub: s.perfect ? `${s.perfect} em 100%` : "", tone: s.achPct === 100 ? "gold" : "" } : null
 		];
+		const editBtn = (label, kind) => U.btn(label, { icon: "edit", kind, action: "franchise-edit", attrs: `data-name="${U.attr(title)}" data-path="${U.attr(page?.path || current.file.path)}"` });
+		const done = f.total && f.completed >= f.total;
+		// área de gerenciamento: tudo o que é editável, num lugar só
+		const manage = `<section class="sv-block sv-fmanage">
+			${U.sectionHead("Gerenciar franquia", { sub: f.total ? this.franchiseLine(ctx, f) : "Informe quantos jogos a franquia tem para ver o progresso", action: editBtn("Editar franquia", "secondary") })}
+			${U.figures(this.franchiseFigures(ctx, f))}
+			${f.overflow ? `<p class="sv-fmanage-note">${U.icon("alert")}Há mais jogos cadastrados (${f.owned}) do que o total informado (${f.total}). Confira o total.</p>` : ""}
+			${!f.total ? `<p class="sv-fmanage-note">${U.icon("info")}Total não informado: a porcentagem só aparece depois que você informar quantos jogos a franquia tem.</p>` : ""}
+		</section>`;
 		const html = `<div class="sv-page sv-idpage" style="${this.identStyle(id.color)}">
 			<section class="sv-idhero sv-idhero--franchise${art ? " has-art" : ""}">
 				${art ? `<img class="sv-idhero-art" src="${U.attr(art)}" alt="" data-sv-img>` : ""}
@@ -1102,13 +1137,16 @@ class SteamVaultBrowse {
 					<h1>${U.esc(title)}</h1>
 					${C.str(current.description) ? `<p class="sv-idhero-desc">${U.esc(current.description)}</p>` : ""}
 					${U.figures(stats)}
-					<div class="sv-sagabar"><span style="width:${s.completionPct}%"></span></div>
-					<div class="sv-idhero-actions">${this.identityBtn(ctx, "franchise", title, page || { path: current.file.path })}</div>
+					${f.total ? `<div class="sv-sagabar"><span style="width:${f.pct}%"></span></div>` : ""}
+					<div class="sv-idhero-actions">${editBtn("Editar franquia", "glass")}</div>
 				</div>
 			</section>
 			<div class="sv-pad">
+				${manage}
 				${games.length ? `${next ? `<section class="sv-block">${U.sectionHead("Próximo da saga", { sub: next.status === "Playing" ? "Você está jogando" : hasStory ? "Seguindo a ordem da história" : "Seguindo a ordem de lançamento" })}${U.wideCard(next, C)}</section>`
-					: `<div class="sv-callout sv-callout--ok">${U.icon("trophy")}<div><strong>Saga concluída</strong><p>Você zerou todos os jogos desta franquia no vault.</p></div></div>`}
+					: done ? `<div class="sv-callout sv-callout--ok">${U.icon("trophy")}<div><strong>Saga concluída</strong><p>Você zerou todos os ${U.plural(f.total, "jogo", "jogos")} da franquia.</p></div></div>`
+					: f.total ? `<div class="sv-callout">${U.icon("flag")}<div><strong>Zerou tudo o que está no vault</strong><p>${U.plural(f.missing, "jogo da franquia ainda não está cadastrado", "jogos da franquia ainda não estão cadastrados")}.</p></div></div>`
+					: `<div class="sv-callout">${U.icon("flag")}<div><strong>Zerou tudo o que está no vault</strong><p>Informe o total de jogos da franquia para saber quanto falta.</p></div></div>`}
 				<section class="sv-block">
 					${U.sectionHead("Linha do tempo", { action: hasStory ? `<div class="sv-segmented" role="radiogroup" aria-label="Ordem"><button type="button" role="radio" data-tl-mode="story" class="is-active" aria-checked="true">História</button><button type="button" role="radio" data-tl-mode="release" aria-checked="false">Lançamento</button></div>` : "" })}
 					${!hasStory ? `<p class="sv-muted sv-tl-hint">Ordem de lançamento. Para ver a ordem da história, preencha “Ordem na franquia” nos detalhes de cada jogo.</p>` : ""}
@@ -1116,7 +1154,7 @@ class SteamVaultBrowse {
 				</section>
 				${missing.length ? `<section class="sv-block">${U.sectionHead("Falta jogar", { count: missing.length, sub: "No backlog, na lista de desejos ou pausados" })}<div class="sv-grid sv-grid--static">${missing.map(g => U.gameCard(g, C)).join("")}</div></section>` : ""}
 				${plats.size > 1 ? `<section class="sv-block">${U.sectionHead("Plataformas da saga")}<div class="sv-chiplinks">${[...plats].map(([n, l]) => { const pp = model.platforms.find(p => C.normalizeKey(p.title) === C.normalizeKey(n)); const pid = this.ident(ctx, "platform", n, pp); return `<a class="sv-chiplink sv-chiplink--id" ${U.catAttrs("platform", n, pp)} style="${this.identStyle(pid.color)}">${U.icon(pid.icon)}${U.esc(n)}<span>${l.length}</span></a>`; }).join("")}</div></section>` : ""}`
-				: U.empty({ icon: "film", title: "Nenhum jogo nesta franquia", text: "Os jogos aparecem aqui quando o campo Franquia deles tiver este nome." })}
+				: U.empty({ icon: "film", title: "Nenhum jogo cadastrado nesta franquia", text: "Marque “Possui franquia?” ao adicionar ou editar um jogo e escolha esta franquia." })}
 				${this.pager(ctx, "franchise", names, title, pages)}
 			</div>
 		</div>`;
@@ -1267,9 +1305,17 @@ class SteamVaultBrowse {
 		});
 	}
 
-	async editIdentity(ctx, kind, name, path) {
+	// 1.12.0: franquia — o mesmo editor, com nome e total de jogos no topo;
+	// sem nome = criar uma franquia nova
+	editFranchise(ctx, name = "", path = "") {
+		return this.editIdentity(ctx, "franchise", name, path, { manage: true });
+	}
+
+	async editIdentity(ctx, kind, name, path, { manage = false } = {}) {
 		const { U, C, V, L } = ctx;
 		const isCol = kind === "collection";
+		const isNew = manage && !C.str(name);
+		const fr = manage && !isNew ? C.franchiseByName(ctx.model, name) : null;
 		const list = kind === "platform" ? ctx.model.platforms : kind === "franchise" ? (ctx.model.franchises || []) : kind === "subgenre" ? (ctx.model.subgenres || []) : isCol ? ctx.model.collections : ctx.model.genres;
 		const page = (path && list.find(p => p.path === path)) || list.find(p => C.normalizeKey(p.title) === C.normalizeKey(name)) || null;
 		if (isCol && !page) return V.toast("Coleção não encontrada", { tone: "error" });
@@ -1288,7 +1334,12 @@ class SteamVaultBrowse {
 		const body = document.createElement("div");
 		body.className = "sv-host sv-idedit sv-legacy";
 		body.innerHTML = `
-			<div class="sv-idedit-preview" style="${this.identStyle(cur.color)}"><span class="sv-idedit-icon">${U.icon(cur.icon)}</span><div><b>${U.esc(name)}</b><small>${U.esc(kind === "platform" ? [cur.maker, cur.year].filter(Boolean).join(" · ") || "Plataforma" : kind === "franchise" ? "Franquia" : isCol ? `${cur.kind} · ${U.plural(page.games.length, "jogo", "jogos")}` : cur.mood || (kind === "subgenre" ? "Subgênero" : "Gênero"))}</small></div></div>
+			${manage ? `<div class="sv-idedit-row sv-fedit-main">
+				<div class="svl-field"><label for="sv-fr-name">Nome da franquia</label><input class="svl-input" id="sv-fr-name" maxlength="80" autocomplete="off" placeholder="Ex: Resident Evil" value="${U.attr(name)}"></div>
+				<div class="svl-field"><label for="sv-fr-total">Total de jogos da franquia</label><input class="svl-input" id="sv-fr-total" type="number" min="1" max="9999" step="1" inputmode="numeric" placeholder="Não informado" value="${U.attr(fr?.total ?? page?.totalGames ?? "")}">
+					<small class="svl-field-hint" data-fr-hint></small></div>
+			</div>` : ""}
+			<div class="sv-idedit-preview" style="${this.identStyle(cur.color)}"><span class="sv-idedit-icon">${U.icon(cur.icon)}</span><div><b>${U.esc(name || "Nova franquia")}</b><small>${U.esc(kind === "platform" ? [cur.maker, cur.year].filter(Boolean).join(" · ") || "Plataforma" : kind === "franchise" ? "Franquia" : isCol ? `${cur.kind} · ${U.plural(page.games.length, "jogo", "jogos")}` : cur.mood || (kind === "subgenre" ? "Subgênero" : "Gênero"))}</small></div></div>
 			<div class="svl-field"><label>Cor</label>
 				<div class="sv-idedit-swatches">
 					<button type="button" class="sv-idedit-swatch is-auto${color ? "" : " is-active"}" data-color="" style="${this.identStyle(def.color)}" title="Automática">${U.icon("refresh")}</button>
@@ -1315,9 +1366,22 @@ class SteamVaultBrowse {
 			<label class="svl-checkbox-label sv-idedit-pin"><input type="checkbox" id="sv-id-pinned"${page.pinned ? " checked" : ""}> Fixar no destaque das Coleções</label>` : ""}
 			<div class="svl-field"><label for="sv-id-desc">${isGenre ? "Frase ou descrição" : "Descrição"}</label><textarea class="svl-input" id="sv-id-desc" rows="2" placeholder="${U.attr(isGenre && def.mood ? def.mood : isGenre ? `Algo sobre este ${kindLabel}` : `Algo sobre esta ${kindLabel}`)}">${U.esc(C.str(page?.description) || "")}</textarea></div>
 			${L?.imagePickerField ? L.imagePickerField({ id: "sv-id-cover", label: "Arte do topo (opcional)", hint: kind === "franchise" ? "Vazio = arte do jogo mais recente da franquia" : isCol ? "Vazio = mosaico com as capas dos jogos" : "Vazio = cor e ícone da identidade" }) : ""}`;
-		const m = V.modal({ title: `Identidade ${kindOf}`, sub: name, size: "md", body,
+		const m = V.modal({ title: manage ? (isNew ? "Nova franquia" : "Editar franquia") : `Identidade ${kindOf}`, sub: manage ? (isNew ? "Nome, total de jogos e identidade visual" : name) : name, size: "md", body,
 			actions: `${U.btn("Cancelar", { kind: "ghost", attrs: "data-close" })}${U.btn("Salvar", { kind: "primary", attrs: "data-id-save" })}` });
 		const preview = body.querySelector(".sv-idedit-preview");
+		if (manage) {
+			// o total é seu: nada aqui conta os jogos cadastrados como total
+			const owned = fr?.owned || 0, done = fr?.completed || 0;
+			const hint = body.querySelector("[data-fr-hint]"), tot = body.querySelector("#sv-fr-total");
+			const say = () => {
+				const n = C.franchiseTotal(tot.value);
+				hint.textContent = !n ? `Vazio = total não informado. No vault: ${U.plural(owned, "jogo cadastrado", "jogos cadastrados")}.`
+					: n < owned ? `Atenção: há ${U.plural(owned, "jogo cadastrado", "jogos cadastrados")}, mais que o total.`
+					: `Progresso: ${done} de ${n} zerados (${Math.floor((done / n) * 100)}%).`;
+			};
+			tot.addEventListener("input", say); say();
+			body.querySelector("#sv-fr-name").addEventListener("input", e => { preview.querySelector("b").textContent = e.target.value.trim() || "Nova franquia"; });
+		}
 		const paint = () => {
 			const c = color || def.color, i = imgSrc() ? `img:${imgSrc()}` : icon || def.icon;
 			preview.setAttribute("style", this.identStyle(c));
@@ -1351,14 +1415,25 @@ class SteamVaultBrowse {
 			paint();
 		}
 		const coverInput = body.querySelector("#sv-id-cover");
-		if (coverInput) { coverInput.value = page?.page?.cover || ""; L.wireImagePicker(body, "sv-id-cover", { folder: "Assets/Covers", baseName: () => `${name}-${kindLabel}` }); }
+		if (coverInput) { coverInput.value = page?.page?.cover || ""; L.wireImagePicker(body, "sv-id-cover", { folder: "Assets/Covers", baseName: () => `${(manage && body.querySelector("#sv-fr-name")?.value.trim()) || name}-${kindLabel}` }); }
 		m.el.querySelector("[data-id-save]")?.addEventListener("click", async () => {
 			const btn = m.el.querySelector("[data-id-save]");
 			btn.disabled = true;
 			try {
-				const file = page ? app.vault.getAbstractFileByPath(page.path) : await C.ensureCategoryNote(kind, name);
-				if (!file) throw new Error("nota não encontrada");
 				const val = sel => (body.querySelector(sel)?.value || "").trim();
+				let newName = name, rename = false;
+				if (manage) {
+					newName = val("#sv-fr-name").replace(/[\u0000-\u001F\u007F]/g, "").replace(/\s+/g, " ").slice(0, 80);
+					if (!newName) { btn.disabled = false; return V.toast("Informe o nome da franquia", { tone: "warn" }); }
+					const rawTotal = val("#sv-fr-total");
+					if (rawTotal && !C.franchiseTotal(rawTotal)) { btn.disabled = false; return V.toast("O total precisa ser um número inteiro a partir de 1", { tone: "warn" }); }
+					// sem duplicar por diferença de escrita (maiúsculas, acentos, ™)
+					const clash = C.franchiseList(ctx.model).find(x => x.key === C.normalizeKey(newName) && (isNew || x.key !== C.normalizeKey(name)));
+					if (clash) { btn.disabled = false; return V.toast(`Já existe a franquia “${clash.name}”`, { tone: "warn" }); }
+					rename = !isNew && newName !== name;
+				}
+				const file = page ? app.vault.getAbstractFileByPath(page.path) : await C.ensureCategoryNote(kind, newName);
+				if (!file) throw new Error("nota não encontrada");
 				if (img && !imgSrc()) { btn.disabled = false; return V.toast("Imagem não encontrada: use um arquivo do vault (PNG, JPG, WebP, GIF ou SVG) ou um endereço https", { tone: "warn" }); }
 				await app.fileManager.processFrontMatter(file, fm => {
 					fm.accent = color || "";
@@ -1371,6 +1446,11 @@ class SteamVaultBrowse {
 						fm.pinned = !!body.querySelector("#sv-id-pinned")?.checked;
 						fm.updated = C.today();
 					}
+					if (manage) {
+						fm.title = newName;
+						const t = C.franchiseTotal(val("#sv-fr-total"));
+						fm.totalGames = t ?? "";
+					}
 					if (kind === "platform") {
 						fm.maker = val("#sv-id-maker");
 						const y = parseInt(val("#sv-id-year"), 10);
@@ -1378,9 +1458,26 @@ class SteamVaultBrowse {
 						fm.generation = val("#sv-id-gen");
 					}
 				});
+				// renomear: os jogos da franquia passam a apontar para o nome novo
+				// (só o campo `franchise`; status e o resto da nota ficam como estão)
+				if (rename) {
+					const oldKey = C.normalizeKey(name);
+					for (const g of ctx.model.games) {
+						if (C.normalizeKey(g.franchise) !== oldKey) continue;
+						const gf = app.vault.getAbstractFileByPath(g.path);
+						if (gf) await app.fileManager.processFrontMatter(gf, fm => { fm.franchise = newName; });
+					}
+					const target = `${file.parent?.path ? `${file.parent.path}/` : ""}${C.safeFileName(newName, "Franquia")}.md`;
+					// o arquivo acompanha o nome (opcional: o título no frontmatter é o que vale)
+					if (target !== file.path && !app.vault.getAbstractFileByPath(target) && typeof app.fileManager.renameFile === "function") {
+						try { await app.fileManager.renameFile(file, target); } catch (_) { /* fica com o nome antigo de arquivo */ }
+					}
+				}
 				m.close();
-				V.toast("Identidade salva", { tone: "ok", icon: "check" });
-				setTimeout(() => V.refresh?.(), 350);
+				V.toast(manage ? (isNew ? "Franquia criada" : "Franquia salva") : "Identidade salva", { tone: "ok", icon: "check" });
+				C.invalidate?.();
+				if (manage && (isNew || rename)) setTimeout(() => V.open?.(file.path, ctx), 350);
+				else setTimeout(() => V.refresh?.(), 350);
 			} catch (err) {
 				console.error("Game Library: identidade", err);
 				V.toast(`Não foi possível salvar: ${err.message}`, { tone: "error" });

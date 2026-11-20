@@ -107,6 +107,7 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	await setVal("#svl-f-title", "Jogo de Teste Formulário");
 	await setVal("#svl-f-platform", await p.evaluate(() => [...document.querySelectorAll("#svl-f-platform option")].map(o => o.value).find(v => v === "PS2") || document.querySelector("#svl-f-platform option").value));
 	await setVal("#svl-f-status", "Backlog");
+	await click('#svl-f-franchise-has [data-value="yes"]');
 	await setVal("#svl-f-franchise", "Saga Teste");
 	await p.evaluate(() => { const r = document.querySelector('[name="svl-f-ach-sync"][value="manual"], [data-sync="manual"], [data-v="manual"]'); r?.click(); });
 	await click("#svl-f-submit"); await p.waitForTimeout(900);
@@ -118,11 +119,11 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	const fBefore = await fm(RE4);
 	await openAction({ action: "manage", section: "details", path: RE4 }); await p.waitForTimeout(600);
 	check("Editar detalhes: abre com os valores atuais", await p.evaluate(v => document.querySelector("#svl-de-franchise")?.value === (v || ""), fBefore.franchise));
-	await setVal("#svl-de-franchise", "Resident Evil (teste)");
+	await setVal("#svl-de-franchise", "dying light");
 	await setVal("#svl-de-rating", "4");
 	await click("#svl-de-save"); await p.waitForTimeout(700);
 	const fAfter = await fm(RE4);
-	check("Editar detalhes: grava o que mudou", fAfter.franchise === "Resident Evil (teste)" && Number(fAfter.rating) === 4, JSON.stringify({ franchise: fAfter.franchise, rating: fAfter.rating }));
+	check("Editar detalhes: grava o que mudou (franquia na grafia da que já existe)", fAfter.franchise === "Dying Light" && Number(fAfter.rating) === 4, JSON.stringify({ franchise: fAfter.franchise, rating: fAfter.rating }));
 	check("Editar detalhes: preserva o resto (ano, plataforma, gêneros, sinopse)", String(fAfter.releaseYear) === String(fBefore.releaseYear) && fAfter.platform === fBefore.platform && JSON.stringify(fAfter.genre) === JSON.stringify(fBefore.genre) && fAfter.summary === fBefore.summary, JSON.stringify({ y: [fBefore.releaseYear, fAfter.releaseYear], g: [fBefore.genre, fAfter.genre] }));
 	await p.evaluate(([path, v]) => { const x = __PAGES.find(y => y.path === path); x.fm.franchise = v.franchise; x.fm.rating = v.rating; }, [RE4, { franchise: fBefore.franchise, rating: fBefore.rating }]);
 	await closeModal();
@@ -528,6 +529,24 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	await go(game);
 	await click('.sv-tabs--game [data-tab="sessions"]'); await p.waitForTimeout(300);
 	check("mapa de calor na aba Sessões (depois da sessão gravada)", await count(".sv-gameheat .sv-heatmap i") > 300);
+	// 1.11.2: ao rolar a ficha, a fileira "Registrar sessão" não fica por baixo dos botões flutuantes
+	const rFab = await p.evaluate(async () => {
+		const sc = document.querySelector(".sv-layer"), a = document.querySelector(".sv-app");
+		const pad = document.createElement("div"); pad.style.height = "3000px"; document.querySelector(".sv-page--game").appendChild(pad);
+		const fab = () => getComputedStyle(document.querySelector(".sv-topbar-actions")).opacity;
+		const wait = () => new Promise(r => setTimeout(r, 350));
+		const row = document.querySelector(".sv-page--game .sv-hero-actions");
+		const out = {};
+		sc.scrollTop = 0; await wait(); out.top = [a.classList.contains("is-fab-clash"), fab()];
+		sc.scrollTop = sc.scrollTop + row.getBoundingClientRect().top - 20; await wait();
+		out.under = [a.classList.contains("is-fab-clash"), fab(), a.classList.contains("is-tabs-stuck")];
+		sc.scrollTop = sc.scrollTop + document.querySelector(".sv-gamenav").getBoundingClientRect().top + 200; await wait();
+		out.stuck = [a.classList.contains("is-tabs-stuck"), fab()];
+		sc.scrollTop = 0; await wait(); out.back = [a.classList.contains("is-fab-clash"), fab()];
+		pad.remove();
+		return out;
+	});
+	check("ficha: botões flutuantes somem sobre a fileira de ações e voltam com as abas grudadas", !rFab.top[0] && rFab.top[1] === "1" && rFab.under[0] && rFab.under[1] === "0" && !rFab.under[2] && rFab.stuck[0] && rFab.stuck[1] === "1" && !rFab.back[0] && rFab.back[1] === "1", JSON.stringify(rFab));
 
 	// ---- Início: personalizar; gaveta "Mais"
 	await go("Dashboard/Home.md");
@@ -1189,6 +1208,109 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		check("troca de aba (modo Leitura): a tela de carregamento não aparece de novo", first && !flashed);
 		check("troca de aba: o segundo desenho da mesma tela não corta a animação de entrada", first && !swapped && !refresh && await m.evaluate(() => document.querySelector(".sv-layer .sv-app").classList.contains("sv-motion")), JSON.stringify({ swapped, refresh }));
 		await mctx.close();
+	}
+	// 1.11.3: as três conquistas em destaque da ficha abrem a conquista tocando em qualquer parte
+	{
+		const G = "Games/PC/Dying Light.md";
+		await p.evaluate(async G => { for (let i = 0; i < 4; i++) await app.vault.create(`Achievements/Dying Light/Destaque ${i}.md`, `---\ntype: achievement\nname: "Destaque ${i}"\ngame: "[[Dying Light]]"\ngamePath: "${G}"\nunlocked: true\nunlockedDate: "2026-01-0${i + 1}"\nsteamGlobalPercent: ${3 + i}\n---\n`); customJS.SteamVaultCore.invalidate(); }, G);
+		const opened = [];
+		for (const part of ["b", "em", ":scope > div"]) {
+			await go(G);
+			await click('.sv-tabs--game [data-tab="achievements"]'); await p.waitForTimeout(300);
+			opened.push(await p.evaluate(async sel => {
+				const meds = [...document.querySelectorAll(".sv-showcase .sv-medallion")];
+				if (meds.length !== 3 || meds.some(m => m.tagName !== "A" || !m.dataset.open)) return "medalhas sem link";
+				const o = app.workspace.openLinkText; let got = "";
+				app.workspace.openLinkText = l => { got = l; };
+				meds[1].querySelector(sel).click();
+				app.workspace.openLinkText = o;
+				return got;
+			}, part));
+		}
+		check("conquistas em destaque: nome, porcentagem e ícone abrem a mesma conquista", opened.every(x => x === "Achievements/Dying Light/Destaque 1"), JSON.stringify(opened));
+		check("conquistas em destaque: tocar não dá fundo ao bloco (só o ícone reage)", await p.evaluate(() => {
+			// regras de toque (:active) com fundo que valeriam para a medalha da ficha, no celular
+			const med = document.querySelector(".sv-showcase .sv-medallion"), app_ = med?.closest(".sv-app");
+			if (!med) return false;
+			const had = app_.classList.contains("is-touch"); app_.classList.add("is-touch");
+			const hit = [...document.styleSheets].flatMap(s => { try { return [...s.cssRules]; } catch (_) { return []; } })
+				.filter(r => /:active/.test(r.selectorText || "") && /background/.test(r.style?.cssText || ""))
+				.some(r => r.selectorText.split(",").some(sel => { try { return /:active\s*$/.test(sel.trim()) && med.matches(sel.replace(/:active\s*$/, "")); } catch (_) { return false; } }));
+			if (!had) app_.classList.remove("is-touch");
+			return !hit;
+		}));
+	}
+	// ---- 1.12.0: franquias com total informado à mão (os 11 cenários pedidos)
+	{
+		const frNote = title => p.evaluate(t => { const x = __PAGES.find(y => y.fm?.type === "franchise" && y.fm.title === t); return x ? { path: x.path, ...x.fm } : null; }, title);
+		const frStats = name => p.evaluate(n => { const C = customJS.SteamVaultCore; C.invalidate(); const f = C.franchiseByName(C.model(mkdv()), n); return f ? { total: f.total, owned: f.owned, completed: f.completed, notCompleted: f.notCompleted, missing: f.missing, remaining: f.remaining, pct: f.pct } : null; }, name);
+		const addGame = async (title, status, franchise) => {
+			await go("Dashboard/Biblioteca.md");
+			await openAction({ action: "add-game" }); await p.waitForTimeout(500);
+			await setVal("#svl-f-title", title);
+			await setVal("#svl-f-status", status);
+			if (franchise !== null) { await click('#svl-f-franchise-has [data-value="yes"]'); await setVal("#svl-f-franchise", franchise); }
+			await click("#svl-f-submit"); await p.waitForTimeout(900);
+			const path = await p.evaluate(t => (window.__created || []).filter(x => x.includes(t)).pop() || "", title);
+			await closeModal();
+			return path;
+		};
+		const saveEditor = async (fill) => {
+			await p.waitForTimeout(400);
+			for (const [sel, v] of fill) await setVal(sel, v);
+			await click("[data-id-save]"); await p.waitForTimeout(1100);
+		};
+		// 1. jogo sem franquia
+		const solo = await addGame("Jogo Avulso FR", "Completed", null);
+		const soloFm = solo ? await fm(solo) : null;
+		check("franquias 1: jogo cadastrado com “Possui franquia? Não” fica sem franquia", !!soloFm && !soloFm.franchise, JSON.stringify(soloFm?.franchise));
+		// 3 e 4. nova franquia pela aba Franquias, com total
+		await go("Dashboard/Franquias.md");
+		await click('[data-action="franchise-edit"][data-new]');
+		await saveEditor([["#sv-fr-name", "Saga Manual"], ["#sv-fr-total", "15"]]);
+		const saga = await frNote("Saga Manual");
+		check("franquias 3 e 4: “Nova franquia” cria a nota com o total informado", !!saga && Number(saga.totalGames) === 15, JSON.stringify(saga));
+		// 2. jogo numa franquia existente (grafia diferente não duplica)
+		const g1 = await addGame("Saga Manual Parte 1", "Completed", "saga MANUAL");
+		check("franquias 2: jogo entra na franquia existente, na grafia dela", (await fm(g1))?.franchise === "Saga Manual" && (await p.evaluate(() => __PAGES.filter(y => y.fm?.type === "franchise" && /saga manual/i.test(y.fm.title)).length)) === 1);
+		// 5 e 6. um jogo zerado de 15: 6%, não 100%
+		let st = await frStats("Saga Manual");
+		check("franquias 5 e 6: 1 zerado de 15 = 6% (não 100%) e contadores separados", st.total === 15 && st.owned === 1 && st.completed === 1 && st.notCompleted === 0 && st.missing === 14 && st.remaining === 14 && st.pct === 6, JSON.stringify(st));
+		check("franquias 6: 3 de 15 = 20% (exemplo do pedido)", await p.evaluate(() => customJS.SteamVaultCore.franchiseCounts([{ status: "Completed" }, { status: "Completed" }, { status: "Completed" }, { status: "Playing" }, { status: "Backlog" }], 15).pct === 20));
+		await go("Dashboard/Franquias.md");
+		check("franquias 6: o card mostra o total, cadastrados, zerados, restantes e 6%", await p.evaluate(() => { const c = [...document.querySelectorAll(".sv-fcard")].find(x => x.dataset.name === "Saga Manual"); return !!c && /15/.test(c.querySelector(".sv-fcard-nums").textContent) && /1 de 15 zerados · 6%/.test(c.querySelector(".sv-fcard-progress").textContent) && !!c.querySelector('[data-action="franchise-edit"]'); }));
+		// sem total: "Total não informado", sem porcentagem
+		check("franquias: sem total, nada de porcentagem nem saga concluída", await p.evaluate(() => { const c = [...document.querySelectorAll(".sv-fcard")].find(x => x.dataset.name === "Dying Light"); return !!c && /Total não informado/.test(c.textContent) && !c.querySelector(".sv-fcard-bar") && c.dataset.progress === "-1"; }));
+		// 7. mudar o total: progresso recalcula, status dos jogos intacto
+		await p.evaluate(() => [...document.querySelectorAll('[data-action="franchise-edit"]')].find(b => b.dataset.name === "Saga Manual")?.click());
+		await saveEditor([["#sv-fr-total", "5"]]);
+		st = await frStats("Saga Manual");
+		check("franquias 7: alterar o total recalcula (1 de 5 = 20%) sem mexer no status do jogo", st.total === 5 && st.pct === 20 && (await fm(g1))?.status === "Completed", JSON.stringify(st));
+		// 8. editar a franquia: renomear leva os jogos junto
+		await p.evaluate(() => [...document.querySelectorAll('[data-action="franchise-edit"]')].find(b => b.dataset.name === "Saga Manual")?.click());
+		await saveEditor([["#sv-fr-name", "Saga Renomeada"], ["#sv-id-desc", "Descrição de teste"]]);
+		const ren = await frNote("Saga Renomeada");
+		check("franquias 8: editar nome e descrição; o jogo segue na franquia e mantém o status", !!ren && ren.description === "Descrição de teste" && Number(ren.totalGames) === 5 && (await fm(g1))?.franchise === "Saga Renomeada" && (await fm(g1))?.status === "Completed" && !(await frNote("Saga Manual")), JSON.stringify(ren));
+		// 9. trocar o jogo de franquia
+		await go(g1);
+		await openAction({ action: "manage", section: "details", path: g1 }); await p.waitForTimeout(600);
+		await setVal("#svl-de-franchise", "Dying Light");
+		await click("#svl-de-save"); await p.waitForTimeout(800);
+		check("franquias 9: trocar a franquia do jogo", (await fm(g1))?.franchise === "Dying Light" && (await frStats("Saga Renomeada")).owned === 0);
+		await closeModal();
+		// 10. remover a associação
+		await openAction({ action: "manage", section: "details", path: g1 }); await p.waitForTimeout(600);
+		await click('#svl-de-franchise-has [data-value="no"]');
+		await click("#svl-de-save"); await p.waitForTimeout(800);
+		const g1fm = await fm(g1);
+		check("franquias 10: “Não” tira o jogo da franquia (e da aba Franquias)", !g1fm.franchise && !g1fm.franchiseOrder && g1fm.status === "Completed" && (await frStats("Dying Light")).owned === 1, JSON.stringify({ f: g1fm.franchise, o: g1fm.franchiseOrder }));
+		await closeModal();
+		// 11. persistência: tudo está no frontmatter das notas (o que o Obsidian grava em disco)
+		await p.evaluate(() => { customJS.SteamVaultCore.invalidate(); rerender(); }); await p.waitForTimeout(600);
+		check("franquias 11: total, nome e descrição estão na nota da franquia (sobrevivem a fechar o Obsidian)", await p.evaluate(() => { const x = __PAGES.find(y => y.fm?.type === "franchise" && y.fm.title === "Saga Renomeada"); return !!x && x.fm.totalGames === 5 && x.fm.description === "Descrição de teste"; }));
+		// a ficha da franquia tem a área de gerenciamento
+		await p.evaluate(() => go(__PAGES.find(y => y.fm?.type === "franchise" && y.fm.title === "Saga Renomeada").path)); await p.waitForTimeout(600);
+		check("franquias: a ficha mostra “Gerenciar franquia” com os números e o botão de editar", await count(".sv-fmanage .sv-figures") === 1 && await count('.sv-fmanage [data-action="franchise-edit"]') === 1);
 	}
 	check("nenhum erro de script durante os testes", errors.length === 0, errors.slice(0, 3).join(" | "));
 

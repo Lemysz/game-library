@@ -2601,6 +2601,11 @@ a.sv-recent-row:hover { background: var(--sv-surface); }
 .sv-medallion em, .sv-medallion figcaption span { font-style: normal; font-size: calc(0.68rem * var(--sv-ts, 1)); font-weight: 600; color: var(--sv-rarity); }
 .sv-rarewall .sv-medallion { width: 120px; padding: 14px 8px; border-radius: var(--sv-radius-lg); background: var(--sv-surface); box-shadow: inset 0 0 0 1px var(--sv-line); }
 .sv-rarewall .sv-medallion:hover { background: var(--sv-surface-2); }
+/* 1.11.3: medalhas soltas (sem cartão): o toque age só no ícone — nada de
+   fundo, borda ou contorno no bloco; o foco do teclado segue a moldura do ícone */
+a.sv-medallion { color: inherit; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; outline: none; }
+.sv-showcase a.sv-medallion:active > div { transform: scale(0.94); transition-duration: 60ms; }
+a.sv-medallion:focus-visible > div { box-shadow: 0 0 0 2px var(--sv-rarity), 0 0 0 4px color-mix(in srgb, var(--sv-text) 70%, transparent); }
 
 /* página de conquistas / RA */
 .sv-trophyhero {
@@ -4699,7 +4704,7 @@ body.sv-reduced-motion .sv-motion .sv-reveal, body.sv-reduced-motion .sv-motion 
 /* itens com cara de "cartão" também afundam */
 .sv-app.is-touch :is(.sv-ach):active,
 .sv-app.is-touch :is(.sv-chiplink):active,
-.sv-app.is-touch :is(.sv-medallion):active,
+.sv-app.is-touch :is(.sv-rarewall .sv-medallion):active,
 .sv-app.is-touch :is(.sv-ra-strip-inner):active { background: var(--sv-surface-2); transform: scale(0.985); transition-duration: 60ms; }
 .sv-app.is-touch .sv-card .sv-card-art:active, .sv-app.is-touch .sv-award .sv-cover:active { transform: scale(0.97); transition-duration: 90ms; }
 .sv-app.is-touch :is(.sv-wide-art:not(sv-nunca)):active,
@@ -5944,7 +5949,11 @@ body.theme-light .sv-plat--epic, body.theme-light .sv-achsrc--epic { --sv-plat: 
 .sv-app.sv-bp-sm:has(.sv-gamenav) .sv-topbar::before { display: none; }
 /* o deslize até a linha das abas usa transform (feito pela GPU): animar
    "top" recalculava e redesenhava a página a cada quadro (3.7.2) */
-.sv-app.sv-bp-sm .sv-topbar-actions, .sv-app.sv-bp-sm .sv-topbar > .sv-drawer-btn { transition: transform var(--sv-t-fast) var(--sv-ease); }
+.sv-app.sv-bp-sm .sv-topbar-actions, .sv-app.sv-bp-sm .sv-topbar > .sv-drawer-btn { transition: transform var(--sv-t-fast) var(--sv-ease), opacity var(--sv-t-fast) var(--sv-ease); }
+/* 1.11.2: ficha — enquanto a fileira "Registrar sessão" passa pela altura dos
+   botões flutuantes, eles somem (voltam na linha das abas quando elas grudam) */
+.sv-app.sv-bp-sm.is-fab-clash:not(.is-tabs-stuck) .sv-topbar-actions,
+.sv-app.sv-bp-sm.is-fab-clash:not(.is-tabs-stuck) .sv-topbar > .sv-drawer-btn { opacity: 0; pointer-events: none; }
 .sv-app.sv-bp-sm.is-tabs-stuck .sv-topbar-actions,
 .sv-app.sv-bp-sm.is-tabs-stuck .sv-topbar > .sv-drawer-btn { transform: translateY(calc(var(--sv-fab-stuck-top) - var(--sv-safe-top) - 10px)); }
 /* celular: botões flutuantes e abas sem desfoque do fundo, com o mesmo
@@ -6236,8 +6245,8 @@ body.is-mobile .sv-share-modal .sv-share-extra .sv-btn { padding-left: 12px; pad
 	color: color-mix(in oklab, var(--sv-id) 72%, var(--sv-text));
 }
 /* metadados com separador "·" (como nas listas da Steam) */
-.sv-pcard-meta, .sv-gtile-meta, .sv-fcard-meta { display: flex; flex-wrap: wrap; gap: 2px 6px; font-size: var(--sv-fs-micro); color: var(--sv-muted); }
-:is(.sv-pcard-meta, .sv-gtile-meta, .sv-fcard-meta) > span + span::before { content: "·"; margin-right: 6px; opacity: 0.7; }
+.sv-pcard-meta, .sv-gtile-meta { display: flex; flex-wrap: wrap; gap: 2px 6px; font-size: var(--sv-fs-micro); color: var(--sv-muted); }
+:is(.sv-pcard-meta, .sv-gtile-meta) > span + span::before { content: "·"; margin-right: 6px; opacity: 0.7; }
 
 /* ---------------------------------------------------------- PLATAFORMAS */
 .sv-makergroup { margin-top: 26px; }
@@ -6401,11 +6410,28 @@ body.is-mobile .sv-share-modal .sv-share-extra .sv-btn { padding-left: 12px; pad
 .sv-fcard-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .sv-fcard-kicker { font-size: var(--sv-fs-micro); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(238, 243, 248, 0.7); }
 .sv-fcard strong { font-family: var(--sv-font-display); font-size: calc(1.45rem * var(--sv-ts, 1)); font-weight: 800; line-height: 1.05; color: #fff; }
-.sv-fcard-meta { color: rgba(238, 243, 248, 0.74); }
 .sv-fcard-progress { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
 .sv-fcard-progress small { font-size: var(--sv-fs-micro); color: rgba(238, 243, 248, 0.74); }
 .sv-fcard-bar { display: block; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
 .sv-fcard-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--sv-accent); }
+/* 1.12.0: franquias com total informado à mão — números, editar e gerenciar */
+.sv-fcard-nums { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+.sv-fcard-num { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.sv-fcard-num b { font-size: calc(1.05rem * var(--sv-ts, 1)); font-weight: 800; line-height: 1.1; color: #fff; }
+.sv-fcard-num small { font-size: calc(0.66rem * var(--sv-ts, 1)); color: rgba(238, 243, 248, 0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sv-fcard.is-nototal .sv-fcard-progress small { color: var(--sv-amber); font-weight: 600; }
+.sv-fcard-edit { position: absolute; top: 10px; right: 10px; z-index: 2; display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 50%; background: rgba(7, 11, 17, 0.55); color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background var(--sv-t-fast) var(--sv-ease), transform var(--sv-t-fast) var(--sv-ease); }
+.sv-fcard-edit .sv-i { width: 16px; height: 16px; }
+.sv-fcard-edit:hover, .sv-fcard-edit:focus-visible { background: rgba(7, 11, 17, 0.8); }
+.sv-fcard-edit:active { transform: scale(0.92); }
+.sv-fmanage .sv-figures { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 14px 18px; padding: 16px; border-radius: var(--sv-radius-lg); background: var(--sv-surface); box-shadow: inset 0 0 0 1px var(--sv-line); }
+.sv-fmanage-note { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0 0; font-size: var(--sv-fs-small); color: var(--sv-text-2); }
+.sv-fmanage-note .sv-i { flex: none; width: 16px; height: 16px; margin-top: 2px; color: var(--sv-amber); }
+.sv-fedit-main { margin-bottom: 4px; }
+.sv-app.sv-bp-sm .sv-fmanage .sv-figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sv-app.sv-bp-sm .sv-fcard-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 10px; }
+.sv-app.sv-bp-sm .sv-fcard-num { flex-direction: row; align-items: baseline; gap: 5px; }
+.sv-app.sv-bp-sm .sv-fcard-num b { font-size: calc(0.98rem * var(--sv-ts, 1)); }
 
 /* linha do tempo da saga */
 .sv-tl-wrap { margin: 0 calc(var(--sv-pad-x) * -1); padding: 0 var(--sv-pad-x); overflow-x: auto; scrollbar-width: none; }

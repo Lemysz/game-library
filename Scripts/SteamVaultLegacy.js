@@ -982,6 +982,53 @@ class SteamVaultLegacy {
 
 	// campos "Origem" + "Sincronização" (formulários de adicionar e editar):
 	// duas escolhas separadas; os modos que a origem não aceita ficam desativados
+	// 1.12.0: "Possui franquia?" — Não = sem franquia (fora da aba Franquias);
+	// Sim = escolher uma franquia existente ou digitar uma nova
+	_franchiseFieldsHtml(prefix, current = "", order = "") {
+		const C = customJS.SteamVaultCore;
+		const has = !!C.str(current);
+		const names = C.franchiseNames();
+		return `<div class="svl-field svl-franchise-field" id="${prefix}-wrap">
+				<label>Possui franquia?</label>
+				<div class="svl-segmented" id="${prefix}-has" role="radiogroup" aria-label="Possui franquia?">
+					<button type="button" class="svl-segmented-opt${has ? "" : " is-active"}" data-value="no" role="radio" aria-checked="${!has}">Não</button>
+					<button type="button" class="svl-segmented-opt${has ? " is-active" : ""}" data-value="yes" role="radio" aria-checked="${has}">Sim</button>
+				</div>
+			</div>
+			<div class="svl-field" data-fr-when="yes"${has ? "" : " hidden"}><label for="${prefix}">Franquia</label>
+				<input type="text" class="svl-input" id="${prefix}" value="${this.esc(current)}" placeholder="Escolha ou digite uma nova" autocomplete="off" list="${prefix}-list" maxlength="80">
+				<datalist id="${prefix}-list">${names.map(n => `<option value="${this.esc(n)}">`).join("")}</datalist>
+				<small class="svl-field-hint" id="${prefix}-hint">${names.length ? "Escolha uma das suas franquias ou digite o nome de uma nova" : "Digite o nome da franquia: ela é criada ao salvar"}</small></div>
+			<div class="svl-field" data-fr-when="yes"${has ? "" : " hidden"}><label for="${prefix}-order">Ordem na saga</label>
+				<small class="svl-field-hint">Opcional. Vazio = ordena por ano de lançamento</small>
+				<input type="number" class="svl-input" id="${prefix}-order" value="${this.esc(order ?? "")}" placeholder="1" inputmode="numeric"></div>`;
+	}
+
+	_wireFranchise(root, prefix) {
+		const C = customJS.SteamVaultCore;
+		const seg = root.querySelector(`#${prefix}-has`), input = root.querySelector(`#${prefix}`), hint = root.querySelector(`#${prefix}-hint`);
+		if (!seg || !input) return;
+		const names = C.franchiseNames();
+		const set = yes => {
+			seg.querySelectorAll("[data-value]").forEach(b => { const on = (b.dataset.value === "yes") === yes; b.classList.toggle("is-active", on); b.setAttribute("aria-checked", String(on)); });
+			root.querySelectorAll(`#${prefix}-wrap ~ [data-fr-when]`).forEach(el => { el.hidden = !yes; });
+			if (yes) requestAnimationFrame(() => input.focus({ preventScroll: true }));
+		};
+		seg.addEventListener("click", e => { const b = e.target.closest("[data-value]"); if (b) set(b.dataset.value === "yes"); });
+		// avisa quando o nome digitado é uma franquia que já existe (com outra grafia) ou uma nova
+		input.addEventListener("input", () => {
+			const k = C.normalizeKey(input.value), hit = k && names.find(n => C.normalizeKey(n) === k);
+			hint.textContent = !k ? "Escolha uma das suas franquias ou digite o nome de uma nova" : hit ? (hit === input.value.trim() ? "Franquia existente" : `Vai entrar em “${hit}”, que já existe`) : "Franquia nova: ela é criada ao salvar";
+		});
+	}
+
+	// valor a gravar: "" com Não; com Sim, o nome na grafia da franquia existente
+	_franchiseValue(root, prefix) {
+		const C = customJS.SteamVaultCore;
+		const yes = root.querySelector(`#${prefix}-has [data-value="yes"]`)?.classList.contains("is-active");
+		return yes ? C.canonicalFranchise(root.querySelector(`#${prefix}`)?.value || "") : "";
+	}
+
 	_achFieldsHtml(prefix, provider, sync) {
 		const C = customJS.SteamVaultCore;
 		const groups = C.providerGroups.map(([id, label]) => `<optgroup label="${this.esc(label)}">${Object.entries(C.providerDefs).filter(([, d]) => d.group === id)
@@ -3787,11 +3834,7 @@ class SteamVaultLegacy {
 						</div>`, { icon: "trophy", sub: "De onde vem o progresso e como ele é atualizado" })}
 					${this.formSec("Detalhes", `
 						<div class="svl-field-grid">
-							<div class="svl-field"><label for="svl-f-franchise">Franquia</label>
-								<input type="text" class="svl-input" id="svl-f-franchise" placeholder="Ex: God of War" autocomplete="off"></div>
-							<div class="svl-field"><label for="svl-f-franchise-order">Ordem na saga</label>
-								<small class="svl-field-hint">Opcional. Vazio = ordena por ano de lançamento</small>
-								<input type="number" class="svl-input" id="svl-f-franchise-order" placeholder="1" inputmode="numeric"></div>
+							${this._franchiseFieldsHtml("svl-f-franchise")}
 							<div class="svl-field"><label for="svl-f-year">Ano de lançamento</label>
 								<input type="number" class="svl-input" id="svl-f-year" placeholder="Ex: 2017" inputmode="numeric"></div>
 							<div class="svl-field"><label for="svl-f-releasedate">Data de lançamento (opcional)</label>
@@ -3969,6 +4012,7 @@ class SteamVaultLegacy {
 		};
 
 		// "Identificar na Steam" só faz sentido com origem Steam
+		this._wireFranchise(root, "svl-f-franchise");
 		const getAch = this._wireAchFields(root, "svl-f-ach", ({ provider }) => {
 			const isSteam = provider === "steam";
 			const lookupWrap = root.querySelector("#svl-steam-lookup-wrap");
@@ -4027,8 +4071,9 @@ class SteamVaultLegacy {
 			const platform = val("#svl-f-platform");
 			const status = val("#svl-f-status");
 			const ach = getAch();
-			const franchise = val("#svl-f-franchise");
-			const franchiseOrder = val("#svl-f-franchise-order");
+			const franchise = this._franchiseValue(root, "svl-f-franchise");
+			if (root.querySelector('#svl-f-franchise-has [data-value="yes"].is-active') && !franchise) { submitBtn.disabled = false; msg.textContent = "Escolha a franquia ou marque Não."; msg.className = "svl-form-msg is-error"; return; }
+			const franchiseOrder = franchise ? val("#svl-f-franchise-order") : "";
 			const genre = val("#svl-f-genre").split(",").map(s => s.trim()).filter(Boolean);
 			const subgenre = val("#svl-f-subgenre").split(",").map(s => s.trim()).filter(Boolean);
 			const year = val("#svl-f-year");
@@ -4063,6 +4108,7 @@ class SteamVaultLegacy {
 				const genreYaml = genre.length ? `[${genre.map(g => `"${yesc(g)}"`).join(", ")}]` : "[]";
 				const subgenreYaml = subgenre.length ? `[${subgenre.map(g => `"${yesc(g)}"`).join(", ")}]` : "[]";
 
+				if (franchise) await customJS.SteamVaultCore.ensureCategoryNote("franchise", franchise).catch(() => {});
 				const content = customJS.SteamVaultCore.buildGameNote({
 					title, platform, franchise,
 					franchiseOrder: Number(franchiseOrder) > 0 ? Number(franchiseOrder) : "",
@@ -4220,11 +4266,7 @@ class SteamVaultLegacy {
 							<select class="svl-input" id="svl-de-platform">${platformOptions}</select></div>
 							<div class="svl-field"><label for="svl-de-status">Status</label>
 							<select class="svl-input" id="svl-de-status">${statusOptions}</select></div>
-							<div class="svl-field"><label for="svl-de-franchise">Franquia</label>
-							<input type="text" class="svl-input" id="svl-de-franchise" value="${this.esc(p.franchise || "")}" placeholder="God of War"></div>
-							<div class="svl-field"><label for="svl-de-franchise-order">Ordem na saga</label>
-							<small class="svl-field-hint">Opcional. Vazio = ordena por ano de lançamento</small>
-							<input type="number" class="svl-input" id="svl-de-franchise-order" value="${this.esc(p.franchiseOrder ?? "")}" placeholder="1"></div>
+							${this._franchiseFieldsHtml("svl-de-franchise", p.franchise || "", p.franchiseOrder ?? "")}
 							<div class="svl-field"><label for="svl-de-year">Ano de lançamento</label>
 							<input type="number" class="svl-input" id="svl-de-year" value="${this.esc(p.releaseYear || "")}"></div>
 							<div class="svl-field"><label for="svl-de-releasedate">Data de lançamento (opcional)</label>
@@ -4324,6 +4366,7 @@ class SteamVaultLegacy {
 		this.wireTagChipField(root, "svl-de-genre");
 		this.wireTagChipField(root, "svl-de-subgenre");
 		const getAch = this._wireAchFields(root, "svl-de-ach");
+		this._wireFranchise(root, "svl-de-franchise");
 
 		const openForm = () => {
 			form.classList.add("is-open");
@@ -4349,15 +4392,19 @@ class SteamVaultLegacy {
 				if (!file) throw new Error("arquivo não encontrado");
 				const genre = val("#svl-de-genre-hidden").split(",").map(s => s.trim()).filter(Boolean);
 				const subgenre = val("#svl-de-subgenre-hidden").split(",").map(s => s.trim()).filter(Boolean);
+				// 1.12.0: "Possui franquia?" Não = sem franquia; Sim = grafia da franquia existente (ou nova, criada aqui)
+				const franchiseName = this._franchiseValue(root, "svl-de-franchise");
+				if (root.querySelector('#svl-de-franchise-has [data-value="yes"].is-active') && !franchiseName) { saveBtn.disabled = false; msg.textContent = "Escolha a franquia ou marque Não."; msg.className = "svl-form-msg is-error"; return; }
+				if (franchiseName) await customJS.SteamVaultCore.ensureCategoryNote("franchise", franchiseName).catch(() => {});
 				await app.fileManager.processFrontMatter(file, fm => {
 					fm.platform = val("#svl-de-platform");
 					fm.status = val("#svl-de-status");
 					const ach = getAch();
 					Object.assign(fm, customJS.SteamVaultCore.achievementFields(ach.provider, ach.sync));
 					delete fm.gameType; delete fm.achievementSource;
-					fm.franchise = val("#svl-de-franchise");
+					fm.franchise = franchiseName;
 					const ordem = Number(val("#svl-de-franchise-order"));
-					fm.franchiseOrder = Number.isFinite(ordem) && ordem > 0 ? ordem : "";
+					fm.franchiseOrder = franchiseName && Number.isFinite(ordem) && ordem > 0 ? ordem : "";
 					fm.genre = genre;
 					fm.subgenre = subgenre;
 					fm.releaseYear = val("#svl-de-year") ? Number(val("#svl-de-year")) : "";

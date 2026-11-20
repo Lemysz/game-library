@@ -16,7 +16,7 @@ class SteamVaultCore {
 		// estável: estágio vazio = versão estável (tag vX.Y.Z, sem sufixo). Um
 		// estágio ("Beta", "Prototype"…) aparece em Configurações e vira sufixo da
 		// tag (vX.Y.Z-beta) e pré-lançamento no GitHub.
-		this.VERSION = "1.11.1";
+		this.VERSION = "1.12.0";
 		this.STAGE = "";
 
 		this.folders = {
@@ -493,7 +493,9 @@ class SteamVaultCore {
 			// identidade (3.9.0): tudo opcional; vazio = padrão da Game Library
 			accent: /^#[0-9a-f]{3,8}$/i.test(this.str(p.accent)) ? this.str(p.accent) : "",
 			icon: this.str(p.icon), iconImage: this.iconImage(p.iconImage), maker: this.str(p.maker),
-			year: this.num(p.year), generation: this.str(p.generation)
+			year: this.num(p.year), generation: this.str(p.generation),
+			// 1.12.0: franquia — total de jogos informado à mão (vazio = não informado)
+			totalGames: type === "franchise" ? this.franchiseTotal(p.totalGames) : null
 		}));
 
 		// notas que entram no modelo (o aviso de mudança só refaz o modelo por elas)
@@ -906,6 +908,90 @@ class SteamVaultCore {
 			m.get(k).push(g);
 		}
 		return m;
+	}
+
+	// ------------------------------------------------------------ franquias
+	// 1.12.0: o total de jogos de uma franquia é informado à mão na nota dela
+	// (`totalGames`). Sem total, não há porcentagem: nada é presumido a partir
+	// dos jogos cadastrados.
+	franchiseTotal(v) {
+		const n = this.num(v);
+		return Number.isFinite(n) && n >= 1 ? Math.min(9999, Math.floor(n)) : null;
+	}
+
+	// uma entrada por franquia (nota em Franchises/ e/ou campo `franchise` dos
+	// jogos), agrupada por normalizeKey: "resident evil" e "Resident Evil" são a mesma
+	franchiseList(model) {
+		if (model.__franchiseList) return model.__franchiseList;
+		const byKey = new Map();
+		const entry = key => { if (!byKey.has(key)) byKey.set(key, { key, name: "", page: null, games: [], spellings: new Map() }); return byKey.get(key); };
+		for (const p of model.franchises || []) {
+			const key = this.normalizeKey(p.title);
+			if (!key) continue;
+			const e = entry(key);
+			if (!e.page) e.page = p;
+		}
+		for (const g of model.games) {
+			const name = this.str(g.franchise);
+			const key = name ? this.normalizeKey(name) : "";
+			if (!key) continue;
+			const e = entry(key);
+			e.games.push(g);
+			e.spellings.set(name, (e.spellings.get(name) || 0) + 1);
+		}
+		const list = [...byKey.values()].map(e => {
+			// nome: o da nota; sem nota, a grafia mais usada nos jogos
+			e.name = e.page?.title || [...e.spellings].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || "";
+			delete e.spellings;
+			return Object.assign(e, this.franchiseCounts(e.games, e.page?.totalGames ?? null));
+		});
+		model.__franchiseList = list;
+		return list;
+	}
+
+	franchiseCounts(games, total) {
+		const owned = games.length;
+		const completed = games.filter(g => g.status === "Completed").length;
+		const known = Number.isFinite(total) && total >= 1;
+		return {
+			total: known ? total : null, owned, completed,
+			notCompleted: owned - completed,
+			missing: known ? Math.max(0, total - owned) : null,
+			remaining: known ? Math.max(0, total - completed) : null,
+			pct: known ? Math.min(100, Math.floor((completed / total) * 100)) : null,
+			overflow: known && owned > total
+		};
+	}
+
+	// nomes de franquia já existentes no vault (notas + campo dos jogos), sem
+	// precisar do modelo — para os formulários. A grafia da nota tem prioridade.
+	franchiseNames() {
+		const out = new Map();
+		const files = typeof app !== "undefined" ? app.vault.getMarkdownFiles() : [];
+		for (const f of files) {
+			const fm = app.metadataCache.getFileCache(f)?.frontmatter;
+			if (fm?.type === "franchise" && !f.path.includes("/_Templates/")) { const t = this.str(fm.title) || f.basename; const k = this.normalizeKey(t); if (k) out.set(k, t); }
+		}
+		for (const f of files) {
+			const fm = app.metadataCache.getFileCache(f)?.frontmatter;
+			if (fm?.type !== "game") continue;
+			const t = this.str(fm.franchise); const k = t ? this.normalizeKey(t) : "";
+			if (k && !out.has(k)) out.set(k, t);
+		}
+		return [...out.values()].sort((a, b) => a.localeCompare(b));
+	}
+
+	// grafia oficial: se já existe uma franquia com o mesmo nome normalizado, usa a dela
+	canonicalFranchise(name) {
+		const t = this.str(name).replace(/[\u0000-\u001F\u007F]/g, "").replace(/\s+/g, " ").trim().slice(0, 80);
+		if (!t) return "";
+		const k = this.normalizeKey(t);
+		return this.franchiseNames().find(n => this.normalizeKey(n) === k) || t;
+	}
+
+	franchiseByName(model, name) {
+		const key = this.normalizeKey(name);
+		return key ? this.franchiseList(model).find(f => f.key === key) || null : null;
 	}
 
 	groupStats(list) {

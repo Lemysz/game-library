@@ -613,7 +613,8 @@ class SteamVault {
 		// abas da ficha grudadas no topo? Um marcador de altura zero logo antes
 		// delas: quando ele passa acima da linha onde as abas grudam, elas grudaram.
 		scroller.__svStuckIO?.disconnect();
-		app_?.classList.remove("is-tabs-stuck");
+		scroller.__svClashIO?.disconnect();
+		app_?.classList.remove("is-tabs-stuck", "is-fab-clash");
 		// 3.62.1: vale também para as abas das Estatísticas (.sv-sttabs), que
 		// só reservam o espaço dos botões flutuantes quando grudam no topo
 		const gn = app_?.querySelector(".sv-gamenav, .sv-sttabs");
@@ -633,6 +634,20 @@ class SteamVault {
 				io.observe(sentinel);
 				io.__svTop = stickTop;
 				scroller.__svStuckIO = io;
+				// 1.11.2: na ficha, a fileira "Registrar sessão" passava por baixo
+				// dos botões flutuantes (busca/perfil) antes de as abas grudarem —
+				// os botões somem nesse trecho e voltam na linha das abas
+				scroller.__svClashIO?.disconnect();
+				const row = gn.classList.contains("sv-gamenav") ? app_.querySelector(".sv-page--game .sv-hero-actions") : null;
+				if (row) {
+					const band = Math.round(stickTop + 54);
+					const cio = new IntersectionObserver(es => {
+						const e = es[es.length - 1];
+						setCls("is-fab-clash", e.boundingClientRect.top < (e.rootBounds?.top ?? 0) && scroller.scrollTop > 0);
+					}, { root: scroller, rootMargin: `${-band}px 0px 0px 0px`, threshold: [0, 1] });
+					cio.observe(row);
+					scroller.__svClashIO = cio;
+				} else app_.classList.remove("is-fab-clash");
 			};
 			// 3.68.0: no próximo quadro. Ler o "top" calculado aqui, no meio da
 			// montagem, obrigava o navegador a recalcular os estilos da página
@@ -762,7 +777,7 @@ class SteamVault {
 	_handles(a) {
 		return ["favorite", "menu", "manage", "steam-sync-game", "steam-hours-source", "steam-library-picker", "steam-sync", "steam-sync-force", "steam-connect", "steam-clear",
 			"add-game", "random-game", "legacy", "toggle-sidebar", "open-drawer", "close-drawer", "shelf-prev", "shelf-next",
-			"repair-names", "collection-games", "open-category", "identity-edit", "smart-back",
+			"repair-names", "collection-games", "open-category", "identity-edit", "franchise-edit", "smart-back",
 			"ra-connect", "ra-sync", "ra-sync-force", "ra-sync-game", "ra-import-game", "ra-import-all", "ra-disconnect", "obs", "search-open", "search-close", "live-toggle", "live-stop", "live-pause", "queue-toggle", "queue-manage",
 			"steam-import", "steam-art", "steam-art-all", "steam-details", "wikidata-details", "ach-target", "goals-edit", "stories", "picker", "wishlist-prices", "wishlist-import", "wish-target", "wish-bought", "onboard-hide", "onboard-show", "show-more", "backup-now", "backup-snooze", "csv-import", "library-health", "csv-export", "undo-last", "month-dismiss", "smart-collection",
 			"ach-config", "ach-unlock", "ach-migrate", "ach-icons-local", "skip-content", "ach-manage", "ach-manage-pick", "hub-open", "ach-bulk",
@@ -891,6 +906,7 @@ class SteamVault {
 			case "smart-collection": window.__svSmartView = el.dataset.id || null; return this._rerender("collections");
 			case "smart-back": window.__svSmartView = null; return this._rerender("collections");
 			case "identity-edit": return ctx.B.editIdentity(ctx, el.dataset.kind, el.dataset.name || "", el.dataset.path || "");
+			case "franchise-edit": return ctx.B.editFranchise(ctx, el.dataset.new ? "" : (el.dataset.name || ""), el.dataset.new ? "" : (el.dataset.path || ""));
 			case "ach-config": this._closeMenus(root); return ctx.A?.openConfig(ctx, path);
 			case "ach-unlock": return ctx.A?.toggleUnlock(el);
 			// 3.74.0: jogos de Xbox usam o gerenciador manual (lote, planilha, ícones)

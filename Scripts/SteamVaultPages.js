@@ -1810,7 +1810,7 @@ class SteamVaultPages {
 		const dates = [["Adicionado", g.dateAdded], ["Começou", g.startDate], ["Zerou", g.completionDate], ["Última vez", g.lastPlayed.date]].filter(([, v]) => v);
 
 		const collections = model.collectionsByGame.get(g.path) || [];
-		const franchise = g.franchise ? model.games.filter(x => x !== g && x.franchise === g.franchise).sort((x, y) => (x.franchiseOrder ?? 99) - (y.franchiseOrder ?? 99)) : [];
+		const franchise = g.franchise ? model.games.filter(x => x !== g && C.normalizeKey(x.franchise) === C.normalizeKey(g.franchise)).sort((x, y) => (x.franchiseOrder ?? 99) - (y.franchiseOrder ?? 99)) : [];
 		const genreSet = new Set([...g.genres, ...g.subgenres].map(x => C.normalizeKey(x)));
 		const inFranchise = new Set(franchise);
 		const similar = model.games.filter(x => x !== g && !inFranchise.has(x) && [...x.genres, ...x.subgenres].some(y => genreSet.has(C.normalizeKey(y)))).slice(0, 10);
@@ -2309,7 +2309,12 @@ class SteamVaultPages {
 					${origin}
 					<div class="sv-cabinet-actions">${sync}${manage}${xbBtns}</div>
 				</div>
-				${showcase.length ? `<div class="sv-showcase" aria-label="Mais raras desbloqueadas">${showcase.map(x => `<figure class="sv-medallion sv-rarity-${U.rarityTier(x.rarity)}"><div>${x.iconSrc ? `<img src="${U.attr(x.iconSrc)}" alt="">` : U.icon("trophy")}</div><figcaption><b>${U.esc(x.name)}</b><span>${U.fmtPct(x.rarity)} dos jogadores</span></figcaption></figure>`).join("")}</div>` : ""}
+				${showcase.length ? `<div class="sv-showcase" aria-label="Mais raras desbloqueadas">${showcase.map(x => {
+					// 1.11.3: a medalha inteira abre a conquista (antes era um <figure> sem link)
+					const inner = `<div>${x.iconSrc ? `<img src="${U.attr(x.iconSrc)}" alt="">` : U.icon("trophy")}</div><span><b>${U.esc(x.name)}</b><em>${U.fmtPct(x.rarity)} dos jogadores</em></span>`;
+					const cls = `sv-medallion sv-rarity-${U.rarityTier(x.rarity)}`;
+					return x.path ? `<a class="${cls}" ${U.openAttrs(x.path)}>${inner}</a>` : `<div class="${cls}">${inner}</div>`;
+				}).join("")}</div>` : ""}
 			</header>
 			${cards}
 			${ctx.X ? ctx.X.hunterBlock(ctx, g) : ""}
