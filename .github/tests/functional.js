@@ -528,6 +528,24 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 	await go(game);
 	await click('.sv-tabs--game [data-tab="sessions"]'); await p.waitForTimeout(300);
 	check("mapa de calor na aba Sessões (depois da sessão gravada)", await count(".sv-gameheat .sv-heatmap i") > 300);
+	// 1.11.2: ao rolar a ficha, a fileira "Registrar sessão" não fica por baixo dos botões flutuantes
+	const rFab = await p.evaluate(async () => {
+		const sc = document.querySelector(".sv-layer"), a = document.querySelector(".sv-app");
+		const pad = document.createElement("div"); pad.style.height = "3000px"; document.querySelector(".sv-page--game").appendChild(pad);
+		const fab = () => getComputedStyle(document.querySelector(".sv-topbar-actions")).opacity;
+		const wait = () => new Promise(r => setTimeout(r, 350));
+		const row = document.querySelector(".sv-page--game .sv-hero-actions");
+		const out = {};
+		sc.scrollTop = 0; await wait(); out.top = [a.classList.contains("is-fab-clash"), fab()];
+		sc.scrollTop = sc.scrollTop + row.getBoundingClientRect().top - 20; await wait();
+		out.under = [a.classList.contains("is-fab-clash"), fab(), a.classList.contains("is-tabs-stuck")];
+		sc.scrollTop = sc.scrollTop + document.querySelector(".sv-gamenav").getBoundingClientRect().top + 200; await wait();
+		out.stuck = [a.classList.contains("is-tabs-stuck"), fab()];
+		sc.scrollTop = 0; await wait(); out.back = [a.classList.contains("is-fab-clash"), fab()];
+		pad.remove();
+		return out;
+	});
+	check("ficha: botões flutuantes somem sobre a fileira de ações e voltam com as abas grudadas", !rFab.top[0] && rFab.top[1] === "1" && rFab.under[0] && rFab.under[1] === "0" && !rFab.under[2] && rFab.stuck[0] && rFab.stuck[1] === "1" && !rFab.back[0] && rFab.back[1] === "1", JSON.stringify(rFab));
 
 	// ---- Início: personalizar; gaveta "Mais"
 	await go("Dashboard/Home.md");

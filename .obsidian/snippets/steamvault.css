@@ -5944,7 +5944,11 @@ body.theme-light .sv-plat--epic, body.theme-light .sv-achsrc--epic { --sv-plat: 
 .sv-app.sv-bp-sm:has(.sv-gamenav) .sv-topbar::before { display: none; }
 /* o deslize até a linha das abas usa transform (feito pela GPU): animar
    "top" recalculava e redesenhava a página a cada quadro (3.7.2) */
-.sv-app.sv-bp-sm .sv-topbar-actions, .sv-app.sv-bp-sm .sv-topbar > .sv-drawer-btn { transition: transform var(--sv-t-fast) var(--sv-ease); }
+.sv-app.sv-bp-sm .sv-topbar-actions, .sv-app.sv-bp-sm .sv-topbar > .sv-drawer-btn { transition: transform var(--sv-t-fast) var(--sv-ease), opacity var(--sv-t-fast) var(--sv-ease); }
+/* 1.11.2: ficha — enquanto a fileira "Registrar sessão" passa pela altura dos
+   botões flutuantes, eles somem (voltam na linha das abas quando elas grudam) */
+.sv-app.sv-bp-sm.is-fab-clash:not(.is-tabs-stuck) .sv-topbar-actions,
+.sv-app.sv-bp-sm.is-fab-clash:not(.is-tabs-stuck) .sv-topbar > .sv-drawer-btn { opacity: 0; pointer-events: none; }
 .sv-app.sv-bp-sm.is-tabs-stuck .sv-topbar-actions,
 .sv-app.sv-bp-sm.is-tabs-stuck .sv-topbar > .sv-drawer-btn { transform: translateY(calc(var(--sv-fab-stuck-top) - var(--sv-safe-top) - 10px)); }
 /* celular: botões flutuantes e abas sem desfoque do fundo, com o mesmo

@@ -11,6 +11,15 @@ versões menores.
 
 Nada ainda.
 
+## [1.11.2] · 2026-11-20
+
+Sem mudança no formato das notas.
+
+### Corrigido
+- **Ficha no celular:** ao rolar, a fileira *Registrar sessão* passava por baixo dos botões flutuantes
+  de busca e perfil (os ícones ficavam em cima do ♥ e do ⋯). Agora os botões somem enquanto a fileira
+  passa e voltam na linha das abas quando elas grudam no topo.
+
 ## [1.11.1] · 2026-11-19
 
 Sem mudança no formato das notas.

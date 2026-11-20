@@ -613,7 +613,8 @@ class SteamVault {
 		// abas da ficha grudadas no topo? Um marcador de altura zero logo antes
 		// delas: quando ele passa acima da linha onde as abas grudam, elas grudaram.
 		scroller.__svStuckIO?.disconnect();
-		app_?.classList.remove("is-tabs-stuck");
+		scroller.__svClashIO?.disconnect();
+		app_?.classList.remove("is-tabs-stuck", "is-fab-clash");
 		// 3.62.1: vale também para as abas das Estatísticas (.sv-sttabs), que
 		// só reservam o espaço dos botões flutuantes quando grudam no topo
 		const gn = app_?.querySelector(".sv-gamenav, .sv-sttabs");
@@ -633,6 +634,20 @@ class SteamVault {
 				io.observe(sentinel);
 				io.__svTop = stickTop;
 				scroller.__svStuckIO = io;
+				// 1.11.2: na ficha, a fileira "Registrar sessão" passava por baixo
+				// dos botões flutuantes (busca/perfil) antes de as abas grudarem —
+				// os botões somem nesse trecho e voltam na linha das abas
+				scroller.__svClashIO?.disconnect();
+				const row = gn.classList.contains("sv-gamenav") ? app_.querySelector(".sv-page--game .sv-hero-actions") : null;
+				if (row) {
+					const band = Math.round(stickTop + 54);
+					const cio = new IntersectionObserver(es => {
+						const e = es[es.length - 1];
+						setCls("is-fab-clash", e.boundingClientRect.top < (e.rootBounds?.top ?? 0) && scroller.scrollTop > 0);
+					}, { root: scroller, rootMargin: `${-band}px 0px 0px 0px`, threshold: [0, 1] });
+					cio.observe(row);
+					scroller.__svClashIO = cio;
+				} else app_.classList.remove("is-fab-clash");
 			};
 			// 3.68.0: no próximo quadro. Ler o "top" calculado aqui, no meio da
 			// montagem, obrigava o navegador a recalcular os estilos da página
