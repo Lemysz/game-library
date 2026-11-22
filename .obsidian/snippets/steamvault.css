@@ -8899,7 +8899,7 @@ svg.sv-i.sv-i--wide:not(#sv-x) { width: auto !important; aspect-ratio: 3 / 2; ma
    A aparência não muda; só a área que responde ao dedo cresce.
    ========================================================================== */
 /* barra de status (Início e Biblioteca): 12 px de altura, toque de 32 px */
-.sv-libsum-bar { overflow: visible; }
+.sv-libsum-bar { overflow: visible; position: relative; z-index: 1; } /* 1.14.1: a faixa de toque fica por cima do texto vizinho */
 .sv-libsum-bar button, .sv-host .sv-libsum-bar button { position: relative; }
 .sv-libsum-bar button:first-child, .sv-host .sv-libsum-bar button:first-child { border-top-left-radius: 999px; border-bottom-left-radius: 999px; }
 .sv-libsum-bar button:last-child, .sv-host .sv-libsum-bar button:last-child { border-top-right-radius: 999px; border-bottom-right-radius: 999px; }
