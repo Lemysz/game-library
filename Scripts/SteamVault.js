@@ -541,11 +541,14 @@ class SteamVault {
 			ro.observe(surface.el);
 			if (surface.viewContent) ro.observe(surface.viewContent);
 			else if (scroller) ro.observe(scroller);
-			window.visualViewport?.addEventListener("resize", apply, { passive: true });
 			host.__svResize = ro;
-		} else {
-			window.addEventListener("resize", apply);
 		}
+		// 1.14.1: um ouvinte de redimensionamento por host — antes cada desenho
+		// de tela somava um novo (e o antigo segurava a tela anterior na memória)
+		if (host.__svOnResize) { window.visualViewport?.removeEventListener("resize", host.__svOnResize); window.removeEventListener("resize", host.__svOnResize); }
+		host.__svOnResize = apply;
+		if (typeof ResizeObserver === "function") window.visualViewport?.addEventListener("resize", apply, { passive: true });
+		else window.addEventListener("resize", apply);
 	}
 
 	_applyPrefs() {
@@ -747,7 +750,13 @@ class SteamVault {
 		if (actionEl && root.contains(actionEl) && this._handles(actionEl.dataset.action)) {
 			if (actionEl.closest(".sv-legacy")) return; // editores herdados cuidam dos seus próprios botões
 			e.preventDefault(); e.stopPropagation();
-			this._action(actionEl.dataset.action, actionEl, root, ctx, e);
+			// 1.14.1: falha numa ação vira aviso na tela (antes ficava só no console)
+			// (chamada direta: ações que abrem arquivo ou janela precisam do toque "vivo")
+			const fail = err => {
+				console.error(`Game Library: ação ${actionEl.dataset.action}`, err);
+				this.toast(`Não foi possível concluir: ${String(err?.message || err).slice(0, 140)}`, { tone: "error" });
+			};
+			try { const r = this._action(actionEl.dataset.action, actionEl, root, ctx, e); if (r && typeof r.catch === "function") r.catch(fail); } catch (err) { fail(err); }
 			return;
 		}
 		if (openEl && root.contains(openEl) && !openEl.closest(".sv-legacy")) {
@@ -1210,8 +1219,13 @@ class SteamVault {
 		// tamanho, visibilidade e aba oculta
 		const ro = typeof ResizeObserver === "function" ? new ResizeObserver(() => { const nw = car.clientWidth; if (nw && nw !== w) { w = nw; place(false); } }) : null;
 		ro?.observe(car);
-		const onVis = () => schedule();
+		const onVis = () => { if (!car.isConnected) return stop(); schedule(); };
 		document.addEventListener("visibilitychange", onVis);
+		// 1.14.1: o carrossel anterior (de um desenho de tela antigo) solta os
+		// ouvintes ao nascer o novo, mesmo que nada tenha disparado o stop dele
+		// (só os que já saíram da tela: duas notas lado a lado continuam)
+		for (const c of [...(window.__svCars ||= new Set())]) if (!c.car.isConnected) { c.stop(); window.__svCars.delete(c); }
+		window.__svCars.add({ car, stop });
 		// enquanto a página rola, não troca de card (a troca disputaria os
 		// quadros com a rolagem); volta a contar logo que a rolagem para
 		const scroller = surface?.scroller || null;
