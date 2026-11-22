@@ -1,6 +1,6 @@
 # Testes automáticos
 
-O GitHub roda estes testes a cada envio ([`tests.yml`](../workflows/tests.yml)).
+O GitHub roda estes testes em cada pull request e depois de cada mesclagem no `main` ([`tests.yml`](../workflows/tests.yml)); a responsividade roda só no pull request, e mudanças só em documentos não disparam nada.
 
 | Arquivo | O que faz |
 |---|---|

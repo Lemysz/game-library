@@ -1,9 +1,36 @@
 name: Testes
 
+# Economia de minutos do Actions (a cota do repositório privado é mensal):
+# - branches de trabalho só rodam pelo PR (antes o push e o PR rodavam o mesmo
+#   código duas vezes);
+# - o push no main (depois da mesclagem) roda só o job principal;
+# - a responsividade roda uma vez, nos dois temas, no mesmo job do PR, sem
+#   instalar o Chromium de novo;
+# - mudanças só em documentos não rodam nada.
 on:
   push:
-    branches: ["**"]
+    branches: [main]
+    paths-ignore:
+      - "README.md"
+      - "CHANGELOG.md"
+      - "DOCUMENTACAO.md"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
+      - "THIRD_PARTY_NOTICES.md"
+      - "ASSET_CREDITS.md"
+      - "CLAUDE.md"
+      - "docs/**"
   pull_request:
+    paths-ignore:
+      - "README.md"
+      - "CHANGELOG.md"
+      - "DOCUMENTACAO.md"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
+      - "THIRD_PARTY_NOTICES.md"
+      - "ASSET_CREDITS.md"
+      - "CLAUDE.md"
+      - "docs/**"
   workflow_dispatch:
 
 permissions:
@@ -17,7 +44,7 @@ jobs:
   testes:
     name: Verificações, telas e testes funcionais
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: .github/tests
@@ -50,6 +77,10 @@ jobs:
       - name: Testes funcionais (filtros, janelas, fila, sessão, gravação nas notas)
         run: node functional.js
 
+      - name: Responsividade (320, 360, 390, 430 px e desktop, temas escuro e claro)
+        if: github.event_name != 'push'
+        run: node responsive.js
+
       - name: Guardar as capturas de tela
         if: always()
         uses: actions/upload-artifact@v4
@@ -58,34 +89,3 @@ jobs:
           path: .github/tests/screenshots
           retention-days: 7
           if-no-files-found: ignore
-
-  responsivo:
-    name: Responsividade (${{ matrix.tema }}) — 320, 360, 390, 430 px e desktop
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        tema: [dark, light]
-    defaults:
-      run:
-        working-directory: .github/tests
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: .github/tests/package-lock.json
-
-      - name: Instalar dependências
-        run: npm ci
-
-      - name: Instalar o Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Todas as telas em 320, 360, 390, 430 px e desktop
-        run: node responsive.js
-        env:
-          SV_THEMES: ${{ matrix.tema }}
