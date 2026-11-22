@@ -3695,5 +3695,6 @@
 	"{0} conquista em hardcore": "{0} achievement in hardcore",
 	"{0} conquistas em hardcore": "{0} achievements in hardcore",
 	"pontos RetroAchievements": "RetroAchievements points",
-	"Buscar jogos": "Search games"
+	"Buscar jogos": "Search games",
+	"Não foi possível concluir: {0}": "Couldn't finish: {0}"
 }

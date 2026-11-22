@@ -84,8 +84,18 @@ class SteamVaultInsights {
 		// 3.68.0: o mesmo vale para as faixas S–D (com centenas de jogos
 		// classificados, eram centenas de capas montadas de uma vez): as 40
 		// primeiras de cada faixa entram na hora, o resto em partes
+		// 1.14.1: o resto já não é montado todo em segundo plano (com centenas
+		// de capas por faixa a rolagem passava de 50 ms por quadro): cada faixa
+		// recebe mais capas quando a rolagem chega perto do fim dela
 		const queue = [...tiers.map(([t]) => ({ zone: t, items: byTier(t).slice(40) })), { zone: "", items: unranked.slice(60) }].filter(q => q.items.length);
-		const more = () => { const q = queue[0]; if (!q) return null; const html = q.items.splice(0, 60).map(tile).join(""); const zone = q.zone; if (!q.items.length) queue.shift(); return { zone, html }; };
+		const more = zone => {
+			const q = zone === undefined ? queue[0] : queue.find(x => x.zone === zone);
+			if (!q) return null;
+			const html = q.items.splice(0, 60).map(tile).join("");
+			if (!q.items.length) queue.splice(queue.indexOf(q), 1);
+			return { zone: q.zone, html, left: q.items.length };
+		};
+		more.has = zone => queue.some(x => x.zone === zone);
 		return { active: "tierlist", html, wire: root => this._wireTier(root, ctx, queue.length ? more : null) };
 	}
 
@@ -103,24 +113,45 @@ class SteamVaultInsights {
 			zone.appendChild(tpl.content);
 		};
 		if (more) {
-			const pool = root.querySelector(".sv-tier-zone--pool") || root.querySelector("[data-tier-zone]");
 			// 3.64.0: monta só com a rolagem parada (montar no meio do gesto
 			// pesava os quadros) e em partes menores
 			const scroller = root.closest(".sv-layer") || document.querySelector(".sv-layer") || window;
-			let lastScroll = 0;
+			const alive = () => root.querySelector("[data-tier-zone]")?.isConnected;
+			let lastScroll = 0, io = null;
 			// 3.66.0: o rolador é permanente; o ouvinte sai quando a Tier List sai da tela
-			const onScroll = () => { if (!pool?.isConnected) return scroller.removeEventListener("scroll", onScroll); lastScroll = performance.now(); };
+			const stop = () => { scroller.removeEventListener("scroll", onScroll); io?.disconnect(); };
+			const onScroll = () => { if (!alive()) return stop(); lastScroll = performance.now(); };
 			scroller.addEventListener("scroll", onScroll, { passive: true });
 			const later = fn => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 600 }) : setTimeout(fn, 32));
+			const want = new Set();
+			let busy = false;
 			const pump = () => {
-				if (!pool?.isConnected) return scroller.removeEventListener("scroll", onScroll);
+				if (!alive()) return stop();
 				if (performance.now() - lastScroll < 180) { setTimeout(() => later(pump), 120); return; }
-				const c = more();
-				if (!c) return scroller.removeEventListener("scroll", onScroll);
-				append(c);
+				const zone = want.values().next().value;
+				if (zone === undefined) { busy = false; return; }
+				want.delete(zone);
+				const c = more(zone);
+				if (c) { append(c); if (c.left) watch(zone); }
 				later(pump);
 			};
-			later(pump);
+			const ask = zone => { want.add(zone); if (!busy) { busy = true; later(pump); } };
+			// a última capa montada de cada faixa avisa quando chega perto da tela
+			const watch = zone => {
+				const z = root.querySelector(`[data-tier-zone="${zone}"]`);
+				const last = z?.querySelector("[data-tier-game]:last-of-type") || z?.lastElementChild;
+				if (!last) return;
+				if (!io) return ask(zone);
+				last.__svTierZone = zone;
+				io.observe(last);
+			};
+			if (typeof IntersectionObserver === "function") {
+				io = new IntersectionObserver(es => {
+					for (const e of es) if (e.isIntersecting) { io.unobserve(e.target); ask(e.target.__svTierZone); }
+				}, { root: scroller === window ? null : scroller, rootMargin: "0px 0px 900px 0px" });
+			}
+			// faixas com capas por montar
+			root.querySelectorAll("[data-tier-zone]").forEach(z => { if (more.has?.(z.dataset.tierZone)) watch(z.dataset.tierZone); });
 		}
 		// grava só as capas cuja faixa ou posição mudou (cada gravação
 		// redesenha a tela; antes a faixa inteira era regravada)
