@@ -9,6 +9,10 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.14.1] · 2026-11-22
+
 Auditoria técnica completa (desempenho, memória, toque, acessibilidade, dados). Sem mudança no
 formato das notas.
 
