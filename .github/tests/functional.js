@@ -995,6 +995,15 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		const tfm = moved ? await fm(moved) : null;
 		check("Tier List: arrastar para a faixa D grava tier e ordem", !!tfm && tfm.tier === "D" && Number(tfm.tierOrder) >= 1, JSON.stringify({ moved, tier: tfm?.tier, order: tfm?.tierOrder }));
 		await p.evaluate(snap => { for (const [path, t, o] of snap) { const x = __PAGES.find(y => y.path === path); if (x) { x.fm.tier = t; x.fm.tierOrder = o; } } customJS.SteamVaultCore.invalidate?.(); }, tierSnap);
+		// 1.14.1: com muitas capas, o resto de cada faixa só é montado quando a rolagem chega perto do fim dela
+		await p.evaluate(() => { const base = __PAGES.find(x => x.fm?.type === "game"); for (let i = 0; i < 150; i++) { const path = `Games/PC/Tier Sintetico ${i}.md`; __PAGES.push({ ...base, path, file: { ...base.file, path, name: `Tier Sintetico ${i}` }, fm: { ...base.fm, title: `Tier Sintetico ${i}`, tier: "", tierOrder: "", status: "Backlog" } }); } customJS.SteamVaultCore.invalidate?.(); });
+		await go("Dashboard/Tier List.md"); await p.waitForTimeout(1500);
+		const poolAll = await p.evaluate(() => customJS.SteamVaultCore.model(mkdv()).games.filter(g => g.status !== "Wishlist" && !["S", "A", "B", "C", "D"].includes(g.tier)).length);
+		const pool0 = await p.evaluate(() => document.querySelector(".sv-tier-zone--pool").children.length);
+		for (let i = 0; i < 12 && (await p.evaluate(() => document.querySelector(".sv-tier-zone--pool").children.length)) < poolAll; i++) { await p.evaluate(() => { const L = document.querySelector(".sv-layer"); L.scrollTop = L.scrollHeight; }); await p.waitForTimeout(600); }
+		const pool1 = await p.evaluate(() => document.querySelector(".sv-tier-zone--pool").children.length);
+		check("Tier List: capas extras montadas só ao rolar até o fim da faixa", pool0 < poolAll && pool1 === poolAll, `${pool0} → ${pool1} de ${poolAll}`);
+		await p.evaluate(() => { for (let i = __PAGES.length - 1; i >= 0; i--) if (__PAGES[i].path.startsWith("Games/PC/Tier Sintetico")) __PAGES.splice(i, 1); customJS.SteamVaultCore.invalidate?.(); });
 		await go("Dashboard/Home.md"); await p.waitForTimeout(500);
 		const tr = await p.evaluate(() => document.querySelector("[data-herocar-track]")?.style.transform || "");
 		check("carrossel: posição em % da largura (sem medir na montagem)", !tr || /%/.test(tr), tr);

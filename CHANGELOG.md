@@ -9,7 +9,24 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+Auditoria técnica completa (desempenho, memória, toque, acessibilidade, dados). Sem mudança no
+formato das notas.
+
+### Corrigido
+- **Ouvintes acumulando a cada troca de tela:** o ajuste de tamanho (teclado/rotação) e os carrosséis
+  deixavam ouvintes e temporizadores das telas anteriores vivos; depois de 20 trocas eram 22 ouvintes
+  de redimensionamento em vez de 2. Agora cada tela deixa só os seus.
+- **Ação que falha não fica muda:** um botão cuja ação dá erro (arquivo apagado, nota inválida) mostra
+  o aviso "Não foi possível concluir: …" em vez de não fazer nada.
+- **Barra de status da Biblioteca:** o primeiro segmento tinha 22 px de área de toque (o texto vizinho
+  cobria o resto); agora a barra inteira responde ao toque.
+
+### Melhorado
+- **Tier List com centenas de jogos:** as capas além das primeiras de cada faixa já não são montadas
+  todas em segundo plano; cada faixa recebe mais capas quando a rolagem chega perto do fim dela. Com
+  1000 jogos (CPU 4× mais lenta), o quadro médio da rolagem caiu de 57 ms para 21 ms e a tela tem
+  metade dos elementos. Arrastar ou mover uma capa continua considerando a faixa inteira.
+- CSS: regras mortas do antigo layout em grade das Configurações removidas (visual idêntico).
 
 ## [1.14.0] · 2026-11-20
 
