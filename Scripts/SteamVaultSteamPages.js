@@ -128,7 +128,7 @@ class SteamVaultSteamPages {
 	}
 
 	featuredStrip(ctx, g) {
-		const { U, C } = ctx;
+		const { U } = ctx;
 		const art = g.images.featured || g.images.background;
 		return `<a class="sv-featured" ${U.openAttrs(g.path)} style="--sv-hue:${g.hue}">
 			${art ? `<img src="${U.attr(art)}" alt="" data-sv-img style="object-position:${g.framing.x}% ${g.framing.y}%">` : ""}

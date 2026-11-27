@@ -610,7 +610,7 @@ class SteamVaultPicks {
 	}
 
 	wishlistPage(ctx) {
-		const { U, C, model } = ctx;
+		const { U, model } = ctx;
 		const wish = model.games.filter(g => g.status === "Wishlist");
 		const priced = wish.filter(g => g.currentPrice !== null);
 		const total = priced.reduce((t, g) => t + g.currentPrice, 0);

@@ -608,7 +608,7 @@ class SteamVaultHub {
 	// ============================================================== CUSTOM
 	// quadro de objetivos pessoais: marcar direto, filtrar por categoria
 	tabCustom(ctx, b) {
-		const { U, C } = ctx;
+		const { U } = ctx;
 		const items = b.games.flatMap(g => g.achievements.map(a => ({ a, g })));
 		const cats = [...new Set(items.map(x => x.a.category).filter(Boolean))].sort((x, y) => x.localeCompare(y));
 		items.sort((x, y) => (x.a.unlocked - y.a.unlocked) || (x.g.title.localeCompare(y.g.title)) || ((x.a.order ?? 1e9) - (y.a.order ?? 1e9)));

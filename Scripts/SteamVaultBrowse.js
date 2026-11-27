@@ -137,7 +137,7 @@ class SteamVaultBrowse {
 	}
 
 	collections(ctx) {
-		const { U, C, model } = ctx;
+		const { U, model } = ctx;
 		const smartView = window.__svSmartView;
 		if (smartView && ctx.X?.smartCollections) {
 			const sc = ctx.X.smartCollections(model).find(x => x.id === smartView);
@@ -162,7 +162,7 @@ class SteamVaultBrowse {
 
 	// coleção automática: página dentro de Coleções (não tem nota própria)
 	smartCollectionPage(ctx, sc) {
-		const { U, C } = ctx;
+		const { U } = ctx;
 		const [color, icon] = this.smartIdent(sc.id);
 		const art = sc.games.map(g => g.images.background || g.images.featured).find(Boolean) || "";
 		const html = `<div class="sv-page sv-idpage" style="${this.identStyle(color)}">
@@ -194,7 +194,7 @@ class SteamVaultBrowse {
 		const isGoal = c.kind === "goal";
 		const next = c.games.find(g => g.status === "Playing") || c.games.find(g => !["Completed", "Dropped"].includes(g.status));
 		const art = c.cover || c.games.map(g => g.images.background || g.images.featured).find(Boolean) || "";
-		let view = "grid", sort = "manual";
+		let view = "grid";
 		try { view = U._store("collView") === "list" ? "list" : "grid"; } catch (_) {}
 		const plats = C.groupBy(c.games, g => g.platform), genres = C.groupBy(c.games, g => g.genres);
 		const names = [...model.collections].sort((a, b) => b.games.length - a.games.length || a.title.localeCompare(b.title));
@@ -412,7 +412,7 @@ class SteamVaultBrowse {
 	}
 
 	iconGallery(ctx) {
-		const { U, C, model } = ctx;
+		const { U, model } = ctx;
 		const used = new Set(model.games.flatMap(g => [...(g.genres || []), ...(g.subgenres || []), g.platform]).filter(Boolean).map(x => this.hubKey(x).replace(/[^a-z0-9]/g, "")));
 		const cell = (id, label, tag = "", concept = "") => `<figure class="sv-icg-cell"${U.paths[id] ? "" : " data-missing"}>
 			<div class="sv-icg-sw is-dark">${U.icon(id, "sv-icg-24")}${U.icon(id, "sv-icg-16")}</div>

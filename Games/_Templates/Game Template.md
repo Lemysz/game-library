@@ -6,11 +6,9 @@
 // schema nunca diverge. "Jogado por último" nasce vazio.
 const C = customJS.SteamVaultCore;
 const title = await tp.system.prompt("Nome do jogo");
-const platform = await tp.system.suggester(
-	["PC", "Switch", "PS5", "PS4", "PS2", "PS1", "PSP", "PS Vita", "3DS", "NDS", "GBA", "N64", "GameCube", "Wii", "SNES", "Dreamcast", "Arcade"],
-	["PC", "Switch", "PS5", "PS4", "PS2", "PS1", "PSP", "PS Vita", "3DS", "NDS", "GBA", "N64", "GameCube", "Wii", "SNES", "Dreamcast", "Arcade"],
-	false, "Plataforma"
-);
+// mesma lista do formulário "Adicionar jogo" (inclui os consoles Xbox)
+const platforms = customJS.SteamVaultLegacy?.platformOrder || ["PC", "Switch", "PS5", "PS4", "PS3", "PS2", "PS1", "PSP", "PS Vita", "3DS", "NDS", "GBA", "N64", "GameCube", "Wii", "SNES", "Dreamcast", "Arcade"];
+const platform = await tp.system.suggester(platforms, platforms, false, "Plataforma");
 // origem e sincronização são perguntas separadas; a sincronização só
 // oferece os modos que a origem escolhida aceita
 const providers = Object.entries(C.providerDefs);

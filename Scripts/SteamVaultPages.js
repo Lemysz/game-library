@@ -407,7 +407,7 @@ class SteamVaultPages {
 	}
 
 	_homeGoals(ctx) {
-		const { U, model } = ctx;
+		const { model } = ctx;
 		const goals = ctx.X ? ctx.X.goalsBlock(ctx, { compact: true }) : "";
 		const near = model.games.filter(g => g.ach.state === "known" && g.ach.total && !g.ach.perfect && g.ach.pct >= 50).sort((a, b) => b.ach.pct - a.ach.pct).slice(0, 3);
 		if (!goals && !near.length) return "";
@@ -1716,7 +1716,7 @@ class SteamVaultPages {
 
 	// =========================================================== FICHA
 	game(ctx) {
-		const { C, U, model, current } = ctx;
+		const { U, model, current } = ctx;
 		const g = model.gamesByPath.get(current.file.path);
 		if (!g) return { active: "library", html: U.empty({ icon: "alert", title: "Jogo não encontrado no índice", text: "Verifique se o frontmatter tem type: game." }) };
 		const a = g.ach;

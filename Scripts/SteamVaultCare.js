@@ -689,7 +689,7 @@ class SteamVaultCare {
 	// (no celular, baixar arquivos pelo Obsidian não é confiável).
 	csvCell(v) { const s = String(v ?? ""); return /[",;\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }
 	exportCsvText(ctx) {
-		const { C, model } = ctx;
+		const { model } = ctx;
 		const head = ["Name", "Platform", "Status", "Hours", "Rating", "Genres", "Subgenres", "Developer", "Publisher", "ReleaseYear", "Franchise", "DateAdded", "Started", "Completed", "LastPlayed", "Favorite"];
 		const rows = [...model.games].sort((a, b) => a.title.localeCompare(b.title)).map(g => [
 			g.title, g.platform, g.status, g.playtime.hours ? Math.round(g.playtime.hours * 10) / 10 : "", g.rating || "",

@@ -1089,7 +1089,6 @@ class SteamVaultSteam {
 	// a ficha que já representa este jogo: mesmo AppID, ou mesmo nome numa
 	// ficha de PC/Steam ainda sem AppID (evita duplicar ao importar)
 	existingFor(appId, name) {
-		const C = customJS.SteamVaultCore;
 		const files = app.vault.getMarkdownFiles().filter(f => app.metadataCache.getFileCache(f)?.frontmatter?.type === "game");
 		const byId = files.find(f => String(app.metadataCache.getFileCache(f).frontmatter.steamAppId || "").trim() === String(appId));
 		if (byId) return { file: byId, how: "appid" };

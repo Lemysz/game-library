@@ -48,13 +48,14 @@ class SteamVaultLegacy {
 			app.vault.on("create", bump);
 		}
 
-		this.platformOrder = ["PS Vita", "PSP", "PS1", "PS2", "Switch", "3DS", "NDS",
+		// 1.14.2: PS3/PS4/PS5 (o template e a integração PSN já os usavam)
+		this.platformOrder = ["PS Vita", "PSP", "PS1", "PS2", "PS3", "PS4", "PS5", "Switch", "3DS", "NDS",
 			"GBA", "N64", "GameCube", "Wii", "SNES", "Dreamcast", "Arcade", "PC",
 			// 3.70.0: consoles Xbox no cadastro manual
 			"Xbox Series", "Xbox One", "Xbox 360", "Xbox"];
 
 
-		this.statusLabels = { Playing: "Jogando", Completed: "Zerado", Platinum: "Platinado", Backlog: "Backlog", Dropped: "Abandonado", Wishlist: "Lista de desejos" };
+		this.statusLabels = { Playing: "Jogando", Paused: "Pausado", Completed: "Zerado", Platinum: "Platinado", Backlog: "Backlog", Dropped: "Abandonado", Wishlist: "Lista de desejos" };
 		this.noteCategoryIcons = {
 			"Impressão": "💭", "Personagem": "🧑", "História": "📖", "Build": "🛠️",
 			"Dica": "💡", "Curiosidade": "✨", "Teoria": "🔮", "Observação": "👁️"
@@ -2936,7 +2937,6 @@ class SteamVaultLegacy {
 				if (!rows.length) continue;
 
 				let achievements = rows.map((row, index) => {
-					const isRawFallback = !!row.rawName;
 					const textRoot = row.fallback ? row.text : row.querySelector?.(".achieveTxt");
 					const imgNode = row.fallback ? row.img : (row.querySelector?.(".achieveImgHolder img") || row.querySelector?.("img"));
 					const img = row.rawImg || imgNode?.getAttribute?.("src") || "";
@@ -4090,7 +4090,6 @@ class SteamVaultLegacy {
 			const obs = val("#svl-f-notes");
 
 			try {
-				const yesc = s => this.yamlEscape(s);
 				// jogos novos nascem organizados numa subpasta da própria
 				// plataforma (Games/PSP/, Games/3DS/, etc.) — jogos antigos na
 				// raiz de Games/ continuam funcionando normalmente
@@ -4104,9 +4103,6 @@ class SteamVaultLegacy {
 					n += 1;
 					path = `${folder}/${safeName} ${n}.md`;
 				}
-				const today = customJS.SteamVaultCore.today();
-				const genreYaml = genre.length ? `[${genre.map(g => `"${yesc(g)}"`).join(", ")}]` : "[]";
-				const subgenreYaml = subgenre.length ? `[${subgenre.map(g => `"${yesc(g)}"`).join(", ")}]` : "[]";
 
 				if (franchise) await customJS.SteamVaultCore.ensureCategoryNote("franchise", franchise).catch(() => {});
 				const content = customJS.SteamVaultCore.buildGameNote({
