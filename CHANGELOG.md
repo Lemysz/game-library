@@ -17,6 +17,8 @@ organização do vault). Sem mudança no formato das notas.
   janelas médias do computador (≈ 60 px em 915–1100 px): uma sobra do antigo layout em grade deixava o
   primeiro grupo crescer até 876 px. Agora os grupos ocupam a largura da tela.
 - **Status "Pausado"** aparecia como "Paused" na lista do formulário antigo.
+- **Alvos de toque no celular deitado e no tablet:** botões pequenos, filtros e chips só ganhavam 36 px
+  em telas estreitas; deitado, ficavam com 25–30 px. Agora valem para qualquer tela de toque.
 - **Botão desabilitado** continuava com o cursor de clique no computador (a regra perdia na
   especificidade).
 
