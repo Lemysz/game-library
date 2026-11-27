@@ -1,5 +1,6 @@
 // Responsividade: abre cada tela em 320, 360, 390 e 430 px (celular, toque) e no
-// computador, nos temas escuro e claro. Falha com erro de JavaScript, tela vazia,
+// computador, nos temas escuro e claro; no tema escuro também o celular deitado
+// (780×360) e uma janela média do computador (1100 px). Falha com erro de JavaScript, tela vazia,
 // rolagem lateral ou conteúdo fora da tela. Avisa (sem falhar) sobre áreas de
 // toque menores que 32 px (área efetiva, com o ::after que a amplia) e textos
 // cortados sem reticências.
@@ -7,6 +8,7 @@
 //   node responsive.js                 todas as larguras e os dois temas
 //   SV_WIDTHS=320,390 node responsive.js
 //   SV_THEMES=light node responsive.js
+//   SV_NO_EXTRA=1 node responsive.js   sem o celular deitado e a janela média
 //   SV_ONLY=Biblioteca node responsive.js
 //   SV_SHOTS=shots node responsive.js  salva uma captura por tela/largura/tema
 const fs = require("fs"), path = require("path");
@@ -25,10 +27,17 @@ const SHOTS = process.env.SV_SHOTS ? path.resolve(process.env.SV_SHOTS) : null;
 	if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 	const viewports = [
 		...MOBILE.map(w => ({ tag: `${w}px`, viewport: { width: w, height: Math.round(w * 2.16) }, isMobile: true, hasTouch: true })),
-		...DESKTOP
+		...DESKTOP,
+		// 1.14.2: celular deitado e janela média (a tela de Configurações rolava
+		// para o lado nessas larguras e nenhuma das outras pegava)
+		...(process.env.SV_NO_EXTRA ? [] : [
+			{ tag: "deitado", viewport: { width: 780, height: 360 }, isMobile: true, hasTouch: true, firstTheme: true },
+			{ tag: "1100px", viewport: { width: 1100, height: 800 }, firstTheme: true }
+		])
 	];
 
 	for (const theme of THEMES) for (const vp of viewports) {
+		if (vp.firstTheme && theme !== THEMES[0]) continue;
 		const ctx = await browser.newContext({ viewport: vp.viewport, isMobile: !!vp.isMobile, hasTouch: !!vp.hasTouch, reducedMotion: "reduce", colorScheme: theme });
 		const page = await ctx.newPage();
 		// erros de script: o harness já registra "error" e "unhandledrejection" em window.__errors

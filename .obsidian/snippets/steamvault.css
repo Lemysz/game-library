@@ -964,7 +964,7 @@ body.theme-dark .sv-search-results, body:not(.theme-light) .sv-search-results { 
 .sv-btn .sv-i { width: 17px; height: 17px; }
 .sv-btn:hover { background: var(--sv-surface-3); }
 .sv-btn:active { transform: translateY(1px); }
-.sv-btn[disabled] { opacity: 0.45; cursor: default; transform: none; }
+.sv-btn[disabled], .sv-host button.sv-btn[disabled], .sv-modal-root button.sv-btn[disabled] { opacity: 0.45; cursor: default; transform: none; }
 
 .sv-btn--primary,
 .sv-host button.sv-btn--primary,
@@ -2806,7 +2806,6 @@ body .sv-ehero { --sv-accent: var(--sv-cyan); }
 .sv-heatmap i.l4 { background: var(--sv-cyan); }
 
 /* configurações */
-.sv-settings { align-items: start; }
 .sv-settings .sv-muted { font-size: var(--sv-fs-small); }
 .sv-issues { display: flex; flex-direction: column; max-height: 420px; overflow-y: auto; margin-top: var(--sv-s4); border-radius: var(--sv-radius); box-shadow: inset 0 0 0 1px var(--sv-line); }
 .sv-issue { display: grid; grid-template-columns: 52px 92px minmax(0, 1fr); gap: 10px; padding: 9px 12px; border-top: 1px solid var(--sv-line); font-size: var(--sv-fs-small); }
@@ -4824,14 +4823,15 @@ body.sv-reduced-motion .sv-motion .sv-reveal, body.sv-reduced-motion .sv-motion 
    ========================================================================== */
 
 /* alvos de toque: nada tocável abaixo de ~36 px de altura no celular
-   (botões pequenos, filtros, chips e links de seção tinham 24–32 px) */
-.sv-app.sv-bp-sm .sv-btn--sm:not(.sv-btn--icon) { min-height: 36px; }
-.sv-app.sv-bp-sm .sv-btn--sm.sv-btn--icon, .sv-host .sv-app.sv-bp-sm button.sv-btn--sm.sv-btn--icon { width: 36px; height: 36px; }
-.sv-app.sv-bp-sm .sv-segmented > button, .sv-host .sv-app.sv-bp-sm .sv-segmented > button { height: 36px; }
-.sv-app.sv-bp-sm .sv-viewtoggle button, .sv-host .sv-app.sv-bp-sm .sv-viewtoggle button { width: 36px; height: 36px; }
-.sv-app.sv-bp-sm .sv-select { height: 40px; }
-.sv-app.sv-bp-sm .sv-chiplink { height: 36px; }
-.sv-app.sv-bp-sm .sv-sechead .sv-link { display: inline-flex; align-items: center; min-height: 36px; padding: 0 0 0 12px; }
+   (botões pequenos, filtros, chips e links de seção tinham 24–32 px).
+   1.14.2: vale para qualquer tela de toque (celular deitado, tablet), não só a estreita */
+.sv-app:is(.sv-bp-sm, .is-touch) .sv-btn--sm:not(.sv-btn--icon) { min-height: 36px; }
+.sv-app:is(.sv-bp-sm, .is-touch) .sv-btn--sm.sv-btn--icon, .sv-host .sv-app:is(.sv-bp-sm, .is-touch) button.sv-btn--sm.sv-btn--icon { width: 36px; height: 36px; }
+.sv-app:is(.sv-bp-sm, .is-touch) .sv-segmented > button, .sv-host .sv-app:is(.sv-bp-sm, .is-touch) .sv-segmented > button { height: 36px; }
+.sv-app:is(.sv-bp-sm, .is-touch) .sv-viewtoggle button, .sv-host .sv-app:is(.sv-bp-sm, .is-touch) .sv-viewtoggle button { width: 36px; height: 36px; }
+.sv-app:is(.sv-bp-sm, .is-touch) .sv-select { height: 40px; }
+.sv-app:is(.sv-bp-sm, .is-touch) .sv-chiplink { height: 36px; }
+.sv-app:is(.sv-bp-sm, .is-touch) .sv-sechead .sv-link { display: inline-flex; align-items: center; min-height: 36px; padding: 0 0 0 12px; }
 .sv-app.sv-bp-sm .sv-pick-compare, .sv-host .sv-app.sv-bp-sm button.sv-pick-compare { height: 30px; padding: 0 10px; }
 
 /* configurações: cada opção só aparece onde faz sentido */

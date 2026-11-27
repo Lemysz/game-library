@@ -11,6 +11,27 @@ versões menores.
 
 Nada ainda.
 
+## [1.14.2] · 2026-11-27
+
+Segunda rodada de auditoria (orientação horizontal, estados vazio e desabilitado, código morto,
+organização do vault). Sem mudança no formato das notas.
+
+### Corrigido
+- **Configurações rolava para o lado** no celular deitado (191 px a mais em 780 px de largura) e em
+  janelas médias do computador (≈ 60 px em 915–1100 px): uma sobra do antigo layout em grade deixava o
+  primeiro grupo crescer até 876 px. Agora os grupos ocupam a largura da tela.
+- **Status "Pausado"** aparecia como "Paused" na lista do formulário antigo.
+- **Alvos de toque no celular deitado e no tablet:** botões pequenos, filtros e chips só ganhavam 36 px
+  em telas estreitas; deitado, ficavam com 25–30 px. Agora valem para qualquer tela de toque.
+- **Botão desabilitado** continuava com o cursor de clique no computador (a regra perdia na
+  especificidade).
+
+### Alterado
+- **PS3, PS4 e PS5** no formulário "Adicionar jogo" (o template e a integração PSN já usavam).
+- O template Templater de jogo usa a mesma lista de plataformas do formulário (inclui os Xbox).
+- Código morto removido: variáveis calculadas e nunca lidas, atalhos de contexto sem uso.
+- Testes de responsividade também no celular deitado (780×360) e numa janela de 1100 px.
+
 ## [1.14.1] · 2026-11-22
 
 Auditoria técnica completa (desempenho, memória, toque, acessibilidade, dados). Sem mudança no

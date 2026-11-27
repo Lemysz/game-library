@@ -56,7 +56,7 @@ class SteamVaultRetroPages {
 
 	// ---------------------------------------------------------------- hero
 	hero(ctx, cfg, cache, { compact = false } = {}) {
-		const { U, R } = ctx;
+		const { U } = ctx;
 		const p = cache?.profile || {};
 		const s = cache?.summary || {};
 		const aw = cache?.awards || {};
@@ -220,7 +220,7 @@ class SteamVaultRetroPages {
 	}
 
 	gameRow(ctx, x, byId) {
-		const { U, R } = ctx;
+		const { U } = ctx;
 		const g = byId.get(String(x.gameId));
 		const action = g
 			? `<a class="sv-btn sv-btn--ghost sv-btn--sm" ${U.openAttrs(g.path)}>${U.icon("eye")}<span>Ficha</span></a>`

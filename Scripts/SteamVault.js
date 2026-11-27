@@ -2878,7 +2878,7 @@ class SteamVault {
 
 	legacy(ctx, kind, el) {
 		if (!this._needLegacy()) return;
-		const { L, dv, model, current, page, C } = ctx;
+		const { L, dv, current, page, C } = ctx;
 		let _games = null, _platforms = null;
 		const lazy = {
 			get games() { return _games || (_games = dv.pages().where(p => p.type === "game" && !String(p.file.path).includes("/_Templates/")).array()); },

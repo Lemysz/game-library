@@ -62,7 +62,7 @@ class SteamVaultInsights {
 
 	// ============================================================== TIER LIST
 	tierlist(ctx) {
-		const { U, C, model } = ctx;
+		const { U, model } = ctx;
 		const tiers = [["S", "Obras-primas"], ["A", "Excelentes"], ["B", "Muito bons"], ["C", "Bons"], ["D", "Esquecíveis"]];
 		const eligible = model.games.filter(g => g.status !== "Wishlist");
 		const byTier = t => eligible.filter(g => g.tier === t).sort((a, b) => (a.tierOrder ?? 999) - (b.tierOrder ?? 999) || a.title.localeCompare(b.title));
@@ -754,7 +754,7 @@ class SteamVaultInsights {
 		return [...seen].sort((a, b) => b - a).map(String);
 	}
 	_stCmpData(ctx, mode, key) {
-		const { C, model } = ctx;
+		const { model } = ctx;
 		const avg = list => { const r = list.filter(z => z.rating > 0); return r.length ? r.reduce((t, z) => t + z.rating, 0) / r.length : null; };
 		const topGenre = byGame => {
 			const m = new Map();

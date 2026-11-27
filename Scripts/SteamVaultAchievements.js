@@ -148,7 +148,7 @@ class SteamVaultAchievements {
 		const fmOf = p => { const f = app.vault.getAbstractFileByPath(p); return (f && app.metadataCache.getFileCache(f)?.frontmatter) || {}; };
 		// estado local: a lista do jogo, na ordem atual
 		let items = g.achievements.filter(a => a.path).map(a => ({ path: a.path, name: a.name, iconSrc: a.iconSrc, category: a.category, tier: C.rarityOf(a), secret: a.secret, unlocked: a.unlocked, date: a.unlockedDate, order: a.order }));
-		let dirty = false, view = "list", form = null, busy = false;
+		let dirty = false, form = null, busy = false;
 		const presets = () => [...new Set([...this._catPresets(g.provider), ...items.map(x => x.category).filter(Boolean)])];
 		const body = document.createElement("div");
 		body.className = "sv-mgr";
@@ -211,10 +211,10 @@ class SteamVaultAchievements {
 				secret: fm.secret === true || fm.secret === "true", unlocked: fm.unlocked === true || fm.unlocked === "true",
 				unlockedDate: C.iso(fm.unlockedDate) || "", notes: C.str(fm.notes)
 			} : { path: "", index: null, name: "", description: "", icon: "", iconPreview: "", category: "", rarityTier: "", points: "", secret: false, unlocked: false, unlockedDate: "", notes: "" };
-			view = "form"; paintForm();
+			paintForm();
 			m.el.querySelector(".sv-modal-body")?.scrollTo?.(0, 0);
 		};
-		const back = () => { view = "list"; form = null; paintList(); };
+		const back = () => { form = null; paintList(); };
 
 		// grava a ordem 1..n só nas notas que mudaram
 		const saveOrder = async () => {
