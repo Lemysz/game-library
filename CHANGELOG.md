@@ -9,6 +9,10 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.14.2] · 2026-11-27
+
 Segunda rodada de auditoria (orientação horizontal, estados vazio e desabilitado, código morto,
 organização do vault). Sem mudança no formato das notas.
 
