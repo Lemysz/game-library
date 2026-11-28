@@ -1,0 +1,16 @@
+# templater-obsidian 2.27.0 licença AGPL-3.0
+templater-obsidian 2.27.0 SilentVoid13/Templater manifest.json a9d10df447b9ce60e72df775cea66f246dacaac1f2e508b023585552f08be900
+templater-obsidian 2.27.0 SilentVoid13/Templater main.js 0b4a22e7a3871f929e18656d9f3c7defd8588c9dc5845620b9a16e0adb7c9a2f
+templater-obsidian 2.27.0 SilentVoid13/Templater styles.css 67a6dd2d1d6dedca1287c334ca884ec4196433f71ca47388a0bd3eac14cf8b5f
+# templater-obsidian manifest: "id": "templater-obsidian"
+# templater-obsidian manifest: "version": "2.27.0"
+# templater-obsidian manifest: "minAppVersion": "1.13.0"
+# templater-obsidian manifest: "isDesktopOnly": false
+# obsidian-style-settings 1.0.9 licença GPL-3.0
+obsidian-style-settings 1.0.9 mgmeyers/obsidian-style-settings manifest.json 9cffdc20cf2aa1354820e0050b694b0f9b576446e3d5d44a36ae8b0187e5bfb8
+obsidian-style-settings 1.0.9 mgmeyers/obsidian-style-settings main.js 1828abaacdab4c5578b705a625c585b30512f8efad4c7cfc5a18e70cc3557468
+obsidian-style-settings 1.0.9 mgmeyers/obsidian-style-settings styles.css ee7937d2be50653a89ccb30ae5f0572b23507d5b7f1328d005271a363075bfd8
+# obsidian-style-settings manifest: "id": "obsidian-style-settings"
+# obsidian-style-settings manifest: "version": "1.0.9"
+# obsidian-style-settings manifest: "minAppVersion": "0.11.5"
+# obsidian-style-settings manifest: "isDesktopOnly": false
