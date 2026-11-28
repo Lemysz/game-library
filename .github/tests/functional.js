@@ -317,6 +317,24 @@ const check = (name, ok, detail = "") => { results.push({ name, ok }); console.l
 		await mark(prevSt);
 	}
 
+	// ---- 1.15.0: opções de tela nas Configurações (antes no Style Settings)
+	{
+		await go("Dashboard/Configurações.md");
+		const st = await p.evaluate(() => {
+			const B = document.body.classList, n = document.querySelectorAll("[data-ui-screen]").length;
+			const defaults = ["sv-app-mode", "sv-immersive-top", "sv-hide-scrollbar", "sv-accent-from-art"].every(c => B.contains(c)) && !B.contains("sv-compact") && !B.contains("sv-hide-top-search");
+			const sw = document.querySelector('[data-ui-screen="hideTopSearch"]'); sw.click();
+			const hid = B.contains("sv-hide-top-search") && getComputedStyle(document.querySelector(".sv-search") || document.body).display === "none";
+			const app = document.querySelector('[data-ui-screen="appMode"]'); app.click();
+			const off = !B.contains("sv-app-mode") && customJS.SteamVaultUI._store("screen:appMode") === "0";
+			sw.click(); app.click();
+			return { n, defaults, hid, off, back: B.contains("sv-app-mode") && !B.contains("sv-hide-top-search") };
+		});
+		await go("Dashboard/Biblioteca.md");
+		const kept = await p.evaluate(() => document.body.classList.contains("sv-app-mode"));
+		check("Configurações: 7 opções de tela, padrões ligados e cada uma liga/desliga sua classe", st.n === 7 && st.defaults && st.hid && st.off && st.back && kept, JSON.stringify({ ...st, kept }));
+	}
+
 	// ---- ícone de favorito nos cards (1.5.0)
 	{
 		await go("Dashboard/Configurações.md");

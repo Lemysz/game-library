@@ -19,11 +19,10 @@ release oficial de cada um, numa versão fixa, confere o SHA-256 listado em
 | [Dataview](https://github.com/blacksmithgu/obsidian-dataview) | 0.5.68 | Executa os blocos `dataviewjs` de cada tela | MIT — © 2021 Michael Brenan ([texto](.github/plugins/dataview.LICENSE.txt)) | Release oficial no GitHub |
 | [CustomJS](https://github.com/saml-dev/obsidian-custom-js) | 1.0.21 | Carrega os scripts de `Scripts/` | MIT — © 2021 Sam Lewis ([texto](.github/plugins/customjs.LICENSE.txt)) | Release oficial no GitHub |
 | [Templater](https://github.com/SilentVoid13/Templater) | 2.27.0 | Modelos opcionais em `*/_Templates/` | AGPL-3.0 ([texto](.github/plugins/templater-obsidian.LICENSE.txt)) | Release oficial no GitHub · [código-fonte desta versão](https://github.com/SilentVoid13/Templater/tree/2.27.0) |
-| [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) | 1.0.9 | Ajustes visuais do snippet | GPL-3.0 ([texto](.github/plugins/obsidian-style-settings.LICENSE.txt)) | Release oficial no GitHub · [código-fonte desta versão](https://github.com/mgmeyers/obsidian-style-settings/tree/1.0.9) |
 
-O Templater e o Style Settings são distribuídos sem modificação, como programas separados, ao lado do
-vault (agregação). Suas licenças (AGPL-3.0 e GPL-3.0) valem para o código deles, não para a Game
-Library. O código-fonte correspondente a cada versão está nos links acima.
+O Templater é distribuído sem modificação, como programa separado, ao lado do vault (agregação). A
+licença dele (AGPL-3.0) vale para o código dele, não para a Game Library. O código-fonte
+correspondente à versão está no link acima.
 
 ## Não redistribuído (instalado pelo próprio Obsidian)
 

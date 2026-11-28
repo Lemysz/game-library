@@ -561,6 +561,8 @@ class SteamVault {
 		const fav = U._store("favStyle") || "dot";
 		for (const [k, cls] of [["glass", "sv-fav--glass"], ["ribbon", "sv-fav--ribbon"], ["corner", "sv-fav--corner"], ["outline", "sv-fav--outline"], ["label", "sv-fav--label"]]) document.body.classList.toggle(cls, fav === k);
 		document.body.classList.toggle("sv-no-haptics", U._store("haptics") === "0");
+		// 1.15.0: opções de tela (antes no Style Settings)
+		for (const [key, cls] of U.screenPrefs()) document.body.classList.toggle(cls, U.screenPrefOn(key));
 		// 3.23.0: preto puro (telas OLED) e tamanho do texto, por aparelho ou sincronizados
 		document.body.classList.toggle("sv-oled", U._store("oled") === "1");
 		const ts = Number(U._store("textScale") || 1);

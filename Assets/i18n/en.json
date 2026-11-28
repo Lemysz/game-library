@@ -3696,5 +3696,20 @@
 	"{0} conquistas em hardcore": "{0} achievements in hardcore",
 	"pontos RetroAchievements": "RetroAchievements points",
 	"Buscar jogos": "Search games",
-	"Não foi possível concluir: {0}": "Couldn't finish: {0}"
+	"Não foi possível concluir: {0}": "Couldn't finish: {0}",
+	"Tela e modo aplicativo": "Screen and app mode",
+	"Modo aplicativo": "App mode",
+	"No celular, esconde a barra inferior e o cabeçalho do Obsidian nas telas da Game Library.": "On phones, hides Obsidian's bottom bar and header on Game Library screens.",
+	"Imagem do topo sob a barra de status": "Top image under the status bar",
+	"No celular, a arte do topo da tela vai até a borda de cima.": "On phones, the artwork at the top reaches the top edge.",
+	"Ocultar a barra de rolagem": "Hide the scrollbar",
+	"A rolagem continua; só a barra fica escondida.": "Scrolling still works; only the bar is hidden.",
+	"Cor da ficha a partir da arte": "Game page color from the artwork",
+	"O topo da ficha usa a cor da capa do jogo. Desligado, usa a cor de destaque.": "The top of the game page uses the cover's color. When off, it uses the accent color.",
+	"Densidade compacta": "Compact density",
+	"Menos espaço entre seções e cards.": "Less space between sections and cards.",
+	"Ocultar o botão de pesquisa do topo": "Hide the top search button",
+	"Também desliga os atalhos / e Ctrl+K.": "Also turns off the / and Ctrl+K shortcuts.",
+	"Ocultar o ícone de perfil do topo": "Hide the top profile icon",
+	"Esconde o menu de conta; a aba Perfil continua.": "Hides the account menu; the Profile tab stays."
 }

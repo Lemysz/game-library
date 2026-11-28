@@ -366,9 +366,9 @@ A Steam é a plataforma principal da Game Library; o RetroAchievements tem uma s
 
 ## Aparência
 
-**Tela de Configurações.** Organizada em cinco categorias, com um índice no topo: *Aparência* (tema, cor de destaque, preto puro, tamanho do texto, ícone de favorito e Personalização da Interface), *Efeitos e toque* (animações, brilho, comemoração, inclinação 3D, vibração e sons), *Idioma e rotina* (idioma e nota diária), *Integrações e conquistas* e *Biblioteca e dados* (saúde, backup, importação e diagnóstico).
+**Tela de Configurações.** Organizada em cinco categorias, com um índice no topo: *Aparência* (tema, cor de destaque, preto puro, tamanho do texto, ícone de favorito, tela e modo aplicativo, e Personalização da Interface), *Efeitos e toque* (animações, brilho, comemoração, inclinação 3D, vibração e sons), *Idioma e rotina* (idioma e nota diária), *Integrações e conquistas* e *Biblioteca e dados* (saúde, backup, importação e diagnóstico).
 
-Segue o tema claro/escuro do Obsidian. Os heros continuam escuros no tema claro, de propósito (arte sobre palco). Em *Style Settings → Game Library*: azul principal, ciano, destaque a partir da arte, largura das capas, arredondamento e densidade compacta. Em *Configurações* do app: reduzir animações.
+Segue o tema claro/escuro do Obsidian. Os heros continuam escuros no tema claro, de propósito (arte sobre palco). Tudo se ajusta em *Configurações* do app, sem plugin: tema, cor de destaque, tamanho das capas e arredondamento (*Aparência* e *Personalização da Interface*), e as opções de *Aparência › Tela e modo aplicativo*: modo aplicativo, imagem do topo sob a barra de status, barra de rolagem, cor da ficha a partir da arte, densidade compacta e botões do topo. Elas valem para este aparelho e acompanham a sincronização de preferências.
 
 **Brilho nas capas (estilo Big Picture):** uma faixa de luz atravessa a capa quando você passa o mouse ou foca com o teclado; no celular, ao tocar na capa, e uma vez na capa do jogo aberto. Anima só posição e transparência (roda na GPU, sem recalcular a página), nunca fica em loop e respeita "Reduzir animações". Dá para desligar em *Configurações → Brilho nas capas*.
 
@@ -401,9 +401,9 @@ O layout se adapta à largura real da área da nota (não à da janela), então 
 
 Na aba principal, a Game Library é desenhada numa camada própria sobre a área de conteúdo, então fica igual no modo leitura e no modo edição, com qualquer tema. Para editar o texto da nota, use o modo código-fonte. Depois de atualizar os scripts, feche o Obsidian por completo: a versão aparece em *Configurações* do app.
 
-**Modo aplicativo (celular):** em *Style Settings → Game Library → Obsidian mobile → Modo aplicativo* (ligado por padrão). Ligado: nas telas da Game Library somem o **cabeçalho** da nota (barra lateral, caminho, leitura/edição, ⋮) e a **barra inferior** do Obsidian (voltar, avançar, buscar, nova nota, abas, menu) — a interface fica com cara de app, a barra da Game Library assume a navegação e o menu **Mais** traz os atalhos do Obsidian (Voltar, Avançar, Buscar no vault, Nova nota, Editar nota, Menu lateral e *Mostrar controles do Obsidian*, que traz cabeçalho e barra de volta até você trocar de tela). Desligado: cabeçalho e barra do Obsidian funcionam normalmente. Cabeçalho e barra andam juntos, de propósito — não há opção separada. Nas notas comuns, tudo do Obsidian volta sozinho.
+**Modo aplicativo (celular):** em *Configurações → Aparência → Tela e modo aplicativo → Modo aplicativo* (ligado por padrão). Ligado: nas telas da Game Library somem o **cabeçalho** da nota (barra lateral, caminho, leitura/edição, ⋮) e a **barra inferior** do Obsidian (voltar, avançar, buscar, nova nota, abas, menu) — a interface fica com cara de app, a barra da Game Library assume a navegação e o menu **Mais** traz os atalhos do Obsidian (Voltar, Avançar, Buscar no vault, Nova nota, Editar nota, Menu lateral e *Mostrar controles do Obsidian*, que traz cabeçalho e barra de volta até você trocar de tela). Desligado: cabeçalho e barra do Obsidian funcionam normalmente. Cabeçalho e barra andam juntos, de propósito — não há opção separada. Nas notas comuns, tudo do Obsidian volta sozinho.
 
-**Imagem do topo na área da barra de status:** *Style Settings → Game Library → Obsidian mobile* (ligado por padrão). Nas telas que começam com imagem — fichas de jogo (sempre) e, quando há imagem de fundo, Início, coleções, plataformas, gêneros, perfil Steam e página de conquista — a imagem sobe por trás da barra de status do Android, com um escurecimento suave em cima para os ícones do sistema continuarem legíveis. Textos, botões e ícones continuam abaixo da barra de status. Desligado, a imagem fica limitada à área normal.
+**Imagem do topo na área da barra de status:** *Configurações → Aparência → Tela e modo aplicativo* (ligado por padrão). Nas telas que começam com imagem — fichas de jogo (sempre) e, quando há imagem de fundo, Início, coleções, plataformas, gêneros, perfil Steam e página de conquista — a imagem sobe por trás da barra de status do Android, com um escurecimento suave em cima para os ícones do sistema continuarem legíveis. Textos, botões e ícones continuam abaixo da barra de status. Desligado, a imagem fica limitada à área normal.
 
 **Sem barra superior (celular):** nenhuma faixa no topo, em nenhuma tela — só os botões redondos de pesquisa e perfil, flutuando abaixo da barra de status. Ao rolar, o conteúdo passa por trás deles e da barra de status.
 
@@ -415,9 +415,9 @@ Na aba principal, a Game Library é desenhada numa camada própria sobre a área
 
 **Listas de escolha (celular):** os campos de seleção dos formulários abrem uma janela no visual do app, que sobe da borda, com a opção atual marcada e uma busca quando há mais de 10 opções. No computador fica a lista do sistema (que aceita teclado).
 
-**Barra de rolagem:** *Style Settings → Game Library → Obsidian mobile → Ocultar barra de rolagem* (ligado por padrão) esconde o indicador cinza de rolagem vertical nas telas da Game Library e nas áreas internas (menu, janelas, busca, listas). A rolagem por toque, roda do mouse e teclado continua igual.
+**Barra de rolagem:** *Configurações → Aparência → Tela e modo aplicativo → Ocultar a barra de rolagem* (ligado por padrão) esconde o indicador cinza de rolagem vertical nas telas da Game Library e nas áreas internas (menu, janelas, busca, listas). A rolagem por toque, roda do mouse e teclado continua igual.
 
-**Style Settings → Botões do topo:** *Ocultar botão de pesquisa* e *Ocultar ícone de perfil*, independentes (valem no celular e no desktop). Com a pesquisa oculta, os atalhos `/` e `Ctrl+K` ficam desativados.
+**Botões do topo** (*Configurações → Aparência → Tela e modo aplicativo*): *Ocultar o botão de pesquisa* e *Ocultar o ícone de perfil*, independentes (valem no celular e no desktop). Com a pesquisa oculta, os atalhos `/` e `Ctrl+K` ficam desativados.
 
 ## Problemas comuns
 

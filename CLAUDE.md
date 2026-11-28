@@ -91,7 +91,7 @@ node checks.js        # sintaxe, versão, CSS, segredos, higiene do repositório
 node icons.js         # SVGs em dia com o registro
 node smoke.js         # todas as telas em 410 px e 1400 px, português e inglês
 node responsive.js    # 320/360/390/430 px, deitado, 1100 px e desktop, temas escuro e claro
-node functional.js    # 263 testes de uso (filtros, modais, gravação nas notas)
+node functional.js    # 264 testes de uso (filtros, modais, gravação nas notas)
 ```
 
 Num ambiente com Chromium já instalado, use `CHROMIUM_PATH=/caminho/do/chrome`. O harness simula o
@@ -100,7 +100,7 @@ foco, desempenho) estão em `.github/tools/audit/`.
 
 ## O que não fazer
 
-- Não versionar `main.js`/`styles.css`/`manifest.json` de plugins (Dataview, CustomJS, Templater e Style Settings entram só no
+- Não versionar `main.js`/`styles.css`/`manifest.json` de plugins (Dataview, CustomJS e Templater entram só no
   ZIP da versão, por `.github/tools/bundle-plugins.sh`, com versão e SHA-256 em
   `.github/plugins/plugins.lock`), temas, `.trash/`, `Backups/`,
   `.steamvault/`, `workspace*.json` (o `.gitignore` e o `checks.js` cuidam disso).

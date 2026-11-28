@@ -11,17 +11,31 @@ versões menores.
 
 Nada ainda.
 
-## [1.14.3] · 2026-11-28
+## [1.15.0] · 2026-11-28
+
+As opções que dependiam do plugin Style Settings agora ficam nas Configurações do app, e o vault abre
+sem nenhum plugin faltando. Sem mudança no formato das notas.
 
 ### Adicionado
-- **Templater e Style Settings já vêm no ZIP**, ativados, como o Dataview e o CustomJS: o vault abre
-  sem nenhum plugin faltando e não é preciso instalar nada pela loja. Versões fixas (Templater 2.27.0,
-  Style Settings 1.0.9), baixadas do release oficial, com SHA-256 conferido e a licença ao lado
-  (AGPL-3.0 e GPL-3.0; detalhes em [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)).
+- **Configurações › Aparência › Tela e modo aplicativo:** modo aplicativo, imagem do topo sob a barra
+  de status, ocultar a barra de rolagem, cor da ficha a partir da arte, densidade compacta e ocultar
+  os botões de pesquisa e de perfil do topo. Valem para o aparelho e entram na sincronização de
+  preferências. Cor de destaque, tamanho das capas e arredondamento já estavam na *Aparência*.
+- **Templater já vem no ZIP**, ativado, como o Dataview e o CustomJS: versão fixa (2.27.0), baixada do
+  release oficial, com SHA-256 conferido e a licença ao lado (AGPL-3.0; detalhes em
+  [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)).
 
 ### Corrigido
+- **Sem o Style Settings, o modo aplicativo ficava desligado:** ele, a imagem do topo, a barra de
+  rolagem oculta e a cor da arte vinham "ligados por padrão" só quando o plugin estava instalado.
+  Agora o próprio app aplica esses padrões.
 - **Plugins "faltando" ao abrir o vault:** a configuração ativava o Templater e o Style Settings, que
   não vinham no ZIP, e o Obsidian acusava a falta deles.
+
+### Removido
+- **Dependência do Style Settings:** as opções saíram do CSS (o bloco `@settings`) e da lista de
+  plugins do vault. Quem tiver o plugin instalado pode desinstalá-lo; ele não tem mais efeito na Game
+  Library.
 
 ## [1.14.2] · 2026-11-27
 
