@@ -21,7 +21,9 @@ class SteamVaultCare {
 		this.syncKeys = ["accent", "homeLayout", "libraryView", "collView", "reducedMotion", "shine", "celebrate", "favStyle", "gamepad", "tilt", "haptics", "sfx", "sfxVol",
 			"onboardHidden", "shareFormat", "statsPeriod", "goalsDone", "oled", "textScale", "backupRemind", "lang", "theme", "dailyLog", "monthSeen",
 			// 3.58.0: Personalização da Interface (perfil de layout e combinações salvas)
-			"layout", "layoutPresets"];
+			"layout", "layoutPresets",
+			// 1.15.0: opções de tela (antes no Style Settings)
+			"screen:appMode", "screen:immersiveTop", "screen:hideScrollbar", "screen:artAccent", "screen:compact", "screen:hideTopSearch", "screen:hideTopProfile"];
 		this.syncPrefixes = ["lib:"];
 		// pastas que entram no backup (só as notas .md)
 		this.backupRoots = ["Games", "Achievements", "Collections", "Platforms", "Genres", "Subgenres", "Franchises", "Dashboard"];

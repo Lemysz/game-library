@@ -456,7 +456,7 @@ class SteamVaultUI {
 	}
 
 	// atalhos do Obsidian no menu "Mais" (celular): substituem a barra
-	// inferior do Obsidian quando ela está oculta pelo Style Settings
+	// inferior do Obsidian quando ela está oculta pelo modo aplicativo
 	obsidianGroup() {
 		const it = (cmd, icon, label) => `<button type="button" class="sv-nav-item" data-action="obs" data-cmd="${cmd}">${this.icon(icon)}<span>${label}</span></button>`;
 		return `<div class="sv-nav-group sv-nav-group--obsidian"><span class="sv-nav-label">Obsidian</span>
@@ -656,6 +656,26 @@ class SteamVaultUI {
 			green: ["Verde", "#2fbf6c", "#1f9454", "#1a7f47", "#0b1119"],
 			cyan: ["Ciano", "#22b8cf", "#13909f", "#0c7684", "#0b1119"]
 		};
+	}
+
+	// 1.15.0: opções de tela que antes dependiam do plugin Style Settings. Cada
+	// uma liga/desliga uma classe do <body> (os mesmos nomes de antes, então o
+	// CSS não muda). [chave, classe, ligada por padrão, rótulo, explicação]
+	screenPrefs() {
+		return [
+			["appMode", "sv-app-mode", true, "Modo aplicativo", "No celular, esconde a barra inferior e o cabeçalho do Obsidian nas telas da Game Library."],
+			["immersiveTop", "sv-immersive-top", true, "Imagem do topo sob a barra de status", "No celular, a arte do topo da tela vai até a borda de cima."],
+			["hideScrollbar", "sv-hide-scrollbar", true, "Ocultar a barra de rolagem", "A rolagem continua; só a barra fica escondida."],
+			["artAccent", "sv-accent-from-art", true, "Cor da ficha a partir da arte", "O topo da ficha usa a cor da capa do jogo. Desligado, usa a cor de destaque."],
+			["compact", "sv-compact", false, "Densidade compacta", "Menos espaço entre seções e cards."],
+			["hideTopSearch", "sv-hide-top-search", false, "Ocultar o botão de pesquisa do topo", "Também desliga os atalhos / e Ctrl+K."],
+			["hideTopProfile", "sv-hide-top-profile", false, "Ocultar o ícone de perfil do topo", "Esconde o menu de conta; a aba Perfil continua."]
+		];
+	}
+	screenPrefOn(key) {
+		const p = this.screenPrefs().find(x => x[0] === key);
+		const v = this._store(`screen:${key}`);
+		return v === "1" ? true : v === "0" ? false : !!p?.[2];
 	}
 
 	// temas da interface: só fundos e superfícies (a cor de destaque é à parte)

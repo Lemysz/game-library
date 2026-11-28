@@ -986,6 +986,12 @@ class SteamVaultInsights {
 					</div>
 					<div class="sv-row-actions"><a class="sv-btn sv-btn--ghost sv-btn--sm" ${U.openAttrs("Dashboard/Ícones")}>${U.icon("grid")}<span>Galeria de ícones</span></a></div>
 				</section>
+				<section class="sv-surface" id="sv-set-screen">
+					<h3>Tela e modo aplicativo</h3>
+					<div class="sv-setlist">
+					${U.screenPrefs().map(([key, , , label, hint]) => `<label class="sv-switch sv-setrow"><input type="checkbox" data-ui-screen="${key}" ${U.screenPrefOn(key) ? "checked" : ""}><span></span><b>${U.esc(label)}</b><small>${U.esc(hint)}</small></label>`).join("")}
+					</div>
+				</section>
 				${ctx.LK ? ctx.LK.section(ctx) : ""}
 					</div>
 				</section>
@@ -1165,6 +1171,12 @@ class SteamVaultInsights {
 					U._store("reducedMotion", e.target.checked ? "1" : "0");
 					document.body.classList.toggle("sv-reduced-motion", e.target.checked);
 				});
+				root.querySelectorAll("[data-ui-screen]").forEach(input => input.addEventListener("change", e => {
+					const key = e.target.dataset.uiScreen, pref = U.screenPrefs().find(x => x[0] === key);
+					if (!pref) return;
+					U._store(`screen:${key}`, e.target.checked ? "1" : "0");
+					document.body.classList.toggle(pref[1], e.target.checked);
+				}));
 				root.querySelector("[data-ui-shine]")?.addEventListener("change", e => {
 					U._store("shine", e.target.checked ? "1" : "0");
 					document.body.classList.toggle("sv-no-shine", !e.target.checked);

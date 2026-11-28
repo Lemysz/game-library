@@ -41,16 +41,18 @@ ok(`CHANGELOG.md tem a seção da versão ${version}`, new RegExp(`^## \\[${Stri
 	ok("CustomJS lendo a pasta Scripts/ (data.json)", cj.jsFolder === "Scripts/");
 }
 
-// 3c. Plugins do ZIP da versão: só Dataview e CustomJS, versão fixa, SHA-256 de cada
+// 3c. Plugins do ZIP da versão: só os da lista (Dataview, CustomJS, Templater), versão fixa, SHA-256 de cada
 // arquivo e licença ao lado (.github/tools/bundle-plugins.sh confere tudo ao empacotar)
 {
 	const lines = read(".github/plugins/plugins.lock").split("\n").map(l => l.trim()).filter(l => l && !l.startsWith("#")).map(l => l.split(/\s+/));
-	const okLine = l => l.length === 5 && ["dataview", "customjs"].includes(l[0]) && /^\d+\.\d+\.\d+$/.test(l[1]) && /^[\w.-]+\/[\w.-]+$/.test(l[2]) && ["manifest.json", "main.js", "styles.css"].includes(l[3]) && /^[0-9a-f]{64}$/.test(l[4]);
+	// id → licença esperada no texto ao lado
+	const allowed = { dataview: /MIT License/, customjs: /MIT License/, "templater-obsidian": /GNU AFFERO GENERAL PUBLIC LICENSE\s+Version 3/ };
+	const okLine = l => l.length === 5 && Object.hasOwn(allowed, l[0]) && /^\d+\.\d+\.\d+$/.test(l[1]) && /^[\w.-]+\/[\w.-]+$/.test(l[2]) && ["manifest.json", "main.js", "styles.css"].includes(l[3]) && /^[0-9a-f]{64}$/.test(l[4]);
 	const ids = [...new Set(lines.map(l => l[0]))];
 	const complete = ids.every(id => ["manifest.json", "main.js", "styles.css"].every(f => lines.some(l => l[0] === id && l[3] === f)));
-	ok("plugins.lock: só Dataview e CustomJS, versão fixa e SHA-256 dos 3 arquivos", lines.every(okLine) && ids.length === 2 && complete, JSON.stringify(lines.filter(l => !okLine(l))));
-	ok("plugins.lock: licença de cada plugin em .github/plugins/", ids.every(id => fs.existsSync(path.join(ROOT, `.github/plugins/${id}.LICENSE.txt`)) && /MIT License/.test(read(`.github/plugins/${id}.LICENSE.txt`))));
-	ok("plugins do ZIP ativados em community-plugins.json", ["dataview", "customjs"].every(id => JSON.parse(read(".obsidian/community-plugins.json")).includes(id)));
+	ok("plugins.lock: só os plugins da lista, versão fixa e SHA-256 dos 3 arquivos", lines.every(okLine) && ids.length === Object.keys(allowed).length && complete, JSON.stringify(lines.filter(l => !okLine(l))));
+	ok("plugins.lock: licença de cada plugin em .github/plugins/", ids.every(id => fs.existsSync(path.join(ROOT, `.github/plugins/${id}.LICENSE.txt`)) && allowed[id].test(read(`.github/plugins/${id}.LICENSE.txt`))));
+	ok("plugins do ZIP ativados em community-plugins.json", Object.keys(allowed).every(id => JSON.parse(read(".obsidian/community-plugins.json")).includes(id)));
 }
 
 // 4. Todas as notas têm frontmatter legível
@@ -163,7 +165,7 @@ ok("nenhuma imagem em Assets/ acima de 1 MB", !bigArt.length, bigArt.join(", "))
 }
 
 // CSS (3.55.0): toda classe do snippet precisa aparecer em algum script ou
-// nota. Exceções: as opções do Style Settings (viram classes do <body>) e os
+// nota. Exceções: opções antigas do Style Settings, se voltarem ao CSS (viram classes do <body>), e os
 // prefixos montados no código ("sv-rarity-${tier}").
 {
 	const cssRaw = read(".obsidian/snippets/steamvault.css");

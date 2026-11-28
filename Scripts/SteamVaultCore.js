@@ -16,7 +16,7 @@ class SteamVaultCore {
 		// estável: estágio vazio = versão estável (tag vX.Y.Z, sem sufixo). Um
 		// estágio ("Beta", "Prototype"…) aparece em Configurações e vira sufixo da
 		// tag (vX.Y.Z-beta) e pré-lançamento no GitHub.
-		this.VERSION = "1.14.2";
+		this.VERSION = "1.15.0";
 		this.STAGE = "";
 
 		this.folders = {
