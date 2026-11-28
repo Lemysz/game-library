@@ -9,7 +9,11 @@ versões menores.
 
 ## [Não lançado]
 
-Nada ainda.
+### Corrigido
+- **Plugins "faltando" ao abrir o vault:** a configuração ativava também o Templater e o Style
+  Settings, que são opcionais e não vêm no ZIP, e o Obsidian acusava a falta deles. Agora só o Dataview
+  e o CustomJS (que vêm no ZIP) começam ativos; os opcionais se ativam ao serem instalados pela loja
+  de plugins, e as configurações do Style Settings já estão no vault.
 
 ## [1.14.2] · 2026-11-27
 
