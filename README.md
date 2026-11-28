@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="Versão 1.14.0" src="https://img.shields.io/badge/vers%C3%A3o-1.14.2-1a9fff?style=for-the-badge&labelColor=0d1420">
+  <img alt="Versão 1.14.0" src="https://img.shields.io/badge/vers%C3%A3o-1.14.3-1a9fff?style=for-the-badge&labelColor=0d1420">
   <img alt="Obsidian para Android e computador" src="https://img.shields.io/badge/Obsidian-Android%20%C2%B7%20desktop-7c3aed?style=for-the-badge&logo=obsidian&logoColor=white&labelColor=0d1420">
   <img alt="Sem senha, sem cookies" src="https://img.shields.io/badge/sem%20senha-sem%20cookies-6cc24a?style=for-the-badge&labelColor=0d1420">
   <img alt="Português e inglês" src="https://img.shields.io/badge/idioma-PT%20%C2%B7%20EN-e9bd52?style=for-the-badge&labelColor=0d1420">
@@ -127,8 +127,8 @@ Sem servidor, sem conta e sem banco de dados: tudo são arquivos Markdown e imag
 |---|---|---|
 | Dataview | **Obrigatório** · já vem no ZIP | Executa as telas (`dataviewjs`). A configuração do vault já liga *Enable JavaScript Queries* |
 | CustomJS | **Obrigatório** · já vem no ZIP | Carrega os scripts de `Scripts/` (já configurado) |
-| Style Settings | Recomendado | Ajustes de cor, densidade e do modo aplicativo |
-| Templater | Opcional | Modelos em `*/_Templates/`; os botões do app fazem o mesmo sem ele |
+| Style Settings | Recomendado · já vem no ZIP | Ajustes de cor, densidade e do modo aplicativo |
+| Templater | Opcional · já vem no ZIP | Modelos em `*/_Templates/`; os botões do app fazem o mesmo sem ele |
 | Tema Minimal | Opcional | Tema configurado no vault; sem ele, o Obsidian usa o tema padrão |
 
 - Internet só para integrações, preços e a tipografia (sem internet, fontes do sistema).
@@ -139,10 +139,9 @@ Sem servidor, sem conta e sem banco de dados: tudo são arquivos Markdown e imag
    (é preciso estar conectado ao GitHub com acesso a este repositório privado).
 2. Descompacte. No **Android**, use uma pasta acessível ao Obsidian (ex.: `Documentos/`).
 3. No Obsidian: **Abrir pasta como vault** → escolha a pasta `Game_Library` → **Confiar no autor e
-   ativar plugins**. O **Dataview** e o **CustomJS** já vêm no ZIP, configurados e ativados.
-4. Opcional: em **Configurações › Plugins da comunidade › Procurar**, instale **Style Settings** e
-   **Templater**. As configurações deles já estão no vault.
-5. Abra `Dashboard/Home` — na primeira vez, os **primeiros passos** levam do vault vazio à biblioteca
+   ativar plugins**. **Dataview**, **CustomJS**, **Style Settings** e **Templater** já vêm no ZIP,
+   configurados e ativados: não é preciso instalar nada.
+4. Abra `Dashboard/Home` — na primeira vez, os **primeiros passos** levam do vault vazio à biblioteca
    pronta.
 
 > [!TIP]

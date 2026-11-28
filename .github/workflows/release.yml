@@ -66,10 +66,11 @@ jobs:
           if unzip -Z1 "$NAME.zip" | grep -E '^Game_Library/(\.obsidian/plugins/[^/]+/(main\.js|styles\.css|manifest\.json)|\.obsidian/themes/|\.obsidian/workspace[^/]*\.json|\.trash/|Backups/|\.steamvault/|\.github/(tests|tools|workflows)/|(.*/)?\.env(\..*)?$|(.*/)?node_modules/)'; then
             echo "::error::O ZIP contém arquivos que não podem ser distribuídos."; exit 1
           fi
-          # Dataview e CustomJS entram prontos (versão fixa, SHA-256 conferido, licença MIT);
+          # Dataview, CustomJS, Templater e Style Settings entram prontos (versão fixa, SHA-256
+          # conferido, licença ao lado);
           # nenhum outro código de plugin pode estar no ZIP
           bash .github/tools/bundle-plugins.sh "$NAME.zip"
-          if unzip -Z1 "$NAME.zip" | grep -E '^Game_Library/\.obsidian/plugins/[^/]+/(main\.js|styles\.css|manifest\.json)$' | grep -vE '^Game_Library/\.obsidian/plugins/(dataview|customjs)/'; then
+          if unzip -Z1 "$NAME.zip" | grep -E '^Game_Library/\.obsidian/plugins/[^/]+/(main\.js|styles\.css|manifest\.json)$' | grep -vE '^Game_Library/\.obsidian/plugins/(dataview|customjs|templater-obsidian|obsidian-style-settings)/'; then
             echo "::error::O ZIP contém código de plugin fora da lista permitida."; exit 1
           fi
           sha256sum "$NAME.zip" > "$NAME.zip.sha256"
@@ -84,7 +85,7 @@ jobs:
             echo "### Como instalar"
             echo "1. Baixe \`$NAME.zip\` abaixo e descompacte."
             echo "2. No Obsidian, *Abrir pasta como vault* → \`Game_Library\`, e confie no vault."
-            echo "3. Os plugins obrigatórios (**Dataview** e **CustomJS**) já vêm no ZIP, ativados: não é preciso instalar nada. Opcionais: **Style Settings** (ajustes visuais) e **Templater** (para usar os modelos em \`_Templates/\`), pela loja de plugins."
+            echo "3. Os plugins já vêm no ZIP, ativados: **Dataview** e **CustomJS** (obrigatórios), **Style Settings** (ajustes visuais) e **Templater** (modelos em \`_Templates/\`). Não é preciso instalar nada."
             echo "4. Abra \`Dashboard/Home\`. Detalhes no README."
           } >> notes.md
           echo "name=$NAME" >> "$GITHUB_ENV"

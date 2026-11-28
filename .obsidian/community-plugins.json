@@ -1,4 +1,6 @@
 [
   "dataview",
-  "customjs"
+  "customjs",
+  "templater-obsidian",
+  "obsidian-style-settings"
 ]

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Acrescenta ao ZIP da versão os plugins obrigatórios (Dataview e CustomJS), para o
+# Acrescenta ao ZIP da versão os plugins (Dataview, CustomJS, Templater, Style Settings), para o
 # vault abrir pronto, sem instalar nada pela loja do Obsidian.
 #   bash .github/tools/bundle-plugins.sh Game_Library_X.Y.Z.zip
 # - Lê versões, arquivos e SHA-256 de .github/plugins/plugins.lock.
@@ -8,7 +8,7 @@
 # - Tira o source map embutido do main.js, como o próprio Obsidian faz ao instalar
 #   pela loja ("/* nosourcemap */"): o arquivo fica quase metade menor e abre mais
 #   rápido no celular. O código não muda.
-# - Junta a licença (MIT) de cada plugin.
+# - Junta a licença de cada plugin (MIT, AGPL-3.0 ou GPL-3.0, conforme o plugin).
 # Nada disso vai para o repositório: só para o ZIP.
 set -euo pipefail
 

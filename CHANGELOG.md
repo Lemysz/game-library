@@ -9,11 +9,19 @@ versões menores.
 
 ## [Não lançado]
 
+Nada ainda.
+
+## [1.14.3] · 2026-11-28
+
+### Adicionado
+- **Templater e Style Settings já vêm no ZIP**, ativados, como o Dataview e o CustomJS: o vault abre
+  sem nenhum plugin faltando e não é preciso instalar nada pela loja. Versões fixas (Templater 2.27.0,
+  Style Settings 1.0.9), baixadas do release oficial, com SHA-256 conferido e a licença ao lado
+  (AGPL-3.0 e GPL-3.0; detalhes em [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)).
+
 ### Corrigido
-- **Plugins "faltando" ao abrir o vault:** a configuração ativava também o Templater e o Style
-  Settings, que são opcionais e não vêm no ZIP, e o Obsidian acusava a falta deles. Agora só o Dataview
-  e o CustomJS (que vêm no ZIP) começam ativos; os opcionais se ativam ao serem instalados pela loja
-  de plugins, e as configurações do Style Settings já estão no vault.
+- **Plugins "faltando" ao abrir o vault:** a configuração ativava o Templater e o Style Settings, que
+  não vinham no ZIP, e o Obsidian acusava a falta deles.
 
 ## [1.14.2] · 2026-11-27
 

@@ -9,3 +9,10 @@ dataview 0.5.68 blacksmithgu/obsidian-dataview styles.css 3306dd9032e00f989ba723
 customjs 1.0.21 saml-dev/obsidian-custom-js manifest.json 56ebf635295edeb0ebaf05c64428c6371717cdd566829437cf27f5773e5fb228
 customjs 1.0.21 saml-dev/obsidian-custom-js main.js 2987e0ab8dc5e9d45e2450a09b2343680e2d10cb354c906f7d7f8c1e2322a556
 customjs 1.0.21 saml-dev/obsidian-custom-js styles.css 2cc7a49b43e83ac9d27abd4865a8d2f79c97d050a7151518c609a4ec28ecd023
+# Templater 2.27.0 (AGPL-3.0) e Style Settings 1.0.9 (GPL-3.0): opcionais, também no ZIP desde a 1.14.3
+templater-obsidian 2.27.0 SilentVoid13/Templater manifest.json a9d10df447b9ce60e72df775cea66f246dacaac1f2e508b023585552f08be900
+templater-obsidian 2.27.0 SilentVoid13/Templater main.js 0b4a22e7a3871f929e18656d9f3c7defd8588c9dc5845620b9a16e0adb7c9a2f
+templater-obsidian 2.27.0 SilentVoid13/Templater styles.css 67a6dd2d1d6dedca1287c334ca884ec4196433f71ca47388a0bd3eac14cf8b5f
+obsidian-style-settings 1.0.9 mgmeyers/obsidian-style-settings manifest.json 9cffdc20cf2aa1354820e0050b694b0f9b576446e3d5d44a36ae8b0187e5bfb8
+obsidian-style-settings 1.0.9 mgmeyers/obsidian-style-settings main.js 1828abaacdab4c5578b705a625c585b30512f8efad4c7cfc5a18e70cc3557468
+obsidian-style-settings 1.0.9 mgmeyers/obsidian-style-settings styles.css ee7937d2be50653a89ccb30ae5f0572b23507d5b7f1328d005271a363075bfd8

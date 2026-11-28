@@ -100,7 +100,7 @@ foco, desempenho) estão em `.github/tools/audit/`.
 
 ## O que não fazer
 
-- Não versionar `main.js`/`styles.css`/`manifest.json` de plugins (Dataview e CustomJS entram só no
+- Não versionar `main.js`/`styles.css`/`manifest.json` de plugins (Dataview, CustomJS, Templater e Style Settings entram só no
   ZIP da versão, por `.github/tools/bundle-plugins.sh`, com versão e SHA-256 em
   `.github/plugins/plugins.lock`), temas, `.trash/`, `Backups/`,
   `.steamvault/`, `workspace*.json` (o `.gitignore` e o `checks.js` cuidam disso).

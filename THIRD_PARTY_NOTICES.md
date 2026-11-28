@@ -6,7 +6,7 @@ repositório (e no ZIP da versão) e **o que não é**, com a licença verificad
 > Licença do próprio projeto: **ainda não definida** — todos os direitos reservados ao autor até que
 > uma licença seja escolhida. Nada nesta página concede licença sobre o código da Game Library.
 
-## Redistribuído só no ZIP da versão (plugins obrigatórios)
+## Redistribuído só no ZIP da versão
 
 O código destes plugins **não** está no repositório. O workflow de versões baixa os arquivos do
 release oficial de cada um, numa versão fixa, confere o SHA-256 listado em
@@ -18,6 +18,12 @@ release oficial de cada um, numa versão fixa, confere o SHA-256 listado em
 |---|---|---|---|---|
 | [Dataview](https://github.com/blacksmithgu/obsidian-dataview) | 0.5.68 | Executa os blocos `dataviewjs` de cada tela | MIT — © 2021 Michael Brenan ([texto](.github/plugins/dataview.LICENSE.txt)) | Release oficial no GitHub |
 | [CustomJS](https://github.com/saml-dev/obsidian-custom-js) | 1.0.21 | Carrega os scripts de `Scripts/` | MIT — © 2021 Sam Lewis ([texto](.github/plugins/customjs.LICENSE.txt)) | Release oficial no GitHub |
+| [Templater](https://github.com/SilentVoid13/Templater) | 2.27.0 | Modelos opcionais em `*/_Templates/` | AGPL-3.0 ([texto](.github/plugins/templater-obsidian.LICENSE.txt)) | Release oficial no GitHub · [código-fonte desta versão](https://github.com/SilentVoid13/Templater/tree/2.27.0) |
+| [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) | 1.0.9 | Ajustes visuais do snippet | GPL-3.0 ([texto](.github/plugins/obsidian-style-settings.LICENSE.txt)) | Release oficial no GitHub · [código-fonte desta versão](https://github.com/mgmeyers/obsidian-style-settings/tree/1.0.9) |
+
+O Templater e o Style Settings são distribuídos sem modificação, como programas separados, ao lado do
+vault (agregação). Suas licenças (AGPL-3.0 e GPL-3.0) valem para o código deles, não para a Game
+Library. O código-fonte correspondente a cada versão está nos links acima.
 
 ## Não redistribuído (instalado pelo próprio Obsidian)
 
@@ -28,8 +34,6 @@ própria do projeto.
 
 | Componente | Uso | Obrigatório | Licença | Fonte |
 |---|---|---|---|---|
-| [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) | Ajustes visuais do snippet | Recomendado | Não verificada nesta sessão (consultar o repositório oficial) | Plugins da comunidade |
-| [Templater](https://github.com/SilentVoid13/Templater) | Modelos opcionais em `*/_Templates/` | Opcional | Não verificada nesta sessão (consultar o repositório oficial) | Plugins da comunidade |
 | [Minimal](https://github.com/kepano/obsidian-minimal) (tema) | Tema configurado em `appearance.json` | Opcional | MIT (cabeçalho do `theme.css`) | Temas da comunidade |
 
 Como esses componentes não são redistribuídos, a Game Library não precisa reproduzir suas licenças.

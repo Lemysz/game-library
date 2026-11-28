@@ -28,7 +28,7 @@ O GitHub Actions roda os mesmos testes em cada envio. Mudanças de interface pre
 O harness simula o Obsidian; ele não pega tudo o que acontece no Android. Com o ZIP da versão num
 vault **novo**, no celular, confira em poucos minutos:
 
-1. Abrir a pasta como vault e **confiar**: Dataview e CustomJS já aparecem ativados.
+1. Abrir a pasta como vault e **confiar**: Dataview, CustomJS, Templater e Style Settings já aparecem ativados.
 2. A tela de carregamento aparece só na abertura e some sozinha (no máximo 25 s).
 3. Trocar de aba pela barra inferior (Início, Biblioteca, Conquistas, Perfil): sem tela de
    carregamento no meio e com as animações de entrada.
